@@ -1,0 +1,530 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ClaimService } from '../services/claim.service';
+import { ActivatedRoute, Router } from '@angular/router';
+
+@Component({
+  selector: 'app-apply-claim',
+  templateUrl: './apply-claim.component.html',
+  styleUrls: ['./apply-claim.component.css']
+})
+export class ApplyClaimComponent implements OnInit {
+  claimForm: FormGroup;
+  policyId: number;
+  errorMessage: string = '';
+
+  constructor(
+    private fb: FormBuilder,
+    private claimService: ClaimService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.claimForm = this.fb.group({
+      claimAmount: ['', [Validators.required, Validators.min(1000)]],
+      claimType: ['', Validators.required],
+      claimDocuments: ['', Validators.required]
+    });
+
+    this.policyId = Number(this.route.snapshot.paramMap.get('policyId'));
+  }
+
+  ngOnInit(): void {}
+
+  onSubmit(): void {
+    if (this.claimForm.invalid) {
+      return;
+    }
+
+    this.claimService.applyClaim(this.policyId, this.claimForm.value).subscribe(
+      () => {
+        alert('Claim submitted successfully');
+        this.router.navigate(['/dashboard']);
+      },
+      error => {
+        console.error('Error applying claim:', error);
+        this.errorMessage = 'Failed to submit claim. Try again later.';
+      }
+    );
+  }
+}
+_______applyclaim.component.ts_____________________
+
+
+apply-claim.component.html
+
+<div class="claim-container">
+  <h2>Apply for Claim</h2>
+  <form [formGroup]="claimForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label>Claim Amount:</label>
+      <input type="number" formControlName="claimAmount" class="form-control" />
+      <span *ngIf="claimForm.controls['claimAmount'].invalid && claimForm.controls['claimAmount'].touched">
+        Claim amount must be at least 1000.
+      </span>
+    </div>
+
+    <div class="form-group">
+      <label>Claim Type:</label>
+      <select formControlName="claimType" class="form-control">
+        <option value="">Select Type</option>
+        <option value="Medical">Medical</option>
+        <option value="Accident">Accident</option>
+        <option value="Property">Property</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Claim Documents:</label>
+      <input type="file" formControlName="claimDocuments" class="form-control" />
+    </div>
+
+    <button type="submit" [disabled]="claimForm.invalid" class="btn btn-primary">Submit Claim</button>
+  </form>
+</div>
+__________________________
+
+apply-claim.component.css
+.claim-container {
+  width: 50%;
+  margin: auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+.form-group {
+  margin-bottom: 15px;
+}
+.form-control {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
+_____________________________________________________
+
+
+claim.service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Claim } from '../models/claim.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ClaimService {
+  private apiUrl = 'http://localhost:8080/claims';
+
+  constructor(private http: HttpClient) {}
+
+  applyClaim(policyId: number, claim: Claim): Observable<Claim> {
+    return this.http.post<Claim>(`${this.apiUrl}/apply/${policyId}`, claim);
+  }
+
+  getUserClaims(userId: number): Observable<Claim[]> {
+    return this.http.get<Claim[]>(`${this.apiUrl}/user/${userId}`);
+  }
+
+  getClaimsForApproval(): Observable<Claim[]> {
+    return this.http.get<Claim[]>(`${this.apiUrl}/pending`);
+  }
+
+  approveClaim(claimId: number): Observable<Claim> {
+    return this.http.put<Claim>(`${this.apiUrl}/approve/${claimId}`, {});
+  }
+
+  rejectClaim(claimId: number): Observable<Claim> {
+    return this.http.put<Claim>(`${this.apiUrl}/reject/${claimId}`, {});
+  }
+}
+_________________________________________
+
+claim.model.ts
+
+export interface Claim {
+  id?: number;
+  policyId: number;
+  claimAmount: number;
+  claimType: string;
+  claimDocuments: string;
+  status?: string;
+}
+___________________________________________________
+
+
+
+claim-approval.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { ClaimService } from '../services/claim.service';
+
+@Component({
+  selector: 'app-claim-approval',
+  templateUrl: './claim-approval.component.html',
+  styleUrls: ['./claim-approval.component.css']
+})
+export class ClaimApprovalComponent implements OnInit {
+  claims: any[] = [];
+
+  constructor(private claimService: ClaimService) {}
+
+  ngOnInit(): void {
+    this.claimService.getClaimsForApproval().subscribe(data => {
+      this.claims = data;
+    });
+  }
+
+  approveClaim(id: number) {
+    this.claimService.approveClaim(id).subscribe(() => {
+      this.claims = this.claims.filter(claim => claim.id !== id);
+    });
+  }
+
+  rejectClaim(id: number) {
+    this.claimService.rejectClaim(id).subscribe(() => {
+      this.claims = this.claims.filter(claim => claim.id !== id);
+    });
+  }
+}
+____________________________________________________
+
+
+claim-approval.component.html
+
+<div class="approval-container">
+  <h2>Claim Approval</h2>
+  <table>
+    <tr>
+      <th>Claim ID</th>
+      <th>Policy ID</th>
+      <th>Claim Amount</th>
+      <th>Claim Type</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+    <tr *ngFor="let claim of claims">
+      <td>{{ claim.id }}</td>
+      <td>{{ claim.policyId }}</td>
+      <td>{{ claim.claimAmount }}</td>
+      <td>{{ claim.claimType }}</td>
+      <td>{{ claim.status }}</td>
+      <td>
+        <button (click)="approveClaim(claim.id)">Approve</button>
+        <button (click)="rejectClaim(claim.id)">Reject</button>
+      </td>
+    </tr>
+  </table>
+</div>
+____________________________________________
+
+ profile.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../services/auth.service';
+import { PolicyService } from '../services/policy.service';
+import { ClaimService } from '../services/claim.service';
+
+@Component({
+  selector: 'app-profile',
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.css']
+})
+export class ProfileComponent implements OnInit {
+  user: any;
+  policies: any[] = [];
+  claims: any[] = [];
+
+  constructor(
+    private authService: AuthService,
+    private policyService: PolicyService,
+    private claimService: ClaimService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadUserProfile();
+  }
+
+  loadUserProfile() {
+    this.user = this.authService.getLoggedInUser();
+    if (this.user) {
+      this.fetchPolicies();
+      this.fetchClaims();
+    }
+  }
+
+  fetchPolicies() {
+    this.policyService.getPoliciesByUserId(this.user.id).subscribe(
+      (data) => {
+        this.policies = data;
+      },
+      (error) => {
+        console.error('Error fetching policies', error);
+      }
+    );
+  }
+
+  fetchClaims() {
+    this.claimService.getClaimsByUserId(this.user.id).subscribe(
+      (data) => {
+        this.claims = data;
+      },
+      (error) => {
+        console.error('Error fetching claims', error);
+      }
+    );
+  }
+}
+___________________
+
+
+<div class="profile-container">
+  <h2>User Profile</h2>
+  
+  <div class="user-details">
+    <p><strong>Username:</strong> {{ user?.username }}</p>
+    <p><strong>Email:</strong> {{ user?.email }}</p>
+  </div>
+
+  <h3>Issued Policies</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Plan Type</th>
+        <th>Tenure</th>
+        <th>Premium Frequency</th>
+        <th>Insured Amount</th>
+        <th>Issuance Date</th>
+        <th>Maturity Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let policy of policies">
+        <td>{{ policy.planType }}</td>
+        <td>{{ policy.tenure }}</td>
+        <td>{{ policy.premiumFrequency }}</td>
+        <td>{{ policy.insuredAmount }}</td>
+        <td>{{ policy.issuanceDate }}</td>
+        <td>{{ policy.maturityDate }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Claims</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Claim Amount</th>
+        <th>Claim Type</th>
+        <th>Claim Documents</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let claim of claims">
+        <td>{{ claim.claimAmount }}</td>
+        <td>{{ claim.claimType }}</td>
+        <td>{{ claim.claimDocuments }}</td>
+        <td [ngClass]="{
+          'pending': claim.status === 'PENDING',
+          'approved': claim.status === 'APPROVED',
+          'rejected': claim.status === 'REJECTED'
+        }">
+          {{ claim.status }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+profile.component.html
+
+______________________________
+
+profile.component.css
+
+
+.profile-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+h2, h3 {
+  text-align: center;
+}
+
+.user-details p {
+  font-size: 18px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.pending {
+  color: orange;
+  font-weight: bold;
+}
+
+.approved {
+  color: green;
+  font-weight: bold;
+}
+
+.rejected {
+  color: red;
+  font-weight: bold;
+}
+____________________________
+
+Policy Service (policy.service.ts)
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PolicyService {
+  private apiUrl = 'http://localhost:8080/policies';
+
+  constructor(private http: HttpClient) {}
+
+  getPoliciesByUserId(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/user/${userId}`);
+  }
+}
+
+---------------------------------
+Claim Service (claim.service.ts)
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ClaimService {
+  private apiUrl = 'http://localhost:8080/claims';
+
+  constructor(private http: HttpClient) {}
+
+  getClaimsByUserId(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/user/${userId}`);
+  }
+}
+-----------------------------------------
+AuthService (auth.service.ts)
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  getLoggedInUser() {
+    return JSON.parse(localStorage.getItem('user') || '{}');
+  }
+}
+______________________________________________
+
+dashboard.html
+
+<div class="dashboard-container">
+  <h2>Welcome to BNP</h2>
+
+  <div class="menu">
+    <button routerLink="/issuepolicy">Issue Policy</button>
+    <button routerLink="/applyclaim">Apply Claim</button>
+    <button *ngIf="userRole === 'ADMIN'" routerLink="/approveclaim">Approve Claim</button>
+    <button class="profile-btn" (click)="navigateToProfile()">View Profile</button>
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+</div>
+___________________________________________
+dashboard.component.ts
+
+
+import { Component, OnInit } from "@angular/core";
+import { Router } from "@angular/router";
+
+@Component({
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css']
+})
+export class DashboardComponent implements OnInit {
+  userRole: string | null = '';
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    this.userRole = localStorage.getItem('userRole');
+  }
+
+  navigateToProfile(): void {
+    this.router.navigate(['/profile']);
+  }
+
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
+}
+
+------------------------------------------
+
+dashboard.component.css
+
+.dashboard-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.menu {
+  margin-top: 20px;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.profile-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+
+
+
+
