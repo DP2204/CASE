@@ -1,0 +1,407 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthService {
+  private apiUrl = 'http://localhost:8080/users';
+
+  constructor(private http: HttpClient) {}
+
+  login(user: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/login`, user);
+  }
+
+  getUserRole(): string | null {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user).role : null;
+  }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('user');
+  }
+
+  logout(): void {
+    localStorage.removeItem('user');
+  }
+}
+authservice
+
+_______________________
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../auth/auth.service';
+
+@Component({
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css']
+})
+export class DashboardComponent implements OnInit {
+  role: string | null = '';
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit(): void {
+    this.role = this.authService.getUserRole();
+    if (!this.role) {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+}
+____________________
+
+<div class="dashboard-container">
+  <h2>Welcome to Dashboard</h2>
+  <button routerLink="/issue-policy">Issue Policy</button>
+  <button routerLink="/apply-claim">Apply Claim</button>
+  <button *ngIf="role === 'ADMIN'" routerLink="/approve-claim">Approve Claim</button>
+  <button (click)="logout()">Logout</button>
+</div>
+______________
+
+.dashboard-container {
+  text-align: center;
+  margin-top: 50px;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+______________
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-issue-policy',
+  templateUrl: './issue-policy.component.html',
+  styleUrls: ['./issue-policy.component.css']
+})
+export class IssuePolicyComponent {
+  step = 1;
+
+  nextStep(): void {
+    if (this.step < 4) this.step++;
+  }
+
+  prevStep(): void {
+    if (this.step > 1) this.step--;
+  }
+}
+
+________________
+
+<div class="policy-container">
+  <app-personal-details *ngIf="step === 1"></app-personal-details>
+  <app-income-details *ngIf="step === 2"></app-income-details>
+  <app-nominee-details *ngIf="step === 3"></app-nominee-details>
+  <app-policy-details *ngIf="step === 4"></app-policy-details>
+
+  <div class="buttons">
+    <button *ngIf="step > 1" (click)="prevStep()">Previous</button>
+    <button *ngIf="step < 4" (click)="nextStep()">Next</button>
+    <button *ngIf="step === 4">Submit</button>
+  </div>
+</div>
+________________
+
+.policy-container {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.buttons {
+  margin-top: 20px;
+}
+_______________
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-personal-details',
+  templateUrl: './personal-details.component.html',
+})
+export class PersonalDetailsComponent {}
+____________________
+
+<h3>Step 1: Personal Details</h3>
+<form>
+  <label>Name:</label>
+  <input type="text" required />
+
+  <label>DOB:</label>
+  <input type="date" required />
+
+  <label>Address:</label>
+  <input type="text" required />
+</form>
+_____________________________
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-income-details',
+  templateUrl: './income-details.component.html',
+})
+export class IncomeDetailsComponent {}
+___________________
+
+<h3>Step 2: Income Details</h3>
+<form>
+  <label>Income Source:</label>
+  <input type="text" required />
+
+  <label>Total Income:</label>
+  <input type="number" required />
+</form>
+__________________
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-nominee-details',
+  templateUrl: './nominee-details.component.html',
+})
+export class NomineeDetailsComponent {}
+__________________________________
+
+<h3>Step 3: Nominee Details</h3>
+<form>
+  <label>Nominee Name:</label>
+  <input type="text" required />
+
+  <label>Contact No:</label>
+  <input type="text" required />
+
+  <label>DOB:</label>
+  <input type="date" required />
+
+  <label>Relationship:</label>
+  <input type="text" required />
+
+  <label>Percentage Stake:</label>
+  <input type="number" required />
+</form>
+
+_________________________
+
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-policy-details',
+  templateUrl: './policy-details.component.html',
+})
+export class PolicyDetailsComponent {}
+______________
+
+
+<h3>Step 4: Policy Details</h3>
+<form>
+  <label>Plan Name:</label>
+  <input type="text" required />
+
+  <label>Plan Type:</label>
+  <input type="text" required />
+
+  <label>Tenure:</label>
+  <input type="number" required />
+
+  <label>Premium Frequency:</label>
+  <input type="text" required />
+
+  <label>Insured Amount:</label>
+  <input type="number" required />
+
+  <label>Issuance Date:</label>
+  <input type="date" required />
+</form>
+______________
+
+LOGIN.CSS
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(to right, #74ebd5, #acb6e5);
+}
+
+.container {
+  display: flex;
+  width: 600px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.register-box, .login-box {
+  flex: 1;
+  padding: 20px;
+  text-align: center;
+}
+
+.register-box {
+  background: #f8f9fa;
+  border-radius: 10px 0 0 10px;
+}
+
+.register-box h2 {
+  color: #333;
+}
+
+.register-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 15px;
+  color: white;
+  background: #007bff;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.login-box h2 {
+  color: #333;
+}
+
+input {
+  width: 80%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+button {
+  width: 80%;
+  padding: 10px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #218838;
+}
+___________________
+
+REGISTER.TS
+
+import { Component } from '@angular/core';
+import { AuthService } from '../auth.service';
+
+@Component({
+  selector: 'app-register',
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css']
+})
+export class RegisterComponent {
+  user = { username: '', password: '', role: '' };
+
+  constructor(private authService: AuthService) {}
+
+  register() {
+    this.authService.register(this.user).subscribe(
+      response => {
+        alert('Registration Successful!');
+      },
+      error => {
+        alert('Registration Failed!');
+      }
+    );
+  }
+}
+_______________________
+
+REGISTER.HTML
+<div class="container">
+  <div class="register-box">
+    <h2>Create an Account</h2>
+    <form (submit)="register()">
+      <input type="text" placeholder="Username" [(ngModel)]="user.username" required />
+      <input type="password" placeholder="Password" [(ngModel)]="user.password" required />
+      <input type="text" placeholder="Role (User/Admin)" [(ngModel)]="user.role" required />
+      <button type="submit">Register</button>
+    </form>
+  </div>
+
+  <div class="login-box">
+    <h2>Already Registered?</h2>
+    <p>Sign in now and explore the app.</p>
+    <a href="/login" class="login-btn">Login</a>
+  </div>
+</div>
+
+_______________
+
+REGISTER>CSS
+.container {
+  display: flex;
+  width: 600px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.register-box, .login-box {
+  flex: 1;
+  padding: 20px;
+  text-align: center;
+}
+
+.register-box h2, .login-box h2 {
+  color: #333;
+}
+
+input {
+  width: 80%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+button {
+  width: 80%;
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+.login-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 15px;
+  color: white;
+  background: #28a745;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.login-btn:hover {
+  background: #218838;
+}
+_________________________
+
