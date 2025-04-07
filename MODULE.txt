@@ -550,4 +550,157 @@ issue-policy.html
 
 </div>
 
+_______________________________________
+
+// issue-policy.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-issue-policy',
+  templateUrl: './issue-policy.component.html',
+  styleUrls: ['./issue-policy.component.css']
+})
+export class IssuePolicyComponent {
+  step: number = 1;
+  isStepValid: boolean = false;
+
+  nextStep() {
+    if (this.isStepValid && this.step < 4) {
+      this.step++;
+      this.isStepValid = false;
+    }
+  }
+
+  prevStep() {
+    if (this.step > 1) {
+      this.step--;
+      this.isStepValid = true;
+    }
+  }
+
+  onStepValidityChanged(valid: boolean) {
+    this.isStepValid = valid;
+  }
+
+  submitPolicy() {
+    console.log('Policy submitted!');
+  }
+}
+
+// issue-policy.component.html
+<div class="policy-container">
+  <app-personal-details
+    *ngIf="step === 1"
+    (formValidityChanged)="onStepValidityChanged($event)">
+  </app-personal-details>
+
+  <app-income-details
+    *ngIf="step === 2"
+    (formValidityChanged)="onStepValidityChanged($event)">
+  </app-income-details>
+
+  <app-nominee-details
+    *ngIf="step === 3"
+    (formValidityChanged)="onStepValidityChanged($event)">
+  </app-nominee-details>
+
+  <app-policy-details
+    *ngIf="step === 4"
+    (formValidityChanged)="onStepValidityChanged($event)">
+  </app-policy-details>
+
+  <div class="buttons">
+    <button *ngIf="step > 1" (click)="prevStep()">Previous</button>
+    <button *ngIf="step < 4" [disabled]="!isStepValid" (click)="nextStep()">Next</button>
+    <button *ngIf="step === 4" [disabled]="!isStepValid" (click)="submitPolicy()">Submit</button>
+  </div>
+</div>
+
+// personal-details.component.ts
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
+@Component({
+  selector: 'app-personal-details',
+  templateUrl: './personal-details.component.html',
+  styleUrls: ['./personal-details.component.css']
+})
+export class PersonalDetailsComponent implements OnInit {
+  personalForm!: FormGroup;
+
+  @Output() formValidityChanged = new EventEmitter<boolean>();
+
+  constructor(private fb: FormBuilder) {}
+
+  ngOnInit(): void {
+    this.personalForm = this.fb.group({
+      name: ['', Validators.required],
+      dob: ['', Validators.required],
+      address: ['', Validators.required],
+      mobileNumber: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]]
+    });
+
+    this.personalForm.statusChanges.subscribe(() => {
+      this.formValidityChanged.emit(this.personalForm.valid);
+    });
+  }
+}
+
+// personal-details.component.html
+<form [formGroup]="personalForm">
+  <div class="form-group">
+    <label>Name</label>
+    <input formControlName="name" type="text" />
+    <div class="error" *ngIf="personalForm.get('name')?.invalid && personalForm.get('name')?.touched">
+      Name is required.
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Date of Birth</label>
+    <input formControlName="dob" type="date" />
+    <div class="error" *ngIf="personalForm.get('dob')?.invalid && personalForm.get('dob')?.touched">
+      Date of Birth is required.
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Address</label>
+    <input formControlName="address" type="text" />
+    <div class="error" *ngIf="personalForm.get('address')?.invalid && personalForm.get('address')?.touched">
+      Address is required.
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Mobile Number</label>
+    <input formControlName="mobileNumber" type="text" />
+    <div class="error" *ngIf="personalForm.get('mobileNumber')?.invalid && personalForm.get('mobileNumber')?.touched">
+      Mobile Number must be 10 digits.
+    </div>
+  </div>
+</form>
+
+// personal-details.component.css
+.form-group {
+  margin-bottom: 15px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  box-sizing: border-box;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
 
