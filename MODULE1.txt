@@ -752,6 +752,114 @@ public Policy issuePolicy(Long userId, Policy policy) {
 
     return savedPolicy;
 }
+__________________________________________________________
+
+// personal-details.component.ts
+import { Component, Input } from '@angular/core';
+import { FormGroup } from '@angular/forms';
+
+@Component({
+  selector: 'app-personal-details',
+  template: `
+    <div [formGroup]="formGroup">
+      <label>Policy Holder Name</label>
+      <input formControlName="policyHolderName" />
+
+      <label>DOB</label>
+      <input type="date" formControlName="dob" />
+
+      <label>Address</label>
+      <input formControlName="address" />
+
+      <label>Mobile Number</label>
+      <input formControlName="mobileNumber" />
+    </div>
+  `
+})
+export class PersonalDetailsComponent {
+  @Input() formGroup!: FormGroup;
+}
+
+// income-details.component.ts
+import { Component, Input } from '@angular/core';
+import { FormGroup } from '@angular/forms';
+
+@Component({
+  selector: 'app-income-details',
+  template: `
+    <div [formGroup]="formGroup">
+      <label>Income Source</label>
+      <input formControlName="incomeSource" />
+
+      <label>Total Income</label>
+      <input type="number" formControlName="totalIncome" />
+    </div>
+  `
+})
+export class IncomeDetailsComponent {
+  @Input() formGroup!: FormGroup;
+}
+
+// nominee-details.component.ts
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { FormGroup } from '@angular/forms';
+
+@Component({
+  selector: 'app-nominee-details',
+  template: `
+    <div *ngFor="let form of nomineeFormArray; let i = index" [formGroup]="form">
+      <label>Nominee Name</label>
+      <input formControlName="nomineeName" />
+
+      <label>Contact Number</label>
+      <input formControlName="contactNumber" />
+
+      <label>DOB</label>
+      <input type="date" formControlName="dob" />
+
+      <label>Relationship</label>
+      <input formControlName="relationship" />
+
+      <label>Percentage Stake</label>
+      <input type="number" formControlName="percentageStake" />
+    </div>
+    <button (click)="addNominee.emit()">Add Nominee</button>
+  `
+})
+export class NomineeDetailsComponent {
+  @Input() nomineeFormArray!: FormGroup[];
+  @Output() addNominee = new EventEmitter<void>();
+}
+
+// policy-details.component.ts
+import { Component, Input } from '@angular/core';
+import { FormGroup } from '@angular/forms';
+
+@Component({
+  selector: 'app-policy-details',
+  template: `
+    <div [formGroup]="formGroup">
+      <label>Plan Type</label>
+      <input formControlName="planType" />
+
+      <label>Tenure</label>
+      <input type="number" formControlName="tenure" />
+
+      <label>Premium Frequency</label>
+      <input formControlName="premiumFrequency" />
+
+      <label>Insured Amount</label>
+      <input type="number" formControlName="insuredAmount" />
+
+      <label>Issuance Date</label>
+      <input type="date" formControlName="issuanceDate" />
+    </div>
+  `
+})
+export class PolicyDetailsComponent {
+  @Input() formGroup!: FormGroup;
+}
+
 
 
 
