@@ -523,5 +523,31 @@ button[disabled] {
 }
 ______________________________________________________________
 
+issue-policy.html
+
+<div class="policy-container">
+
+  <!-- Step Indicator -->
+  <div class="step-indicator">
+    <div class="step" [class.active]="step === 1">Personal</div>
+    <div class="step" [class.active]="step === 2">Income</div>
+    <div class="step" [class.active]="step === 3">Nominee</div>
+    <div class="step" [class.active]="step === 4">Policy</div>
+  </div>
+
+  <!-- Step Components -->
+  <app-personal-details *ngIf="step === 1"></app-personal-details>
+  <app-income-details *ngIf="step === 2"></app-income-details>
+  <app-nominee-details *ngIf="step === 3"></app-nominee-details>
+  <app-policy-details *ngIf="step === 4"></app-policy-details>
+
+  <!-- Navigation Buttons -->
+  <div class="buttons">
+    <button *ngIf="step > 1" (click)="prevStep()">Previous</button>
+    <button *ngIf="step < 4" (click)="nextStep()">Next</button>
+    <button *ngIf="step === 4" (click)="submit()">Submit</button>
+  </div>
+
+</div>
 
 
