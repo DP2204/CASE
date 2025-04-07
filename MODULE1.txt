@@ -1,3 +1,210 @@
+// issue-policy.component.ts
+import { Component, OnInit } from '@angular/core';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { PolicyService } from '../policy.service';
+
+@Component({
+  selector: 'app-issue-policy',
+  templateUrl: './issue-policy.component.html',
+  styleUrls: ['./issue-policy.component.css']
+})
+export class IssuePolicyComponent implements OnInit {
+  userId = 1; // replace with actual user ID
+  step = 1;
+  personalForm!: FormGroup;
+  incomeForm!: FormGroup;
+  nomineeForm!: FormGroup;
+  policyForm!: FormGroup;
+
+  constructor(private fb: FormBuilder, private policyService: PolicyService) {}
+
+  ngOnInit(): void {
+    this.personalForm = this.fb.group({
+      policyHolderName: ['', Validators.required],
+      dob: ['', Validators.required],
+      address: ['', Validators.required],
+      mobileNumber: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]]
+    });
+
+    this.incomeForm = this.fb.group({
+      incomeSource: ['', Validators.required],
+      totalIncome: ['', [Validators.required, Validators.min(0)]]
+    });
+
+    this.nomineeForm = this.fb.group({
+      nominees: this.fb.array([this.createNomineeGroup()])
+    });
+
+    this.policyForm = this.fb.group({
+      planType: ['', Validators.required],
+      tenure: ['', Validators.required],
+      premiumFrequency: ['', Validators.required],
+      insuredAmount: ['', [Validators.required, Validators.min(0)]],
+      issuanceDate: ['', Validators.required]
+    });
+  }
+
+  get nomineeFormArray() {
+    return this.nomineeForm.get('nominees') as FormArray;
+  }
+
+  createNomineeGroup(): FormGroup {
+    return this.fb.group({
+      nomineeName: ['', Validators.required],
+      contactNumber: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+      dob: ['', Validators.required],
+      relationship: ['', Validators.required],
+      percentageStake: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
+    });
+  }
+
+  addNominee(): void {
+    this.nomineeFormArray.push(this.createNomineeGroup());
+  }
+
+  removeNominee(index: number): void {
+    if (this.nomineeFormArray.length > 1) {
+      this.nomineeFormArray.removeAt(index);
+    }
+  }
+
+  nextStep(): void {
+    if (this.step === 1 && this.personalForm.valid) this.step++;
+    else if (this.step === 2 && this.incomeForm.valid) this.step++;
+    else if (this.step === 3 && this.nomineeForm.valid) this.step++;
+  }
+
+  prevStep(): void {
+    if (this.step > 1) this.step--;
+  }
+
+  submitPolicy(): void {
+    if (this.personalForm.invalid || this.incomeForm.invalid || this.nomineeForm.invalid || this.policyForm.invalid) {
+      alert('Please fill all required fields.');
+      return;
+    }
+
+    const policyFormValue = this.policyForm.value;
+    const insuredAmount = policyFormValue.insuredAmount;
+    const tenure = policyFormValue.tenure;
+    const issuanceDate = new Date(policyFormValue.issuanceDate);
+    const maturityDate = new Date(issuanceDate);
+    maturityDate.setFullYear(issuanceDate.getFullYear() + Number(tenure));
+
+    const policyData = {
+      ...this.personalForm.value,
+      ...this.incomeForm.value,
+      ...this.policyForm.value,
+      nominees: this.nomineeFormArray.value,
+      maturityDate: maturityDate.toISOString().split('T')[0],
+      premiumAmount: insuredAmount * 0.02,
+      maturityAmount: insuredAmount * 1.5,
+      policyStatus: 'Issued'
+    };
+
+    this.policyService.issuePolicy(this.userId, policyData).subscribe(
+      response => {
+        alert('Policy Issued Successfully');
+        this.personalForm.reset();
+        this.incomeForm.reset();
+        this.policyForm.reset();
+        this.nomineeFormArray.clear();
+        this.nomineeFormArray.push(this.createNomineeGroup());
+        this.step = 1;
+      },
+      error => alert('Error issuing policy')
+    );
+  }
+}
+
+
+// issue-policy.component.html
+<div class="form-container">
+  <form (ngSubmit)="submitPolicy()">
+    <div *ngIf="step === 1">
+      <h3>Step 1: Personal Details</h3>
+      <input type="text" placeholder="Policy Holder Name" formControlName="policyHolderName" [formGroup]="personalForm">
+      <input type="date" placeholder="DOB" formControlName="dob" [formGroup]="personalForm">
+      <input type="text" placeholder="Address" formControlName="address" [formGroup]="personalForm">
+      <input type="text" placeholder="Mobile Number" formControlName="mobileNumber" [formGroup]="personalForm">
+    </div>
+
+    <div *ngIf="step === 2">
+      <h3>Step 2: Income Details</h3>
+      <input type="text" placeholder="Income Source" formControlName="incomeSource" [formGroup]="incomeForm">
+      <input type="number" placeholder="Total Income" formControlName="totalIncome" [formGroup]="incomeForm">
+    </div>
+
+    <div *ngIf="step === 3">
+      <h3>Step 3: Nominee Details</h3>
+      <div formArrayName="nominees" [formGroup]="nomineeForm">
+        <div *ngFor="let nominee of nomineeFormArray.controls; let i = index" [formGroupName]="i">
+          <input type="text" placeholder="Nominee Name" formControlName="nomineeName">
+          <input type="text" placeholder="Contact Number" formControlName="contactNumber">
+          <input type="date" placeholder="DOB" formControlName="dob">
+          <input type="text" placeholder="Relationship" formControlName="relationship">
+          <input type="number" placeholder="% Stake" formControlName="percentageStake">
+          <button type="button" (click)="removeNominee(i)">Remove</button>
+        </div>
+        <button type="button" (click)="addNominee()">Add Nominee</button>
+      </div>
+    </div>
+
+    <div *ngIf="step === 4">
+      <h3>Step 4: Policy Details</h3>
+      <input type="text" placeholder="Plan Type" formControlName="planType" [formGroup]="policyForm">
+      <input type="number" placeholder="Tenure (Years)" formControlName="tenure" [formGroup]="policyForm">
+      <input type="text" placeholder="Premium Frequency" formControlName="premiumFrequency" [formGroup]="policyForm">
+      <input type="number" placeholder="Insured Amount" formControlName="insuredAmount" [formGroup]="policyForm">
+      <input type="date" placeholder="Issuance Date" formControlName="issuanceDate" [formGroup]="policyForm">
+    </div>
+
+    <div class="button-row">
+      <button type="button" (click)="prevStep()" [disabled]="step === 1">Previous</button>
+      <button type="button" (click)="nextStep()" *ngIf="step < 4">Next</button>
+      <button type="submit" *ngIf="step === 4">Submit</button>
+    </div>
+  </form>
+</div>
+
+
+/* issue-policy.component.css */
+.form-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+
+input, button {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+_____________________________________________________________
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ClaimService } from '../services/claim.service';
