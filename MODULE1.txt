@@ -524,6 +524,234 @@ button {
   color: white;
 }
 
+____________________________________________________________________________
+// This Angular structure represents the Issue Policy functionality with 4-step form and backend integration
+// Folder structure
+// ├── issue-policy
+// │   ├── issue-policy.component.ts
+// │   ├── issue-policy.component.html
+// │   ├── issue-policy.component.css
+// │   ├── policy.service.ts
+// │   ├── personal-details.component.ts
+// │   ├── income-details.component.ts
+// │   ├── nominee-details.component.ts
+// │   ├── policy-details.component.ts
+
+// issue-policy.component.ts
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { PolicyService } from './policy.service';
+
+@Component({
+  selector: 'app-issue-policy',
+  templateUrl: './issue-policy.component.html',
+  styleUrls: ['./issue-policy.component.css']
+})
+export class IssuePolicyComponent {
+  step = 1;
+  personalForm!: FormGroup;
+  incomeForm!: FormGroup;
+  nomineeFormArray: FormGroup[] = [];
+  policyForm!: FormGroup;
+  userId = 1; // Replace with session data after login integration
+
+  constructor(private fb: FormBuilder, private policyService: PolicyService) {
+    this.initForms();
+  }
+
+  initForms() {
+    this.personalForm = this.fb.group({
+      policyHolderName: ['', Validators.required],
+      dob: ['', Validators.required],
+      address: ['', Validators.required],
+      mobileNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+    });
+
+    this.incomeForm = this.fb.group({
+      incomeSource: ['', Validators.required],
+      totalIncome: [null, [Validators.required, Validators.min(0)]],
+    });
+
+    this.policyForm = this.fb.group({
+      planType: ['', Validators.required],
+      tenure: [null, Validators.required],
+      premiumFrequency: ['', Validators.required],
+      insuredAmount: [null, Validators.required],
+      issuanceDate: ['', Validators.required],
+    });
+  }
+
+  addNominee() {
+    const nomineeForm = this.fb.group({
+      nomineeName: ['', Validators.required],
+      contactNumber: ['', Validators.required],
+      dob: ['', Validators.required],
+      relationship: ['', Validators.required],
+      percentageStake: [null, Validators.required],
+    });
+    this.nomineeFormArray.push(nomineeForm);
+  }
+
+  next() {
+    if (this.step < 4) this.step++;
+  }
+
+  prev() {
+    if (this.step > 1) this.step--;
+  }
+
+  submitPolicy() {
+    if (
+      this.personalForm.invalid ||
+      this.incomeForm.invalid ||
+      this.policyForm.invalid ||
+      this.nomineeFormArray.some(form => form.invalid)
+    ) {
+      alert('Please fill all fields correctly.');
+      return;
+    }
+
+    const policyData = {
+      ...this.personalForm.value,
+      ...this.incomeForm.value,
+      ...this.policyForm.value,
+      nominees: this.nomineeFormArray.map(f => f.value),
+    };
+
+    // Dummy formula
+    const issuanceDate = new Date(policyData.issuanceDate);
+    const maturityDate = new Date(issuanceDate);
+    maturityDate.setFullYear(maturityDate.getFullYear() + Number(policyData.tenure));
+    policyData.maturityDate = maturityDate;
+    policyData.premiumAmount = policyData.insuredAmount * 0.02;
+    policyData.maturityAmount = policyData.insuredAmount * 1.5;
+    policyData.policyStatus = 'Issued';
+
+    this.policyService.issuePolicy(this.userId, policyData).subscribe(
+      res => alert('Policy Issued Successfully'),
+      err => alert('Error issuing policy')
+    );
+  }
+}
+
+// policy.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class PolicyService {
+  private baseUrl = 'http://localhost:8080/policy';
+
+  constructor(private http: HttpClient) {}
+
+  issuePolicy(userId: number, policyData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/issue/${userId}`, policyData);
+  }
+
+  getPolicies(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/`);
+  }
+}
+
+// issue-policy.component.html
+<!-- Add attractive CSS and PrimeNG steps here with proper input validation messages -->
+<div class="step-container">
+  <ng-container *ngIf="step === 1">
+    <h3>Step 1: Personal Details</h3>
+    <!-- Inputs from personalForm -->
+  </ng-container>
+
+  <ng-container *ngIf="step === 2">
+    <h3>Step 2: Income Details</h3>
+    <!-- Inputs from incomeForm -->
+  </ng-container>
+
+  <ng-container *ngIf="step === 3">
+    <h3>Step 3: Nominee Details</h3>
+    <div *ngFor="let form of nomineeFormArray; let i = index">
+      <!-- Nominee input fields here -->
+    </div>
+    <button (click)="addNominee()">Add Nominee</button>
+  </ng-container>
+
+  <ng-container *ngIf="step === 4">
+    <h3>Step 4: Policy Details</h3>
+    <!-- Inputs from policyForm -->
+  </ng-container>
+
+  <div class="nav-buttons">
+    <button (click)="prev()" [disabled]="step === 1">Previous</button>
+    <button *ngIf="step < 4" (click)="next()">Next</button>
+    <button *ngIf="step === 4" (click)="submitPolicy()">Submit</button>
+  </div>
+</div>
+
+// Add styling in issue-policy.component.css
+.step-container {
+  padding: 2rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  max-width: 700px;
+  margin: auto;
+}
+
+.nav-buttons button {
+  margin-right: 10px;
+}
+
+input.ng-invalid.ng-touched {
+  border-color: red;
+}
+_______________________________________________________________________
+
+@RestController
+@RequestMapping("/nominees")
+@CrossOrigin(origins = "http://localhost:4200")
+public class NomineeController {
+
+    private final NomineeService nomineeService;
+
+    public NomineeController(NomineeService nomineeService) {
+        this.nomineeService = nomineeService;
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<Nominee> addNominee(@RequestBody Nominee nominee) {
+        return ResponseEntity.ok(nomineeService.addNominee(nominee));
+    }
+
+    @GetMapping("/policy/{policyId}")
+    public ResponseEntity<List<Nominee>> getNomineesByPolicy(@PathVariable Long policyId) {
+        return ResponseEntity.ok(nomineeService.getNomineesByPolicy(policyId));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNominee(@PathVariable Long id) {
+        nomineeService.deleteNominee(id);
+        return ResponseEntity.ok().build();
+    }
+}
+___________________________________________
+
+@Transactional
+public Policy issuePolicy(Long userId, Policy policy) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException("User not found"));
+
+    policy.setUser(user);
+    // Calculate maturity date, amount, etc. here
+
+    Policy savedPolicy = policyRepository.save(policy);
+
+    for (Nominee nominee : policy.getNominees()) {
+        nominee.setPolicy(savedPolicy);
+        nomineeRepository.save(nominee);
+    }
+
+    return savedPolicy;
+}
 
 
 
