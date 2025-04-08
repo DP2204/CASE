@@ -1,4 +1,156 @@
 import { Component, OnInit } from '@angular/core';
+import { PolicyService } from '../authservice/policy.service';
+import { ClaimService } from '../authservice/claim.service';
+
+@Component({
+  selector: 'app-profile',
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.css']
+})
+export class ProfileComponent implements OnInit {
+  userId!: number;
+  policies: any[] = [];
+  claims: any[] = [];
+
+  constructor(
+    private policyService: PolicyService,
+    private claimService: ClaimService
+  ) {}
+
+  ngOnInit(): void {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      this.userId = user.id;
+
+      this.policyService.getUserPolicies(this.userId).subscribe(data => {
+        this.policies = data;
+      });
+
+      this.claimService.getUserClaims(this.userId).subscribe(data => {
+        this.claims = data;
+      });
+    }
+  }
+}
+----------------------------------
+<div class="profile-container">
+  <h2>User Profile</h2>
+
+  <div class="section">
+    <h3>Your Policies</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Policy ID</th>
+          <th>Plan Type</th>
+          <th>Tenure</th>
+          <th>Insured Amount</th>
+          <th>Maturity Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let policy of policies">
+          <td>{{ policy.id }}</td>
+          <td>{{ policy.planType }}</td>
+          <td>{{ policy.tenure }}</td>
+          <td>{{ policy.insuredAmount }}</td>
+          <td>{{ policy.maturityDate }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Your Claims</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Claim ID</th>
+          <th>Amount</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let claim of claims">
+          <td>{{ claim.id }}</td>
+          <td>{{ claim.claimAmount }}</td>
+          <td>{{ claim.claimType }}</td>
+          <td>{{ claim.claimStatus }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+-------------------------------------
+<div class="profile-container">
+  <h2>User Profile</h2>
+
+  <div class="section">
+    <h3>Your Policies</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Policy ID</th>
+          <th>Plan Type</th>
+          <th>Tenure</th>
+          <th>Insured Amount</th>
+          <th>Maturity Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let policy of policies">
+          <td>{{ policy.id }}</td>
+          <td>{{ policy.planType }}</td>
+          <td>{{ policy.tenure }}</td>
+          <td>{{ policy.insuredAmount }}</td>
+          <td>{{ policy.maturityDate }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Your Claims</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Claim ID</th>
+          <th>Amount</th>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let claim of claims">
+          <td>{{ claim.id }}</td>
+          <td>{{ claim.claimAmount }}</td>
+          <td>{{ claim.claimType }}</td>
+          <td>{{ claim.claimStatus }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+------------------------
+.profile-container {
+  padding: 20px;
+}
+.section {
+  margin-bottom: 30px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table, .table th, .table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+---------------
+import { Component, OnInit } from '@angular/core';
 import { ClaimService } from '../authservice/claim.service';
 import { Router } from '@angular/router';
 import { Claim } from '../models/claim.model';
