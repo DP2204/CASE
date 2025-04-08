@@ -1,4 +1,181 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { PolicyService } from '../services/policy.service';
+import { Router } from '@angular/router';
+
+type Frequency = 'Monthly' | 'Quarterly' | 'Half-Yearly' | 'Yearly';
+
+@Component({
+  selector: 'app-issue-policy',
+  templateUrl: './issue-policy.component.html',
+  styleUrls: ['./issue-policy.component.css']
+})
+export class IssuePolicyComponent implements OnInit {
+  step = 0;
+  form: FormGroup;
+  userId = localStorage.getItem('userId') || '1';
+
+  planTypes = ['Term_Life', 'Health_Insaurance', 'Endowment'];
+  frequencies: Frequency[] = ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'];
+
+  constructor(
+    private fb: FormBuilder,
+    private policyService: PolicyService,
+    private router: Router
+  ) {
+    this.form = this.fb.group({
+      // Step 0: Personal
+      policyHolderName: ['', Validators.required],
+      dob: ['', Validators.required],
+      address: ['', Validators.required],
+      mobileNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+
+      // Step 1: Income
+      incomeSource: ['', Validators.required],
+      totalIncome: ['', [Validators.required, Validators.min(1)]],
+
+      // Step 2: Single Nominee
+      nomineeName: ['', Validators.required],
+      nomineeContactNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+      nomineeDOB: ['', Validators.required],
+      nomineeRelationship: ['', Validators.required],
+      nomineePercentageStake: ['', [Validators.required, Validators.min(1), Validators.max(100)]],
+
+      // Step 3: Policy
+      planType: ['', Validators.required],
+      tenure: ['', [Validators.required, Validators.min(1)]],
+      premiumFrequency: ['', Validators.required],
+      insuredAmount: ['', [Validators.required, Validators.min(1)]],
+      issuanceDate: ['', Validators.required]
+    });
+  }
+
+  ngOnInit(): void {}
+
+  nextStep() {
+    const fieldsPerStep = [
+      ['policyHolderName', 'dob', 'address', 'mobileNumber'],
+      ['incomeSource', 'totalIncome'],
+      ['nomineeName', 'nomineeContactNumber', 'nomineeDOB', 'nomineeRelationship', 'nomineePercentageStake'],
+      ['planType', 'tenure', 'premiumFrequency', 'insuredAmount', 'issuanceDate']
+    ];
+
+    const currentFields = fieldsPerStep[this.step];
+    let valid = true;
+
+    currentFields.forEach(control => {
+      const ctrl = this.form.get(control);
+      if (ctrl && ctrl.invalid) {
+        ctrl.markAsTouched();
+        valid = false;
+      }
+    });
+
+    if (!valid) return;
+
+    if (this.step < 3) {
+      this.step++;
+    } else {
+      this.submitForm();
+    }
+  }
+
+  previousStep() {
+    if (this.step > 0) this.step--;
+  }
+
+  submitForm() {
+    const formValue = this.form.value;
+
+    const policyData = {
+      ...formValue,
+      policyStatus: 'ACTIVE',
+      maturityDate: this.calculateMaturityDate(formValue.issuanceDate, formValue.tenure),
+      premiumAmount: this.calculatePremium(+formValue.insuredAmount, formValue.premiumFrequency),
+      maturityAmount: this.calculateMaturityAmount(+formValue.insuredAmount, formValue.planType, +formValue.tenure)
+    };
+
+    console.log('Submitting policyData:', policyData);
+
+    this.policyService.issuePolicy(Number(this.userId), policyData).subscribe(() => {
+      alert('Policy Issued Successfully');
+      this.router.navigate(['/']);
+    });
+  }
+
+  calculateMaturityDate(startDate: string, tenure: number): string {
+    const date = new Date(startDate);
+    date.setFullYear(date.getFullYear() + Number(tenure));
+    return date.toISOString().split('T')[0];
+  }
+
+  calculatePremium(amount: number, frequency: Frequency): number {
+    const frequencyDivisor: Record<Frequency, number> = {
+      Monthly: 12,
+      Quarterly: 4,
+      'Half-Yearly': 2,
+      Yearly: 1
+    };
+    return +(amount / frequencyDivisor[frequency]).toFixed(2);
+  }
+
+  calculateMaturityAmount(amount: number, planType: string, tenure: number): number {
+    const factor = planType === 'Endowment' ? 1.5 : 1.2;
+    return +(amount * factor * tenure).toFixed(2);
+  }
+}
+
+------------------------------------------------------------------------------------------------------------------------
+<div class="container">
+  <h2>Issue Policy - Step {{ step + 1 }}/4</h2>
+
+  <form [formGroup]="form">
+    <div *ngIf="step === 0">
+      <h3>Personal Details</h3>
+      <input type="text" formControlName="policyHolderName" placeholder="Full Name">
+      <input type="date" formControlName="dob" placeholder="Date of Birth">
+      <input type="text" formControlName="address" placeholder="Address">
+      <input type="text" formControlName="mobileNumber" placeholder="Mobile Number">
+    </div>
+
+    <div *ngIf="step === 1">
+      <h3>Income Details</h3>
+      <input type="text" formControlName="incomeSource" placeholder="Income Source">
+      <input type="number" formControlName="totalIncome" placeholder="Total Income">
+    </div>
+
+    <div *ngIf="step === 2">
+      <h3>Nominee Details</h3>
+      <input type="text" formControlName="nomineeName" placeholder="Name">
+      <input type="text" formControlName="nomineeContactNumber" placeholder="Contact No">
+      <input type="date" formControlName="nomineeDOB" placeholder="DOB">
+      <input type="text" formControlName="nomineeRelationship" placeholder="Relationship">
+      <input type="number" formControlName="nomineePercentageStake" placeholder="Stake (%)">
+    </div>
+
+    <div *ngIf="step === 3">
+      <h3>Policy Details</h3>
+      <select formControlName="planType">
+        <option value="">Select Plan</option>
+        <option *ngFor="let type of planTypes" [value]="type">{{ type }}</option>
+      </select>
+      <input type="number" formControlName="tenure" placeholder="Tenure (years)">
+      <select formControlName="premiumFrequency">
+        <option value="">Frequency</option>
+        <option *ngFor="let f of frequencies" [value]="f">{{ f }}</option>
+      </select>
+      <input type="number" formControlName="insuredAmount" placeholder="Insured Amount">
+      <input type="date" formControlName="issuanceDate" placeholder="Issuance Date">
+    </div>
+
+    <div class="navigation-buttons">
+      <button type="button" (click)="previousStep()" *ngIf="step > 0">Previous</button>
+      <button type="button" (click)="nextStep()">{{ step < 3 ? 'Next' : 'Submit' }}</button>
+    </div>
+  </form>
+</div>
+===============================================================================================================
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { PolicyService } from '../services/policy.service';
 import { Router } from '@angular/router';
