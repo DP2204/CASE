@@ -1,4 +1,119 @@
 import { Component, OnInit } from '@angular/core';
+import { ClaimService } from '../authservice/claim.service';
+import { Router } from '@angular/router';
+import { Claim } from '../models/claim.model';
+
+@Component({
+  selector: 'app-approve-claim',
+  templateUrl: './approve-claim.component.html',
+  styleUrls: ['./approve-claim.component.css']
+})
+export class ApproveClaimComponent implements OnInit {
+  pendingClaims: Claim[] = [];
+  errorMessage: string = '';
+
+  constructor(private claimService: ClaimService, private router: Router) {}
+
+  ngOnInit(): void {
+    this.fetchPendingClaims();
+  }
+
+  fetchPendingClaims(): void {
+    this.claimService.getClaimsForApproval().subscribe({
+      next: claims => this.pendingClaims = claims,
+      error: err => this.errorMessage = 'Error loading pending claims'
+    });
+  }
+
+  approveClaim(claimId: number): void {
+    this.claimService.approveClaim(claimId).subscribe({
+      next: () => this.fetchPendingClaims(),
+      error: err => console.error('Error approving claim', err)
+    });
+  }
+
+  rejectClaim(claimId: number): void {
+    this.claimService.rejectClaim(claimId).subscribe({
+      next: () => this.fetchPendingClaims(),
+      error: err => console.error('Error rejecting claim', err)
+    });
+  }
+}
+---------------------------------------------
+<div class="approve-container">
+  <h2>Pending Claims for Approval</h2>
+
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+  <table *ngIf="pendingClaims.length > 0" class="claim-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Claim Amount</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Policy ID</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let claim of pendingClaims">
+        <td>{{ claim.id }}</td>
+        <td>{{ claim.claimAmount }}</td>
+        <td>{{ claim.claimType }}</td>
+        <td>{{ claim.claimStatus }}</td>
+        <td>{{ claim.policy?.id }}</td>
+        <td>
+          <button (click)="approveClaim(claim.id)" class="btn-approve">Approve</button>
+          <button (click)="rejectClaim(claim.id)" class="btn-reject">Reject</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="pendingClaims.length === 0">No pending claims to display.</div>
+</div>
+--------------------------------------------
+.approve-container {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.claim-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.claim-table th, .claim-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.btn-approve {
+  background-color: #28a745;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  cursor: pointer;
+  margin-right: 6px;
+  border-radius: 4px;
+}
+
+.btn-reject {
+  background-color: #dc3545;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+------------------------------------
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PolicyService } from '../services/policy.service';
 import { Router } from '@angular/router';
