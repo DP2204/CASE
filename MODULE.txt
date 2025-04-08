@@ -1,3 +1,485 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { PolicyService } from '../services/policy.service';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-issue-policy',
+  templateUrl: './issue-policy.component.html',
+  styleUrls: ['./issue-policy.component.css']
+})
+export class IssuePolicyComponent implements OnInit {
+  step = 0;
+  form: FormGroup;
+  userId = localStorage.getItem('userId') || '1';
+
+  planTypes = ['BASIC', 'PREMIUM'];
+  frequencies = ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'];
+
+  constructor(private fb: FormBuilder, private policyService: PolicyService, private router: Router) {
+    this.form = this.fb.group({
+      policyHolderName: ['', Validators.required],
+      dob: ['', Validators.required],
+      address: ['', Validators.required],
+      mobileNumber: ['', Validators.required],
+      incomeSource: ['', Validators.required],
+      totalIncome: ['', [Validators.required, Validators.min(1)]],
+      nominees: this.fb.array([]),
+      planType: ['', Validators.required],
+      tenure: ['', [Validators.required, Validators.min(1)]],
+      premiumFrequency: ['', Validators.required],
+      insuredAmount: ['', [Validators.required, Validators.min(1)]],
+      issuanceDate: ['', Validators.required]
+    });
+  }
+
+  ngOnInit(): void {
+    this.addNominee();
+  }
+
+  get nominees() {
+    return this.form.get('nominees') as FormArray;
+  }
+
+  addNominee() {
+    this.nominees.push(this.fb.group({
+      nomineeName: ['', Validators.required],
+      contactNumber: ['', Validators.required],
+      dob: ['', Validators.required],
+      relationship: ['', Validators.required],
+      percentageStake: ['', [Validators.required, Validators.min(1), Validators.max(100)]]
+    }));
+  }
+
+  nextStep() {
+    let valid = false;
+
+    switch (this.step) {
+      case 0:
+        valid = this.form.get('policyHolderName')?.valid &&
+                this.form.get('dob')?.valid &&
+                this.form.get('address')?.valid &&
+                this.form.get('mobileNumber')?.valid;
+        break;
+      case 1:
+        valid = this.form.get('incomeSource')?.valid &&
+                this.form.get('totalIncome')?.valid;
+        break;
+      case 2:
+        valid = this.nominees.valid;
+        break;
+      case 3:
+        valid = this.form.get('planType')?.valid &&
+                this.form.get('tenure')?.valid &&
+                this.form.get('premiumFrequency')?.valid &&
+                this.form.get('insuredAmount')?.valid &&
+                this.form.get('issuanceDate')?.valid;
+        break;
+    }
+
+    if (valid) {
+      if (this.step < 3) {
+        this.step++;
+      } else {
+        this.submitForm();
+      }
+    } else {
+      alert('Please fill all required fields before proceeding.');
+      this.form.markAllAsTouched();
+    }
+  }
+
+  previousStep() {
+    if (this.step > 0) this.step--;
+  }
+
+  submitForm() {
+    const formValue = this.form.value;
+    const policyData = {
+      ...formValue,
+      policyStatus: 'ACTIVE',
+      maturityDate: this.calculateMaturityDate(formValue.issuanceDate, formValue.tenure),
+      premiumAmount: this.calculatePremium(formValue.insuredAmount, formValue.premiumFrequency),
+      maturityAmount: this.calculateMaturityAmount(formValue.insuredAmount, formValue.planType, formValue.tenure)
+    };
+
+    this.policyService.issuePolicy(Number(this.userId), policyData).subscribe(() => {
+      alert('Policy Issued Successfully');
+      this.router.navigate(['/']);
+    });
+  }
+
+  calculateMaturityDate(startDate: string, tenure: number): string {
+    const date = new Date(startDate);
+    date.setFullYear(date.getFullYear() + Number(tenure));
+    return date.toISOString().split('T')[0];
+  }
+
+  calculatePremium(amount: number, frequency: string): number {
+    const frequencyDivisor = { Monthly: 12, Quarterly: 4, 'Half-Yearly': 2, Yearly: 1 };
+    return parseFloat((amount / frequencyDivisor[frequency]).toFixed(2));
+  }
+
+  calculateMaturityAmount(amount: number, planType: string, tenure: number): number {
+    const factor = planType === 'PREMIUM' ? 1.5 : 1.2;
+    return parseFloat((amount * factor * tenure).toFixed(2));
+  }
+}
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { PolicyService } from '../services/policy.service';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-issue-policy',
+  templateUrl: './issue-policy.component.html',
+  styleUrls: ['./issue-policy.component.css']
+})
+export class IssuePolicyComponent implements OnInit {
+  step = 0;
+  form: FormGroup;
+  userId = localStorage.getItem('userId') || '1';
+
+  planTypes = ['BASIC', 'PREMIUM'];
+  frequencies = ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'];
+
+  constructor(private fb: FormBuilder, private policyService: PolicyService, private router: Router) {
+    this.form = this.fb.group({
+      policyHolderName: ['', Validators.required],
+      dob: ['', Validators.required],
+      address: ['', Validators.required],
+      mobileNumber: ['', Validators.required],
+      incomeSource: ['', Validators.required],
+      totalIncome: ['', [Validators.required, Validators.min(1)]],
+      nominees: this.fb.array([]),
+      planType: ['', Validators.required],
+      tenure: ['', [Validators.required, Validators.min(1)]],
+      premiumFrequency: ['', Validators.required],
+      insuredAmount: ['', [Validators.required, Validators.min(1)]],
+      issuanceDate: ['', Validators.required]
+    });
+  }
+
+  ngOnInit(): void {
+    this.addNominee();
+  }
+
+  get nominees() {
+    return this.form.get('nominees') as FormArray;
+  }
+
+  addNominee() {
+    this.nominees.push(this.fb.group({
+      nomineeName: ['', Validators.required],
+      contactNumber: ['', Validators.required],
+      dob: ['', Validators.required],
+      relationship: ['', Validators.required],
+      percentageStake: ['', [Validators.required, Validators.min(1), Validators.max(100)]]
+    }));
+  }
+
+  nextStep() {
+    let valid = false;
+
+    switch (this.step) {
+      case 0:
+        valid = this.form.get('policyHolderName')?.valid &&
+                this.form.get('dob')?.valid &&
+                this.form.get('address')?.valid &&
+                this.form.get('mobileNumber')?.valid;
+        break;
+      case 1:
+        valid = this.form.get('incomeSource')?.valid &&
+                this.form.get('totalIncome')?.valid;
+        break;
+      case 2:
+        valid = this.nominees.valid;
+        break;
+      case 3:
+        valid = this.form.get('planType')?.valid &&
+                this.form.get('tenure')?.valid &&
+                this.form.get('premiumFrequency')?.valid &&
+                this.form.get('insuredAmount')?.valid &&
+                this.form.get('issuanceDate')?.valid;
+        break;
+    }
+
+    if (valid) {
+      if (this.step < 3) {
+        this.step++;
+      } else {
+        this.submitForm();
+      }
+    } else {
+      alert('Please fill all required fields before proceeding.');
+      this.form.markAllAsTouched();
+    }
+  }
+
+  previousStep() {
+    if (this.step > 0) this.step--;
+  }
+
+  submitForm() {
+    const formValue = this.form.value;
+    const policyData = {
+      ...formValue,
+      policyStatus: 'ACTIVE',
+      maturityDate: this.calculateMaturityDate(formValue.issuanceDate, formValue.tenure),
+      premiumAmount: this.calculatePremium(formValue.insuredAmount, formValue.premiumFrequency),
+      maturityAmount: this.calculateMaturityAmount(formValue.insuredAmount, formValue.planType, formValue.tenure)
+    };
+
+    this.policyService.issuePolicy(Number(this.userId), policyData).subscribe(() => {
+      alert('Policy Issued Successfully');
+      this.router.navigate(['/']);
+    });
+  }
+
+  calculateMaturityDate(startDate: string, tenure: number): string {
+    const date = new Date(startDate);
+    date.setFullYear(date.getFullYear() + Number(tenure));
+    return date.toISOString().split('T')[0];
+  }
+
+  calculatePremium(amount: number, frequency: string): number {
+    const frequencyDivisor = { Monthly: 12, Quarterly: 4, 'Half-Yearly': 2, Yearly: 1 };
+    return parseFloat((amount / frequencyDivisor[frequency]).toFixed(2));
+  }
+
+  calculateMaturityAmount(amount: number, planType: string, tenure: number): number {
+    const factor = planType === 'PREMIUM' ? 1.5 : 1.2;
+    return parseFloat((amount * factor * tenure).toFixed(2));
+  }
+}
+=--------------------------------------------------------------------------------------
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { PolicyService } from '../services/policy.service';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-issue-policy',
+  templateUrl: './issue-policy.component.html',
+  styleUrls: ['./issue-policy.component.css']
+})
+export class IssuePolicyComponent implements OnInit {
+  step = 0;
+  form: FormGroup;
+  userId = localStorage.getItem('userId') || '1'; // default fallback
+
+  planTypes = ['BASIC', 'PREMIUM'];
+  frequencies = ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'];
+
+  constructor(private fb: FormBuilder, private policyService: PolicyService, private router: Router) {
+    this.form = this.fb.group({
+      policyHolderName: ['', Validators.required],
+      dob: ['', Validators.required],
+      address: ['', Validators.required],
+      mobileNumber: ['', Validators.required],
+      incomeSource: ['', Validators.required],
+      totalIncome: ['', Validators.required],
+      nominees: this.fb.array([]),
+      planType: ['', Validators.required],
+      tenure: ['', Validators.required],
+      premiumFrequency: ['', Validators.required],
+      insuredAmount: ['', Validators.required],
+      issuanceDate: ['', Validators.required]
+    });
+  }
+
+  ngOnInit(): void {
+    this.addNominee();
+  }
+
+  get nominees() {
+    return this.form.get('nominees') as FormArray;
+  }
+
+  addNominee() {
+    this.nominees.push(this.fb.group({
+      nomineeName: ['', Validators.required],
+      contactNumber: ['', Validators.required],
+      dob: ['', Validators.required],
+      relationship: ['', Validators.required],
+      percentageStake: ['', Validators.required]
+    }));
+  }
+
+  nextStep() {
+    if (this.step < 3) this.step++;
+    else this.submitForm();
+  }
+
+  previousStep() {
+    if (this.step > 0) this.step--;
+  }
+
+  submitForm() {
+    const formValue = this.form.value;
+    const policyData = {
+      ...formValue,
+      policyStatus: 'ACTIVE',
+      maturityDate: this.calculateMaturityDate(formValue.issuanceDate, formValue.tenure),
+      premiumAmount: this.calculatePremium(formValue.insuredAmount, formValue.premiumFrequency),
+      maturityAmount: this.calculateMaturityAmount(formValue.insuredAmount, formValue.planType, formValue.tenure)
+    };
+
+    this.policyService.issuePolicy(Number(this.userId), policyData).subscribe(() => {
+      alert('Policy Issued Successfully');
+      this.router.navigate(['/']);
+    });
+  }
+
+  calculateMaturityDate(startDate: string, tenure: number): string {
+    const date = new Date(startDate);
+    date.setFullYear(date.getFullYear() + Number(tenure));
+    return date.toISOString().split('T')[0];
+  }
+
+  calculatePremium(amount: number, frequency: string): number {
+    const frequencyDivisor = { Monthly: 12, Quarterly: 4, 'Half-Yearly': 2, Yearly: 1 };
+    return +(amount / frequencyDivisor[frequency]).toFixed(2);
+  }
+
+  calculateMaturityAmount(amount: number, planType: string, tenure: number): number {
+    const factor = planType === 'PREMIUM' ? 1.5 : 1.2;
+    return +(amount * factor * tenure).toFixed(2);
+  }
+}
+
+_______________________________________________________________________________________________________
+<div class="container">
+  <h2>Issue Policy - Step {{ step + 1 }}/4</h2>
+
+  <form [formGroup]="form">
+    <div *ngIf="step === 0">
+      <h3>Personal Details</h3>
+      <input type="text" formControlName="policyHolderName" placeholder="Full Name">
+      <input type="date" formControlName="dob" placeholder="Date of Birth">
+      <input type="text" formControlName="address" placeholder="Address">
+      <input type="text" formControlName="mobileNumber" placeholder="Mobile Number">
+    </div>
+
+    <div *ngIf="step === 1">
+      <h3>Income Details</h3>
+      <input type="text" formControlName="incomeSource" placeholder="Income Source">
+      <input type="number" formControlName="totalIncome" placeholder="Total Income">
+    </div>
+
+    <div *ngIf="step === 2">
+      <h3>Nominee Details</h3>
+      <div formArrayName="nominees">
+        <div *ngFor="let nominee of nominees.controls; let i=index" [formGroupName]="i">
+          <input type="text" formControlName="nomineeName" placeholder="Name">
+          <input type="text" formControlName="contactNumber" placeholder="Contact No">
+          <input type="date" formControlName="dob" placeholder="DOB">
+          <input type="text" formControlName="relationship" placeholder="Relationship">
+          <input type="number" formControlName="percentageStake" placeholder="Stake (%)">
+        </div>
+      </div>
+      <button type="button" (click)="addNominee()">+ Add Another Nominee</button>
+    </div>
+
+    <div *ngIf="step === 3">
+      <h3>Policy Details</h3>
+      <select formControlName="planType">
+        <option value="">Select Plan</option>
+        <option *ngFor="let type of planTypes" [value]="type">{{ type }}</option>
+      </select>
+      <input type="number" formControlName="tenure" placeholder="Tenure (years)">
+      <select formControlName="premiumFrequency">
+        <option value="">Frequency</option>
+        <option *ngFor="let f of frequencies" [value]="f">{{ f }}</option>
+      </select>
+      <input type="number" formControlName="insuredAmount" placeholder="Insured Amount">
+      <input type="date" formControlName="issuanceDate" placeholder="Issuance Date">
+    </div>
+
+    <div class="navigation-buttons">
+      <button type="button" (click)="previousStep()" *ngIf="step > 0">Previous</button>
+      <button type="button" (click)="nextStep()">{{ step < 3 ? 'Next' : 'Submit' }}</button>
+    </div>
+  </form>
+</div>
+____________________________________________________________________________________________
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  background: #f7f7f7;
+  padding: 25px;
+  border-radius: 10px;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.navigation-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #0d6efd;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #084298;
+}
+___________________________________________________________________________________
+
+nextStep() {
+  let valid = false;
+
+  switch (this.step) {
+    case 0: // Personal Details
+      valid = this.form.get('policyHolderName')?.valid &&
+              this.form.get('dob')?.valid &&
+              this.form.get('address')?.valid &&
+              this.form.get('mobileNumber')?.valid;
+      break;
+    case 1: // Income Details
+      valid = this.form.get('incomeSource')?.valid &&
+              this.form.get('totalIncome')?.valid;
+      break;
+    case 2: // Nominee Details
+      valid = this.nominees.valid;
+      break;
+    case 3: // Policy Details
+      valid = this.form.get('planType')?.valid &&
+              this.form.get('tenure')?.valid &&
+              this.form.get('premiumFrequency')?.valid &&
+              this.form.get('insuredAmount')?.valid &&
+              this.form.get('issuanceDate')?.valid;
+      break;
+  }
+
+  if (valid) {
+    if (this.step < 3) {
+      this.step++;
+    } else {
+      this.submitForm();
+    }
+  } else {
+    alert('Please fill in all required fields before proceeding.');
+    this.form.markAllAsTouched(); // show errors if any
+  }
+}
+_____________________________________________________________
+
+
 // ===================== app-routing.module.ts =====================
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
