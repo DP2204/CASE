@@ -1,3 +1,130 @@
+// ExtTrackAndTraceMappingServiceImplTest.java
+
+import static org.junit.jupiter.api.Assertions.; import static org.mockito.BDDMockito.;
+
+import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity; import com.bnpparibas.dpw.repository.ExtTrackAndTraceMappingRepository; import com.bnpparibas.dpw.service.impl.ExtTrackAndTraceMappingServiceImpl; import org.junit.jupiter.api.BeforeEach; import org.junit.jupiter.api.Test; import org.junit.jupiter.api.extension.ExtendWith; import org.mockito.InjectMocks; import org.mockito.Mock; import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+
+@ExtendWith(MockitoExtension.class) public class ExtTrackAndTraceMappingServiceImplTest {
+
+@Mock
+private ExtTrackAndTraceMappingRepository repository;
+
+@InjectMocks
+private ExtTrackAndTraceMappingServiceImpl service;
+
+private ExtTrackAndTraceMappingEntity entity;
+
+@BeforeEach
+public void setup() {
+    entity = new ExtTrackAndTraceMappingEntity();
+    entity.setId(3L);
+    entity.setBranchCode("30004");
+    entity.setCountryCode("FR");
+    entity.setPgpeCode("ILCI");
+    entity.setAction("Validated");
+    entity.setStatusCst("Active");
+    entity.setStatusCxt("AC");
+    entity.setProductCode("IC");
+    entity.setTransactionTypeCode("TTC");
+}
+
+@Test
+public void testGetMapping_Found() {
+    given(repository.findByBranchCodeAndCountryCodeAndPgpeCodeAndActionAndStatusCst(
+            "30004", "FR", "ILCI", "Validated", "Active"))
+            .willReturn(entity);
+
+    Optional<ExtTrackAndTraceMappingEntity> result = service.getMapping("30004", "FR", "ILCI", "Validated", "Active");
+
+    assertTrue(result.isPresent());
+    ExtTrackAndTraceMappingEntity actual = result.get();
+
+    // Mandatory fields not null
+    assertNotNull(actual.getBranchCode());
+    assertNotNull(actual.getCountryCode());
+    assertNotNull(actual.getPgpeCode());
+    assertNotNull(actual.getAction());
+    assertNotNull(actual.getStatusCst());
+
+    // All fields value check
+    assertEquals("30004", actual.getBranchCode());
+    assertEquals("FR", actual.getCountryCode());
+    assertEquals("ILCI", actual.getPgpeCode());
+    assertEquals("Validated", actual.getAction());
+    assertEquals("Active", actual.getStatusCst());
+    assertEquals("AC", actual.getStatusCxt());
+    assertEquals("IC", actual.getProductCode());
+    assertEquals("TTC", actual.getTransactionTypeCode());
+}
+
+@Test
+public void testGetMapping_NotFound() {
+    given(repository.findByBranchCodeAndCountryCodeAndPgpeCodeAndActionAndStatusCst(
+            "30004", "FR", "ILCI", "Validated", "Active"))
+            .willReturn(null);
+
+    Optional<ExtTrackAndTraceMappingEntity> result = service.getMapping("30004", "FR", "ILCI", "Validated", "Active");
+
+    assertTrue(result.isEmpty());
+}
+
+}
+
+
+
+--------------
+
+package com.bnpparibas.dpw.service;
+
+import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
+import com.bnpparibas.dpw.service.impl.ExtTrackAndTraceMappingServiceImpl;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
+public class ExtTrackAndTraceMappingServiceTest {
+
+    @Mock
+    private ExtTrackAndTraceMappingService service;
+
+    @Test
+    public void testGetMappingReturnsExpectedEntity() {
+        ExtTrackAndTraceMappingEntity expectedEntity = new ExtTrackAndTraceMappingEntity();
+        expectedEntity.setBranchCode("30004");
+        expectedEntity.setCountryCode("FR");
+        expectedEntity.setPgpeCode("ILCI");
+        expectedEntity.setAction("Validated");
+        expectedEntity.setStatusCst("Active");
+
+        when(service.getMapping("30004", "FR", "ILCI", "Validated", "Active"))
+            .thenReturn(Optional.of(expectedEntity));
+
+        Optional<ExtTrackAndTraceMappingEntity> actual = service.getMapping("30004", "FR", "ILCI", "Validated", "Active");
+
+        assertEquals(expectedEntity.getBranchCode(), actual.get().getBranchCode());
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------
+
 INSERT INTO DPW_EXT_TRACK_TRACE_MAPPING (
     ID, BRANCH_CODE, COUNTRY_CODE, PGPE_CODE, ACTION, STATUS_CST, STATUS_CXT, PROD_CODE, TRANSACTION_TYPE_CODE
 ) VALUES (
