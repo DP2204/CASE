@@ -1,4 +1,25 @@
-// ExtTrackAndTraceMappingServiceImplTest.java
+@Query("SELECT e FROM ExtTrackAndTraceMappingEntity e " +
+       "WHERE e.branchCode = :branchCode " +
+       "AND e.countryCode = :countryCode " +
+       "AND e.pgpeCode = :pgpeCode " +
+       "AND e.action = :action " +
+       "AND UPPER(e.statusCst) = UPPER(:statusCst) " +
+       "AND (:statusCxt IS NULL OR e.statusCxt = :statusCxt) " +
+       "AND (:prodCode IS NULL OR e.productCode = :prodCode)")
+List<ExtTrackAndTraceMappingEntity> findMappings(
+    @Param("branchCode") String branchCode,
+    @Param("countryCode") String countryCode,
+    @Param("pgpeCode") String pgpeCode,
+    @Param("action") String action,
+    @Param("statusCst") String statusCst,
+    @Param("statusCxt") String statusCxt,
+    @Param("prodCode") String prodCode
+);
+
+
+
+
+!!!!!!!!!!!!!!!!!!!// ExtTrackAndTraceMappingServiceImplTest.java
 
 import static org.junit.jupiter.api.Assertions.; import static org.mockito.BDDMockito.;
 
