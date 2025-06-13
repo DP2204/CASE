@@ -1,3 +1,115 @@
+// Test for ServiceImpl package com.bnpparibas.dpw.service;
+
+import com.bmpparibas.dpw.entity.ExtTrackAndTraceMappingEntity; import com.bmpparibas.dpw.mapper.CommonMapper; import com.bmpparibas.dpw.referential.model.ExtTrackAndTraceMapping; import com.bmpparibas.dpw.repository.ExtTrackAndTraceMappingRepository; import com.bmpparibas.dpw.util.ScoreCalculator; import org.junit.jupiter.api.BeforeEach; import org.junit.jupiter.api.Test; import org.mockito.InjectMocks; import org.mockito.Mock; import org.mockito.MockitoAnnotations;
+
+import java.util.Collections; import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.; import static org.mockito.Mockito.;
+
+public class ExtTrackAndTraceMappingServiceImplTest {
+
+@Mock
+private ExtTrackAndTraceMappingRepository repository;
+
+@Mock
+private CommonMapper commonMapper;
+
+@Mock
+private ScoreCalculator scoreCalculator;
+
+@InjectMocks
+private ExtTrackAndTraceMappingServiceImpl service;
+
+@BeforeEach
+public void setup() {
+    MockitoAnnotations.openMocks(this);
+}
+
+@Test
+void testGetMapping_ReturnsBestMatch() {
+    ExtTrackAndTraceMappingEntity entity = new ExtTrackAndTraceMappingEntity();
+    ExtTrackAndTraceMapping model = new ExtTrackAndTraceMapping();
+
+    when(repository.getextMapping(any(), any(), any(), any(), any(), any(), any()))
+            .thenReturn(List.of(entity));
+    when(commonMapper.getExtTrackAndTraceMappingModel(any()))
+            .thenReturn(List.of(model));
+
+    ExtTrackAndTraceMapping result = service.getMapping("30004", "FR", "ILCI", "Validated", "Active", null, null, null, null);
+    assertNotNull(result);
+}
+
+@Test
+void testGetMapping_ReturnsNullIfEmpty() {
+    when(repository.getextMapping(any(), any(), any(), any(), any(), any(), any()))
+            .thenReturn(Collections.emptyList());
+
+    ExtTrackAndTraceMapping result = service.getMapping("30004", "FR", "ILCI", "Validated", "Active", null, null, null, null);
+    assertNull(result);
+}
+
+}
+
+// Test for Controller package com.bnpparibas.dpw.controller;
+
+import com.bmpparibas.dpw.referential.model.ExtTrackAndTraceMapping; import com.bnpparibas.dpw.service.ExtTrackAndTraceMappingService; import org.junit.jupiter.api.BeforeEach; import org.junit.jupiter.api.Test; import org.mockito.InjectMocks; import org.mockito.Mock; import org.mockito.MockitoAnnotations; import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.; import static org.mockito.Mockito.;
+
+public class StaticDataControllerTest {
+
+@Mock
+private ExtTrackAndTraceMappingService service;
+
+@InjectMocks
+private StaticDataController controller;
+
+@BeforeEach
+public void setup() {
+    MockitoAnnotations.openMocks(this);
+}
+
+@Test
+void testGetExtTraceAndTrackMapping_Found() {
+    ExtTrackAndTraceMapping mapping = new ExtTrackAndTraceMapping();
+    when(service.getMapping(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            .thenReturn(mapping);
+
+    ResponseEntity<List<ExtTrackAndTraceMapping>> response =
+            controller.getExtTraceAndTrackMapping("uid", "30004", "FR", "ILCI", "Validated", "Active", null, null, null);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals(1, response.getBody().size());
+}
+
+@Test
+void testGetExtTraceAndTrackMapping_NotFound() {
+    when(service.getMapping(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+            .thenReturn(null);
+
+    ResponseEntity<List<ExtTrackAndTraceMapping>> response =
+            controller.getExtTraceAndTrackMapping("uid", "30004", "FR", "ILCI", "Validated", "Active", null, null, null);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertTrue(response.getBody().isEmpty());
+}
+
+}
+
+// Repository Test (optional integration with H2, not covered here due to complexity) // Usually tested indirectly via Service integration tests
+
+
+
+
+
+
+
+
+
+-----------------------------------------------
+
 import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
