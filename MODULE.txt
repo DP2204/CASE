@@ -1,3 +1,157 @@
+package com.bnpparibas.dpw.service.impl;
+
+import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
+import com.bnpparibas.dpw.mapper.CommonMapper;
+import com.bnpparibas.dpw.model.ExternalTrackAndTraceMapping;
+import com.bnpparibas.dpw.repository.ExtTrackAndTraceMappingRepository;
+import com.bnpparibas.dpw.service.ExtTrackAndTraceMappingService;
+import com.bnpparibas.dpw.util.CustomComparator;
+import com.bnpparibas.dpw.util.ParseUtils;
+import com.bnpparibas.dpw.util.ScoreCalculator;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+@Slf4j
+@Service
+public class ExtTrackAndTraceMappingServiceImpl implements ExtTrackAndTraceMappingService {
+
+    private final ExtTrackAndTraceMappingRepository extTrackAndTraceMappingRepository;
+    private final CommonMapper commonMapper;
+    private final ScoreCalculator genericScoreCalculator;
+
+    private static final List<String> fields = List.of(
+            "transactionTypeCode", "subTransactionTypeCode", "productStatusCode", "transactionStatusCode"
+    );
+
+    public ExtTrackAndTraceMappingServiceImpl(
+            ExtTrackAndTraceMappingRepository extTrackAndTraceMappingRepository,
+            CommonMapper commonMapper,
+            ScoreCalculator genericScoreCalculator) {
+        this.extTrackAndTraceMappingRepository = extTrackAndTraceMappingRepository;
+        this.commonMapper = commonMapper;
+        this.genericScoreCalculator = genericScoreCalculator;
+    }
+
+    @Override
+    @Transactional
+    public ExternalTrackAndTraceMapping getMapping(
+            String branchCode,
+            String countryCode,
+            String pgpeCode,
+            String action,
+            String statusCst,
+            String statusCxt,
+            String prodCode,
+            String transactionTypeCode,
+            String subTransactionTypeCode,
+            String productStatusCode,
+            String transactionStatusCode) {
+
+        log.info("[getMapping] inside the getMapping with branchCode {}, countryCode {}, pgpeCode {}, action {}, statusCst {}",
+                branchCode, countryCode, pgpeCode, action, statusCst);
+
+        Map<String, Object> queryParams = new HashMap<>();
+        queryParams.put("branchCode", branchCode);
+        queryParams.put("countryCode", countryCode);
+        queryParams.put("pgpeCode", pgpeCode);
+        queryParams.put("action", action);
+        queryParams.put("statusCst", statusCst);
+
+        if (statusCxt != null) queryParams.put("statusCxt", statusCxt);
+        if (prodCode != null) queryParams.put("prodCode", prodCode);
+
+        // Prepare wildcard filtering fields (optional ones)
+        if (transactionTypeCode != null) queryParams.put("transactionTypeCode", transactionTypeCode);
+        if (subTransactionTypeCode != null) queryParams.put("subTransactionTypeCode", subTransactionTypeCode);
+        if (productStatusCode != null) queryParams.put("productStatusCode", productStatusCode);
+        if (transactionStatusCode != null) queryParams.put("transactionStatusCode", transactionStatusCode);
+
+        // Create Specification from ParseUtils (already available in project)
+        Specification<ExtTrackAndTraceMappingEntity> spec =
+                ParseUtils.parseQuery(queryParams, ExtTrackAndTraceMappingEntity.class);
+
+        List<ExtTrackAndTraceMappingEntity> resultEntities =
+                extTrackAndTraceMappingRepository.findAll(spec);
+
+        if (resultEntities.isEmpty()) {
+            log.info("No result found for the given criteria.");
+            return null;
+        }
+
+        List<ExternalTrackAndTraceMapping> models =
+                commonMapper.getExtTrackAndTraceMappingModel(resultEntities);
+
+        List<Object> priorityValues = Arrays.asList(
+                transactionTypeCode,
+                subTransactionTypeCode,
+                productStatusCode,
+                transactionStatusCode
+        );
+
+        PriorityQueue<ExternalTrackAndTraceMapping> pq =
+                new PriorityQueue<>(new CustomComparator<>(fields, priorityValues, genericScoreCalculator));
+
+        pq.addAll(models);
+        return pq.peek();
+    }
+}
+
+-----------
+
+package com.bnpparibas.dpw.referential.controller;
+
+import com.bnpparibas.dpw.referential.api.StaticDataApi;
+import com.bnpparibas.dpw.referential.model.ExternalTrackAndTraceMapping;
+import com.bnpparibas.dpw.referential.service.ExtTrackAndTraceMappingService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collections;
+import java.util.List;
+
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+public class StaticDataController implements StaticDataApi {
+
+    private final ExtTrackAndTraceMappingService extTrackAndTraceMappingService;
+
+    @Override
+    public ResponseEntity<List<ExternalTrackAndTraceMapping>> getExternalTraceAndTrackMapping(
+            String bnppuid,
+            String branchCode,
+            String countryCode,
+            String pgpeCode,
+            String action,
+            String statusCst,
+            String statusCxt,
+            String prodCode,
+            String transactionTypeCode,
+            String subTransactionTypeCode,
+            String productStatusCode,
+            String transactionStatusCode) {
+
+        log.info("[getExternalTraceAndTrackMapping] Requested with branchCode={}, countryCode={}, pgpeCode={}, action={}, statusCst={}",
+                branchCode, countryCode, pgpeCode, action, statusCst);
+
+        ExternalTrackAndTraceMapping mapping = extTrackAndTraceMappingService.getMapping(
+                branchCode, countryCode, pgpeCode, action, statusCst, statusCxt,
+                prodCode, transactionTypeCode, subTransactionTypeCode, productStatusCode, transactionStatusCode
+        );
+
+        return mapping == null
+                ? ResponseEntity.ok(Collections.emptyList())
+                : ResponseEntity.ok(List.of(mapping));
+    }
+}
+
+--------------------------------------
 // Test for ServiceImpl package com.bnpparibas.dpw.service;
 
 import com.bmpparibas.dpw.entity.ExtTrackAndTraceMappingEntity; import com.bmpparibas.dpw.mapper.CommonMapper; import com.bmpparibas.dpw.referential.model.ExtTrackAndTraceMapping; import com.bmpparibas.dpw.repository.ExtTrackAndTraceMappingRepository; import com.bmpparibas.dpw.util.ScoreCalculator; import org.junit.jupiter.api.BeforeEach; import org.junit.jupiter.api.Test; import org.mockito.InjectMocks; import org.mockito.Mock; import org.mockito.MockitoAnnotations;
