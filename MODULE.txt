@@ -1,3 +1,83 @@
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ExtTrackAndTraceMappingServiceImpl implements ExtTrackAndTraceMappingService {
+
+    private final ExtTrackAndTraceMappingRepository extTrackAndTraceMappingRepository;
+    private final CommonMapper commonMapper;
+    private final ScoreCalculator genericScoreCalculator;
+
+    private static final List<String> fields = List.of(
+            "transactionTypeCode", 
+            "subTransactionTypeCode", 
+            "productStatusCode", 
+            "transactionStatusCode"
+    );
+
+    @Override
+    @Transactional(readOnly = true)
+    public ExternalTrackAndTraceMapping getMapping(
+            String branchCode,
+            String countryCode,
+            String pgpeCode,
+            String action,
+            String statusCst,
+            String statusCxt,
+            String prodCode,
+            String transactionTypeCode,
+            String subTransactionTypeCode,
+            String productStatusCode,
+            String transactionStatusCode) {
+
+        log.info("[getMapping] Input params - branchCode: {}, countryCode: {}, pgpeCode: {}, action: {}, statusCst: {}, statusCxt: {}, prodCode: {}, txnTypeCode: {}, subTxnTypeCode: {}, prodStatusCode: {}, txnStatusCode: {}",
+                branchCode, countryCode, pgpeCode, action, statusCst, statusCxt, prodCode, transactionTypeCode, subTransactionTypeCode, productStatusCode, transactionStatusCode);
+
+        // Mandatory RSQL base
+        StringBuilder rsql = new StringBuilder();
+        rsql.append("branchCode==").append(branchCode).append(";");
+        rsql.append("countryCode==").append(countryCode).append(";");
+        rsql.append("pgpeCode==").append(pgpeCode).append(";");
+        rsql.append("action==").append(action).append(";");
+        rsql.append("statusCst==").append(statusCst);
+
+        // Optional fields
+        if (statusCxt != null) rsql.append(";statusCxt==").append(statusCxt);
+        if (prodCode != null) rsql.append(";prodCode==").append(prodCode);
+
+        // Wildcard-matching fields
+        if (transactionTypeCode != null) rsql.append(";transactionTypeCode==").append(transactionTypeCode);
+        if (subTransactionTypeCode != null) rsql.append(";subTransactionTypeCode==").append(subTransactionTypeCode);
+        if (productStatusCode != null) rsql.append(";productStatusCode==").append(productStatusCode);
+        if (transactionStatusCode != null) rsql.append(";transactionStatusCode==").append(transactionStatusCode);
+
+        // Parse RSQL query
+        Specification<ExtTrackAndTraceMappingEntity> specification = ParseUtils.parseQuery(
+                rsql.toString(), 
+                new HashMap<>(), 
+                ExtTrackAndTraceMappingEntity.class
+        );
+
+        List<ExtTrackAndTraceMappingEntity> entities = extTrackAndTraceMappingRepository.findAll(specification);
+
+        if (!entities.isEmpty()) {
+            List<Object> values = Arrays.asList(transactionTypeCode, subTransactionTypeCode, productStatusCode, transactionStatusCode);
+
+            PriorityQueue<ExternalTrackAndTraceMapping> queue =
+                    new PriorityQueue<>(new CustomComparator<>(fields, values, genericScoreCalculator));
+
+            queue.addAll(commonMapper.getExtTrackAndTraceMappingModel(entities));
+            return queue.peek();
+        }
+
+        return null;
+    }
+}
+------++++------------------++
+
+
+
+
+
 package com.bnpparibas.dpw.service.impl;
 
 import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
