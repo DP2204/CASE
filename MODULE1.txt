@@ -1,3 +1,80 @@
+package com.bnpparibas.dpw.service.impl;
+
+import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
+import com.bnpparibas.dpw.mapper.CommonMapper;
+import com.bnpparibas.dpw.model.ExternalTrackAndTraceMapping;
+import com.bnpparibas.dpw.repository.ExtTrackAndTraceMappingRepository;
+import com.bnpparibas.dpw.service.score.CustomComparator;
+import com.bnpparibas.dpw.service.score.ScoreCalculator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class ExtTrackAndTraceMappingServiceImplTest {
+
+    @InjectMocks
+    private ExtTrackAndTraceMappingServiceImpl service;
+
+    @Mock
+    private ExtTrackAndTraceMappingRepository repository;
+
+    @Mock
+    private CommonMapper commonMapper;
+
+    @Mock
+    private ScoreCalculator scoreCalculator;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testGetMappingReturnsHighestPriorityMatch() {
+        // Setup
+        ExtTrackAndTraceMappingEntity entity = new ExtTrackAndTraceMappingEntity();
+        List<ExtTrackAndTraceMappingEntity> entityList = List.of(entity);
+
+        ExternalTrackAndTraceMapping model = new ExternalTrackAndTraceMapping();
+        when(repository.getextMapping(any(), any(), any(), any(), any(), any(), any())).thenReturn(entityList);
+        when(commonMapper.getExtTrackAndTraceMappingModel(entityList)).thenReturn(List.of(model));
+
+        // Execute
+        ExternalTrackAndTraceMapping result = service.getMapping(
+                "30004", "FR", "ILCI", "Validated", "Active", null,
+                null, "T1", "ST1", "P1", "TS1"
+        );
+
+        // Verify
+        assertNotNull(result);
+        verify(repository).getextMapping("30004", "FR", "ILCI", "Validated", "Active", null, null);
+    }
+
+    @Test
+    void testGetMappingReturnsNullWhenEmptyList() {
+        when(repository.getextMapping(any(), any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
+
+        ExternalTrackAndTraceMapping result = service.getMapping(
+                "30004", "FR", "ILCI", "Validated", "Active", null,
+                null, "T1", "ST1", "P1", "TS1"
+        );
+
+        assertNull(result);
+    }
+}
+
+
+
+
+
++++++-----------&&&&&&&&&&&&-----------
+
 // issue-policy.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
