@@ -1,3 +1,120 @@
+package com.bnpparibas.dpw.service.impl;
+
+import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
+import com.bnpparibas.dpw.mapper.CommonMapper;
+import com.bnpparibas.dpw.model.ExternalTrackAndTraceMapping;
+import com.bnpparibas.dpw.repository.ExtTrackAndTraceMappingRepository;
+import com.bnpparibas.dpw.score.ScoreCalculator;
+import com.bnpparibas.dpw.service.ExtTrackAndTraceMappingService;
+import com.bnpparibas.dpw.util.ParseUtils;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class ExtTrackAndTraceMappingServiceImplTest {
+
+    @InjectMocks
+    private ExtTrackAndTraceMappingServiceImpl service;
+
+    @Mock
+    private ExtTrackAndTraceMappingRepository repository;
+
+    @Mock
+    private CommonMapper commonMapper;
+
+    @Mock
+    private ScoreCalculator scoreCalculator;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testGetMapping_returnsCorrectMapping_whenMatchFound() {
+        // Given
+        String branchCode = "BR";
+        String countryCode = "IN";
+        String pgpeCode = "PG";
+        String action = "CREATE";
+        String statusCst = "ACTIVE";
+        String statusCxt = "CTX";
+        String prodCode = "PCODE";
+        String txnType = "T1";
+        String subTxnType = "ST1";
+        String prodStatCode = "PSC";
+        String txnStatCode = "TSC";
+
+        List<ExtTrackAndTraceMappingEntity> mockEntities = List.of(new ExtTrackAndTraceMappingEntity());
+        List<ExternalTrackAndTraceMapping> mockModels = List.of(new ExternalTrackAndTraceMapping().branchCode(branchCode));
+
+        // Mock behavior
+        Map<String, Object> queryParams = new HashMap<>();
+        queryParams.put("branchCode", branchCode);
+        queryParams.put("countryCode", countryCode);
+        queryParams.put("pgpeCode", pgpeCode);
+        queryParams.put("action", action);
+        queryParams.put("statusCst", statusCst);
+        queryParams.put("statusCxt", statusCxt);
+        queryParams.put("prodCode", prodCode);
+        queryParams.put("transactionTypeCode", txnType);
+        queryParams.put("subTransactionTypeCode", subTxnType);
+        queryParams.put("productStatusCode", prodStatCode);
+        queryParams.put("transactionStatusCode", txnStatCode);
+
+        Specification<ExtTrackAndTraceMappingEntity> spec = mock(Specification.class);
+        when(ParseUtils.parseQuery(queryParams, ExtTrackAndTraceMappingEntity.class)).thenReturn(spec);
+        when(repository.findAll(spec)).thenReturn(mockEntities);
+        when(commonMapper.getExtTrackAndTraceMappingModel(mockEntities)).thenReturn(mockModels);
+
+        // When
+        ExternalTrackAndTraceMapping result = service.getMapping(
+            branchCode, countryCode, pgpeCode, action, statusCst, statusCxt, prodCode, txnType, subTxnType, prodStatCode, txnStatCode
+        );
+
+        // Then
+        assertNotNull(result);
+        assertEquals(branchCode, result.getBranchCode());
+    }
+
+    @Test
+    void testGetMapping_returnsNull_whenNoResults() {
+        String branchCode = "BR";
+        String countryCode = "IN";
+        String pgpeCode = "PG";
+        String action = "CREATE";
+        String statusCst = "ACTIVE";
+
+        Map<String, Object> queryParams = Map.of(
+            "branchCode", branchCode,
+            "countryCode", countryCode,
+            "pgpeCode", pgpeCode,
+            "action", action,
+            "statusCst", statusCst
+        );
+
+        Specification<ExtTrackAndTraceMappingEntity> spec = mock(Specification.class);
+        when(ParseUtils.parseQuery(queryParams, ExtTrackAndTraceMappingEntity.class)).thenReturn(spec);
+        when(repository.findAll(spec)).thenReturn(Collections.emptyList());
+
+        ExternalTrackAndTraceMapping result = service.getMapping(
+            branchCode, countryCode, pgpeCode, action, statusCst, null, null, null, null, null, null
+        );
+
+        assertNull(result);
+    }
+}
+
+
+_____________&___&___________
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
