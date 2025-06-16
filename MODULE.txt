@@ -6,6 +6,87 @@ import com.bnpparibas.dpw.model.ExternalTrackAndTraceMapping;
 import com.bnpparibas.dpw.repository.ExtTrackAndTraceMappingRepository;
 import com.bnpparibas.dpw.score.ScoreCalculator;
 import com.bnpparibas.dpw.service.ExtTrackAndTraceMappingService;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.*;
+
+@ExtendWith(MockitoExtension.class)
+class ExtTrackAndTraceMappingServiceImplTest {
+
+    @Mock
+    private ExtTrackAndTraceMappingRepository repository;
+
+    @Mock
+    private CommonMapper commonMapper;
+
+    @Mock
+    private ScoreCalculator calculator;
+
+    @InjectMocks
+    private ExtTrackAndTraceMappingServiceImpl service;
+
+    @Test
+    void getMapping_shouldReturnHighestPriorityMatch() {
+        // Sample entity and expected model
+        ExtTrackAndTraceMappingEntity entity = new ExtTrackAndTraceMappingEntity();
+        entity.setBranchCode("30004");
+
+        ExternalTrackAndTraceMapping model = new ExternalTrackAndTraceMapping();
+        model.setBranchCode("30004");
+
+        List<ExtTrackAndTraceMappingEntity> entityList = List.of(entity);
+        List<ExternalTrackAndTraceMapping> modelList = List.of(model);
+
+        // Mocking behavior
+        when(repository.findAll(any())).thenReturn(entityList);
+        when(commonMapper.getExtTrackAndTraceMappingModel(entityList)).thenReturn(modelList);
+        when(calculator.calculate(any(), any())).thenReturn(1); // all same score
+
+        // Method call
+        ExternalTrackAndTraceMapping result = service.getMapping(
+                "30004", "FR", "ILCI", "Validated", "Active",
+                null, null, "*", "*", "*", "*"
+        );
+
+        assertNotNull(result);
+        assertEquals("30004", result.getBranchCode());
+        verify(repository).findAll(any());
+        verify(commonMapper).getExtTrackAndTraceMappingModel(entityList);
+    }
+
+    @Test
+    void getMapping_shouldReturnNullIfNoData() {
+        when(repository.findAll(any())).thenReturn(Collections.emptyList());
+
+        ExternalTrackAndTraceMapping result = service.getMapping(
+                "30004", "FR", "ILCI", "Validated", "Active",
+                null, null, "*", "*", "*", "*"
+        );
+
+        assertNull(result);
+    }
+}
+
+
+
+----------------------_______________________
+package com.bnpparibas.dpw.service.impl;
+
+import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
+import com.bnpparibas.dpw.mapper.CommonMapper;
+import com.bnpparibas.dpw.model.ExternalTrackAndTraceMapping;
+import com.bnpparibas.dpw.repository.ExtTrackAndTraceMappingRepository;
+import com.bnpparibas.dpw.score.ScoreCalculator;
+import com.bnpparibas.dpw.service.ExtTrackAndTraceMappingService;
 import com.bnpparibas.dpw.util.ParseUtils;
 
 import org.junit.jupiter.api.BeforeEach;
