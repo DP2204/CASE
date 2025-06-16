@@ -1,4 +1,48 @@
-package com.bnpparibas.dpw.service;
+@ExtendWith(MockitoExtension.class)
+class ExtTrackAndTraceMappingServiceImplTest {
+
+    @Mock
+    private ExtTrackAndTraceMappingRepository repository;
+
+    @Mock
+    private CommonMapper mapper;
+
+    @Mock
+    private ScoreCalculator calculator;
+
+    @InjectMocks
+    private ExtTrackAndTraceMappingServiceImpl service;
+
+    @Test
+    void testGetMapping_withValidQuery_shouldReturnTopPriorityMapping() {
+        String query = "branchCode==30004;countryCode==FR;pgpeCode==ILCI;action==Validated;statusCst==Active";
+        ExtTrackAndTraceMappingEntity entity = new ExtTrackAndTraceMappingEntity();
+        List<ExtTrackAndTraceMappingEntity> entityList = List.of(entity);
+
+        ExternalTrackAndTraceMapping mapped = new ExternalTrackAndTraceMapping();
+        List<ExternalTrackAndTraceMapping> mappedList = List.of(mapped);
+
+        when(repository.findAll(any(Specification.class))).thenReturn(entityList);
+        when(mapper.getExtTrackAndTraceMappingModel(entityList)).thenReturn(mappedList);
+
+        ExternalTrackAndTraceMapping result = service.getMapping(query);
+
+        assertNotNull(result);
+        assertEquals(mapped, result);
+    }
+
+    @Test
+    void testGetMapping_withEmptyResult_shouldReturnNull() {
+        when(repository.findAll(any(Specification.class))).thenReturn(Collections.emptyList());
+
+        ExternalTrackAndTraceMapping result = service.getMapping("branchCode==999");
+        assertNull(result);
+    }
+}
+
+
+
+----------------package com.bnpparibas.dpw.service;
 
 import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
 import com.bnpparibas.dpw.helpers.CustomComparator;
