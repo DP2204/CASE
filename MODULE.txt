@@ -1,3 +1,79 @@
+
+package com.bnpparibas.dpw.service.impl;
+
+import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
+import com.bnpparibas.dpw.mapper.CommonMapper;
+import com.bnpparibas.dpw.model.ExternalTrackAndTraceMapping;
+import com.bnpparibas.dpw.repository.ExtTrackAndTraceMappingRepository;
+import com.bnpparibas.dpw.service.ExtTrackAndTraceMappingService;
+import com.bnpparibas.dpw.util.ParseUtils;
+import com.bnpparibas.dpw.util.PrioritySelector;
+import com.bnpparibas.dpw.util.SpecificationUtils;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+@Service
+public class ExtTrackAndTraceMappingServiceImpl implements ExtTrackAndTraceMappingService {
+
+    @Autowired
+    private ExtTrackAndTraceMappingRepository repository;
+
+    @Autowired
+    private CommonMapper commonMapper;
+
+    @Autowired
+    private SpecificationUtils specificationUtils;
+
+    @Autowired
+    private PrioritySelector<ExtTrackAndTraceMappingEntity> prioritySelector;
+
+    private static final List<String> wildcardSupportedFields = Arrays.asList(
+            "transactionTypeCode", "subTransactionTypeCode",
+            "productStatusCode", "transactionStatusCode"
+    );
+
+    @Override
+    public List<ExternalTrackAndTraceMapping> getMapping(String query) {
+        // Parse the RSQL query to a Map<String, Object>
+        Map<String, Object> queryParams = ParseUtils.parseQuery(query, ExtTrackAndTraceMappingEntity.class);
+
+        // Filter out wildcard-supported fields with "*" value
+        Map<String, Object> baseParams = new HashMap<>(queryParams);
+        wildcardSupportedFields.forEach(field -> {
+            if ("*".equals(queryParams.get(field))) {
+                baseParams.remove(field);
+            }
+        });
+
+        // Build specification using mandatory + optional fields excluding wildcards
+        Specification<ExtTrackAndTraceMappingEntity> specification =
+                specificationUtils.build(baseParams, ExtTrackAndTraceMappingEntity.class);
+
+        // Fetch all records matching the base specification
+        List<ExtTrackAndTraceMappingEntity> allMatchedEntities = repository.findAll(specification);
+
+        // Filter for best match using comparator logic and PrioritySelector
+        ExtTrackAndTraceMappingEntity bestMatch =
+                prioritySelector.getBestMatch(allMatchedEntities, queryParams, wildcardSupportedFields);
+
+        if (bestMatch != null) {
+            ExternalTrackAndTraceMapping mapped = commonMapper.convert(bestMatch, ExternalTrackAndTraceMapping.class);
+            return List.of(mapped);
+        }
+
+        return Collections.emptyList();
+    }
+}
+
+
+
+
+---------------------
+
 package com.bnpparibas.dpw.service.impl;
 
 import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
