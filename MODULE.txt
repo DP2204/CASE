@@ -1,3 +1,46 @@
+@WebMvcTest(StaticDataController.class)
+class StaticDataControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private ExtTrackAndTraceMappingService extTrackAndTraceMappingService;
+
+    @Autowired
+    private ObjectMapper mapper;
+
+    @Test
+    void testGetExternalTraceAndTrackMapping_shouldReturnList() throws Exception {
+        ExternalTrackAndTraceMapping mapping = new ExternalTrackAndTraceMapping();
+        List<ExternalTrackAndTraceMapping> mappings = List.of(mapping);
+
+        when(extTrackAndTraceMappingService.getMapping("branchCode==30004;countryCode==FR")).thenReturn(mapping);
+
+        mockMvc.perform(get("/v1/admin/ext-trackandtraceMapping")
+                        .header("bnppuid", "h59900")
+                        .param("query", "branchCode==30004;countryCode==FR"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(mapper.writeValueAsString(mappings)));
+    }
+
+    @Test
+    void testGetExternalTraceAndTrackMapping_shouldReturnEmptyListWhenNull() throws Exception {
+        when(extTrackAndTraceMappingService.getMapping("branchCode==999")).thenReturn(null);
+
+        mockMvc.perform(get("/v1/admin/ext-trackandtraceMapping")
+                        .header("bnppuid", "h59900")
+                        .param("query", "branchCode==999"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+}
+
+
+________
+
+
+
 @ExtendWith(MockitoExtension.class)
 class ExtTrackAndTraceMappingServiceImplTest {
 
