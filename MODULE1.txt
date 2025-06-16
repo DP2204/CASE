@@ -1,6 +1,112 @@
 package com.bnpparibas.dpw.service.impl;
 
 import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
+import com.bnpparibas.dpw.model.ExternalTrackAndTraceMapping;
+import com.bnpparibas.dpw.repository.ExtTrackAndTraceMappingRepository;
+import com.bnpparibas.dpw.service.ExtTrackAndTraceMappingService;
+import com.bnpparibas.dpw.util.CommonMapper;
+import com.bnpparibas.dpw.util.CustomComparator;
+import com.bnpparibas.dpw.util.ScoreCalculator;
+import com.bnpparibas.dpw.util.Specification;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.PriorityQueue;
+
+@Service
+public class ExtTrackAndTraceMappingServiceImpl implements ExtTrackAndTraceMappingService {
+
+    @Autowired
+    private ExtTrackAndTraceMappingRepository repository;
+
+    @Autowired
+    private CommonMapper mapper;
+
+    @Autowired
+    private ScoreCalculator scoreCalculator;
+
+    @Override
+    public ExternalTrackAndTraceMapping getMapping(String branchCode,
+                                                   String countryCode,
+                                                   String pgpeCode,
+                                                   String action,
+                                                   String statusCst,
+                                                   String statusCxt,
+                                                   String prodCode,
+                                                   String transactionTypeCode,
+                                                   String subTransactionTypeCode,
+                                                   String productStatusCode,
+                                                   String transactionStatusCode) {
+
+        // Build base specification with mandatory fields
+        Specification<ExtTrackAndTraceMappingEntity> spec =
+            Specification.where("branchCode").is(branchCode)
+                         .and("countryCode").is(countryCode)
+                         .and("pgpeCode").is(pgpeCode)
+                         .and("action").is(action)
+                         .and("statusCst").is(statusCst);
+
+        // Optional fields
+        if (statusCxt != null) {
+            spec = spec.and("statusCxt").is(statusCxt);
+        }
+        if (prodCode != null) {
+            spec = spec.and("prodCode").is(prodCode);
+        }
+
+        // Wildcard and optional fields
+        if (!"*".equals(transactionTypeCode) && transactionTypeCode != null) {
+            spec = spec.and("transactionTypeCode").is(transactionTypeCode);
+        }
+        if (!"*".equals(subTransactionTypeCode) && subTransactionTypeCode != null) {
+            spec = spec.and("subTransactionTypeCode").is(subTransactionTypeCode);
+        }
+        if (!"*".equals(productStatusCode) && productStatusCode != null) {
+            spec = spec.and("productStatusCode").is(productStatusCode);
+        }
+        if (!"*".equals(transactionStatusCode) && transactionStatusCode != null) {
+            spec = spec.and("transactionStatusCode").is(transactionStatusCode);
+        }
+
+        List<ExtTrackAndTraceMappingEntity> entityList = repository.findAll(spec);
+
+        if (entityList.isEmpty()) {
+            return null;
+        }
+
+        // Priority logic
+        Map<String, String> input = Map.of(
+            "transactionTypeCode", transactionTypeCode,
+            "subTransactionTypeCode", subTransactionTypeCode,
+            "productStatusCode", productStatusCode,
+            "transactionStatusCode", transactionStatusCode
+        );
+
+        Comparator<ExtTrackAndTraceMappingEntity> comparator = new CustomComparator(scoreCalculator, input);
+        PriorityQueue<ExtTrackAndTraceMappingEntity> pq = new PriorityQueue<>(comparator);
+        pq.addAll(entityList);
+
+        ExtTrackAndTraceMappingEntity bestMatch = pq.peek();
+        return bestMatch != null ? mapper.toExtTrackAndTraceMapping(bestMatch) : null;
+    }
+}
+
+
+
+
+---------
+
+
+
+
+
+package com.bnpparibas.dpw.service.impl;
+
+import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
 import com.bnpparibas.dpw.mapper.CommonMapper;
 import com.bnpparibas.dpw.model.ExternalTrackAndTraceMapping;
 import com.bnpparibas.dpw.repository.ExtTrackAndTraceMappingRepository;
