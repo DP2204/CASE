@@ -1,4 +1,85 @@
+package com.bnpparibas.dpw.service;
 
+import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
+import com.bnpparibas.dpw.helpers.CustomComparator;
+import com.bnpparibas.dpw.helpers.ScoreCalculator;
+import com.bnpparibas.dpw.mapper.CommonMapper;
+import com.bnpparibas.dpw.referential.model.ExternalTrackAndTraceMapping;
+import com.bnpparibas.dpw.repository.ExtTrackAndTraceMappingRepository;
+import com.bnpparibas.dpw.rsql.ParseUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ExtTrackAndTraceMappingServiceImpl implements ExtTrackAndTraceMappingService {
+
+    private final ExtTrackAndTraceMappingRepository extTrackAndTraceMappingRepository;
+    private final CommonMapper commonMapper;
+    private final ScoreCalculator genericScoreCalculator;
+
+    private static final List<String> fields = List.of(
+            "transactionTypeCode",
+            "subTransactionTypeCode",
+            "productStatusCode",
+            "transactionStatusCode"
+    );
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ExternalTrackAndTraceMapping> getMapping(String query) {
+        log.info("[getMapping] RSQL query: {}", query);
+
+        Specification<ExtTrackAndTraceMappingEntity> specification = ParseUtils.parseQuery(
+                query,
+                new HashMap<>(),
+                ExtTrackAndTraceMappingEntity.class
+        );
+
+        List<ExtTrackAndTraceMappingEntity> entities = extTrackAndTraceMappingRepository.findAll(specification);
+
+        if (entities.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ExternalTrackAndTraceMapping> models = commonMapper.getExtTrackAndTraceMappingModel(entities);
+
+        Map<String, String> paramMap = extractParams(query);
+        List<Object> values = fields.stream()
+                .map(paramMap::get)
+                .toList();
+
+        PriorityQueue<ExternalTrackAndTraceMapping> queue =
+                new PriorityQueue<>(new CustomComparator<>(fields, values, genericScoreCalculator));
+
+        queue.addAll(models);
+
+        // return the top result only as a list
+        ExternalTrackAndTraceMapping bestMatch = queue.peek();
+        return bestMatch != null ? List.of(bestMatch) : Collections.emptyList();
+    }
+
+    private Map<String, String> extractParams(String rsql) {
+        Map<String, String> map = new HashMap<>();
+        if (rsql != null && !rsql.isBlank()) {
+            String[] conditions = rsql.split(";");
+            for (String condition : conditions) {
+                String[] parts = condition.split("==");
+                if (parts.length == 2) {
+                    map.put(parts[0].trim(), parts[1].trim());
+                }
+            }
+        }
+        return map;
+    }
+}
+-------------
 package com.bnpparibas.dpw.service.impl;
 
 import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
