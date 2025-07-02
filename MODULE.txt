@@ -1,3 +1,55 @@
+package com.bnpparibas.dpw.controller;
+
+import com.bnpparibas.dpw.api.CourierApi;
+import com.bnpparibas.dpw.controller.model.Courier;
+import com.bnpparibas.dpw.service.CourierService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+public class CourierController implements CourierApi {
+
+    private final CourierService courierService;
+
+    @Override
+    @PreAuthorize("hasopsPermission(#branchCode, null, 'WriteCourrier')")
+    public ResponseEntity<Courier> createCourier(String branchCode, String countryCode, String bnppuid, String stepName, Courier body) {
+        Courier courierModel = courierService.createCourier(bnppuid, body, stepName);
+        return new ResponseEntity<>(courierModel, HttpStatus.OK);
+    }
+
+    @Override
+    @PreAuthorize("hasopsPermission(#branchCode, null, 'ReadCourrier')")
+    public ResponseEntity<List<Courier>> searchCourierList(String branchCode, String countryCode, String bnppuid, String eventId) {
+        List<Courier> courierList = courierService.getCourierListByEventId(eventId, bnppuid);
+        return new ResponseEntity<>(courierList, HttpStatus.OK);
+    }
+
+    @Override
+    @PreAuthorize("hasopsPermission(#branchCode, null, 'UpdateCourrier')")
+    public ResponseEntity<Courier> updateCourier(String branchCode, String countryCode, String bnppuid, String courierId, String stepName, Courier body) {
+        Courier updated = courierService.updateCourier(bnppuid, courierId, body, stepName);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
+    }
+
+    @Override
+    @PreAuthorize("hasopsPermission(#branchCode, null, 'DeleteCourrier')")
+    public ResponseEntity<Void> deleteCourier(String branchCode, String countryCode, String bnppuid, String courierId, String stepName) {
+        courierService.deleteCourier(courierId, bnppuid, stepName);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+}
+
+___________________
+
+
+
 @Override
 @Transactional(rollbackFor = Exception.class)
 public void deleteCourier(String courierId, String bnppuid, String stepName) {
