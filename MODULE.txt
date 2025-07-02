@@ -1,6 +1,152 @@
 
 package com.bnpparibas.dpw.service.impl;
 
+import com.bnpparibas.dpw.controller.model.Courier;
+import com.bnpparibas.dpw.entity.CourierEntity;
+import com.bnpparibas.dpw.entity.EventEntity;
+import com.bnpparibas.dpw.exception.DpwEntityNotFoundException;
+import com.bnpparibas.dpw.helper.DpwEventHelper;
+import com.bnpparibas.dpw.repository.CourierRepository;
+import com.bnpparibas.dpw.repository.EventRepository;
+import com.bnpparibas.dpw.service.CourierService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+public class CourierServiceImpl implements CourierService {
+
+    @Autowired
+    private CourierRepository courierRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private DpwEventHelper dpwEventHelper;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Courier createCourier(String bnppuid, Courier courier, String stepName) {
+        validateEventId(courier.getEventId());
+
+        if (stepName != null) {
+            dpwEventHelper.checkLockForAllApis(stepName, bnppuid, courier.getEventId());
+        }
+
+        CourierEntity entity = new CourierEntity();
+        entity.setEventId(courier.getEventId());
+        entity.setCourierPartnerCategory(courier.getCourierPartnerCategory());
+        entity.setCourierPartnerWaybillNo(courier.getCourierPartnerWaybillNo());
+
+        String resolvedCreatedBy = dpwEventHelper.setCreatedOrClosedByField(
+                courier.getCreatedBy(), bnppuid, courier.getCreatedByUser(), true
+        );
+        entity.setCreatedBy(resolvedCreatedBy);
+        entity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
+
+        CourierEntity saved = courierRepository.save(entity);
+        return mapEntityToModel(saved);
+    }
+
+    @Override
+    public List<Courier> getCourierListByEventId(String eventId, String bnppuid) {
+        List<CourierEntity> list = courierRepository.findByEventId(eventId);
+        return list.stream().map(this::mapEntityToModel).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Courier updateCourier(String bnppuid, String courierId, Courier courier, String stepName) {
+        Long id = parseId(courierId);
+        validateEventId(courier.getEventId());
+
+        Optional<CourierEntity> optional = courierRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new DpwEntityNotFoundException("Courier entry not found for id: " + courierId);
+        }
+
+        if (stepName != null) {
+            dpwEventHelper.checkLockForAllApis(stepName, bnppuid, courier.getEventId());
+        }
+
+        CourierEntity entity = optional.get();
+        entity.setCourierPartnerCategory(courier.getCourierPartnerCategory());
+        entity.setCourierPartnerWaybillNo(courier.getCourierPartnerWaybillNo());
+
+        String resolvedUpdatedBy = dpwEventHelper.setCreatedOrClosedByField(
+                courier.getUpdatedBy(), bnppuid, courier.getUpdatedByUser(), true
+        );
+        entity.setUpdatedBy(resolvedUpdatedBy);
+        entity.setUpdatedOn(LocalDateTime.now(ZoneOffset.UTC));
+
+        CourierEntity saved = courierRepository.save(entity);
+        return mapEntityToModel(saved);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteCourier(String courierId, String bnppuid, String stepName) {
+        Long id = parseId(courierId);
+
+        Optional<CourierEntity> optional = courierRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new DpwEntityNotFoundException("Courier entry not found for id: " + courierId);
+        }
+
+        CourierEntity entity = optional.get();
+
+        if (stepName != null) {
+            dpwEventHelper.checkLockForAllApis(stepName, bnppuid, entity.getEventId());
+        }
+
+        courierRepository.deleteById(id); // Hard delete
+    }
+
+    private Courier mapEntityToModel(CourierEntity entity) {
+        Courier model = new Courier();
+        model.setId(entity.getId() != null ? entity.getId().toString() : null);
+        model.setEventId(entity.getEventId());
+        model.setCourierPartnerCategory(entity.getCourierPartnerCategory());
+        model.setCourierPartnerWaybillNo(entity.getCourierPartnerWaybillNo());
+        model.setCreatedBy(entity.getCreatedBy());
+        model.setCreatedOn(entity.getCreatedOn());
+        model.setUpdatedBy(entity.getUpdatedBy());
+        model.setUpdatedOn(entity.getUpdatedOn());
+        return model;
+    }
+
+    private void validateEventId(String eventId) {
+        if (!eventRepository.existsById(eventId)) {
+            throw new DpwEntityNotFoundException("Invalid eventId: " + eventId);
+        }
+    }
+
+    private Long parseId(String idStr) {
+        try {
+            return Long.parseLong(idStr);
+        } catch (NumberFormatException ex) {
+            throw new DpwEntityNotFoundException("Invalid ID format: " + idStr);
+        }
+    }
+}
+
+
+
+
+
+-----------------------
+
+
+
+package com.bnpparibas.dpw.service.impl;
+
 import com.bnpparibas.dpw.entity.CourierEntity;
 import com.bnpparibas.dpw.entity.EventEntity;
 import com.bnpparibas.dpw.exception.DpwEntityNotFoundException;
