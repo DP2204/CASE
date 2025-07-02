@@ -1,4 +1,43 @@
+@Override
+@Transactional(rollbackFor = Exception.class)
+public Courier updateCourier(String bnppuid, String courierId, Courier courier, String stepName) {
+    Long id;
+    try {
+        id = Long.parseLong(courierId);
+    } catch (NumberFormatException ex) {
+        throw new DpwEntityNotFoundException("Invalid courier ID format: " + courierId);
+    }
 
+    validateEventId(courier.getEventId());
+
+    Optional<CourierEntity> optional = courierRepository.findById(id);
+    if (optional.isEmpty()) {
+        throw new DpwEntityNotFoundException("Courier entry not found for id: " + courierId);
+    }
+
+    if (stepName != null) {
+        dpwEventHelper.checkLockForAllApis(stepName, bnppuid, courier.getEventId());
+    }
+
+    CourierEntity entity = optional.get();
+
+    entity.setCourierPartnerCategory(courier.getCourierPartnerCategory());
+    entity.setCourierPartnerWaybillNo(courier.getCourierPartnerWaybillNo());
+
+    String resolvedUpdatedBy = dpwEventHelper.setCreatedOrClosedByField(
+            courier.getUpdatedBy(), bnppuid, courier.getUpdatedByUser(), true);
+
+    entity.setUpdatedBy(resolvedUpdatedBy);
+    entity.setUpdatedOn(LocalDateTime.now(ZoneOffset.UTC));
+
+    CourierEntity saved = courierRepository.save(entity);
+    return mapEntityToModel(saved); // This assumes you have this method in parent class
+}
+
+
+
+
+--------
 package com.bnpparibas.dpw.service.impl;
 
 import com.bnpparibas.dpw.controller.model.Courier;
