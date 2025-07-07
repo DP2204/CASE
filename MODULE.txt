@@ -1,3 +1,68 @@
+import { Component, OnInit, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { InitiatEventDataService } from 'app/initiate-event/shared/initiate-event-data.service';
+import { Courier } from '@api/controller';
+import { formatDate, getSessionStorageValue } from '@shared/utils';
+import { SliderService } from 'app/initiate-event/services/slider.service';
+
+@Component({
+  selector: 'dpw-courier-list',
+  templateUrl: './courier-list.component.html',
+  styleUrls: ['./courier-list.component.scss']
+})
+export class CourierListComponent implements OnInit, OnDestroy {
+
+  @Input() eventId: string | null = null;
+  @Input() showModify: boolean = false;
+  @Input() showDelete: boolean = false;
+  @Input() isDisabled: boolean = false;
+  @Input() instructionSheet: any;
+
+  @Output() onModifyCourier: EventEmitter<Courier> = new EventEmitter();
+  @Output() onDeleteCourier: EventEmitter<Courier> = new EventEmitter();
+
+  couriers$ = new BehaviorSubject<Courier[]>([]);
+  private listener: any;
+  private uid: string = '';
+
+  constructor(
+    private initiateEventDataService: InitiatEventDataService,
+    private sliderService: SliderService
+  ) {
+    this.listener = this.sliderService.onLoadData().addListener('Courier', () => {
+      this.getCouriers();
+    });
+  }
+
+  ngOnInit(): void {
+    this.uid = getSessionStorageValue('userId') || '';
+    this.getCouriers();
+  }
+
+  getCouriers(): void {
+    if (!this.eventId) return;
+
+    this.initiateEventDataService.getCourierList(this.eventId).subscribe((couriers: Courier[]) => {
+      this.couriers$.next(couriers || []);
+      this.sliderService.dataLoaded = true;
+    });
+  }
+
+  formatDate(date: any, format = 'DD/MM/yyyy'): string {
+    return formatDate(date, format);
+  }
+
+  ngOnDestroy(): void {
+    this.listener?.removeAllListeners?.();
+  }
+}
+
+
+
+
+
+--------------
+
 <ul class="courier-list">
   <li *ngFor="let courier of couriers$ | async" class="courier-item">
     
