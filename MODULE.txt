@@ -1,3 +1,114 @@
+
+import { Component, OnInit, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { Courier } from '@api/controller';
+import { InitiatEventDataService } from 'app/initiate-event/shared/initiate-event-data.service';
+import { formatDate, getSessionStorageValue } from '@shared/utils';
+import { SliderService } from 'app/initiate-event/services/slider.service';
+import { Store, select } from '@ngrx/store';
+import { getUserJurisdiction } from 'app/initiate-event/store/selectors/juridiction.selector';
+import { UserJurisdiction } from '@api/referential';
+import { AppState } from 'app/store/state/app.state';
+
+@Component({
+  selector: 'dpw-courier-list',
+  templateUrl: './courier-list.component.html',
+  styleUrls: ['./courier-list.component.scss']
+})
+export class CourierListComponent implements OnInit, OnDestroy {
+  @Input('eventId') eventId: string = null;
+  @Input('courierId') courierId: string = null;
+  @Input('instructionSheet') instructionSheet: any;
+  @Input('isCourierManagementPermission') isCourierManagementPermission: boolean = false;
+
+  @Output() onModifyCourier: EventEmitter<Courier> = new EventEmitter();
+  @Output() onDeleteCourier: EventEmitter<Courier> = new EventEmitter();
+
+  couriers$ = new BehaviorSubject<Courier[]>([]);
+  listeners: any;
+  uid: string;
+
+  constructor(
+    private initiateEventDataService: InitiatEventDataService,
+    private sliderService: SliderService,
+    private readonly store: Store<AppState>
+  ) {
+    this.listeners = this.sliderService.onLoadData().addListener('Courier', () => {
+      this.getCouriers();
+    });
+  }
+
+  ngOnInit(): void {
+    this.store.pipe(select(getUserJurisdiction)).subscribe((userInfo: UserJurisdiction) => {
+      this.uid = userInfo?.userId;
+    });
+
+    this.getCouriers();
+  }
+
+  getCouriers(): void {
+    this.initiateEventDataService.getCourierList(this.eventId).subscribe((couriers: Courier[]) => {
+      this.couriers$.next(couriers);
+      this.sliderService.dataLoaded = true;
+    });
+  }
+
+  updateCourier(courier: Courier): void {
+    const fullName = getSessionStorageValue('firstName') || getSessionStorageValue('lastName')
+      ? `${getSessionStorageValue('firstName')} ${getSessionStorageValue('lastName')}`
+      : null;
+
+    const updatedCourier: Courier = {
+      ...courier,
+      updatedBy: this.uid,
+      updatedByUser: fullName,
+      updatedOn: new Date()
+    };
+
+    this.initiateEventDataService.updateCourier(updatedCourier, this.instructionSheet?.stepName)
+      .subscribe(result => {
+        const updatedList = this.couriers$.getValue().map(c =>
+          c.id === result.id ? result : c
+        );
+        this.couriers$.next(updatedList);
+      });
+  }
+
+  deleteCourier(courier: Courier): void {
+    this.initiateEventDataService.deleteCourier(courier.id, this.instructionSheet?.stepName)
+      .subscribe(() => {
+        const filteredList = this.couriers$.getValue().filter(c => c.id !== courier.id);
+        this.couriers$.next(filteredList);
+        this.onDeleteCourier.emit(courier);
+      });
+  }
+
+  formatDate(date: any, format: string = 'DD/MM/yyyy'): string {
+    return formatDate(date, format);
+  }
+
+  ngOnDestroy(): void {
+    this.listeners.removeAllListeners();
+  }
+
+  isEditable(): boolean {
+    return this.isCourierManagementPermission;
+  }
+
+  isDisabled(): boolean {
+    return !this.isCourierManagementPermission;
+  }
+}
+
+
+
+
+
+
+
+-------------------
+
+
 import { Component, OnInit, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { InitiatEventDataService } from 'app/initiate-event/shared/initiate-event-data.service';
