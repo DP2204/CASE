@@ -1,3 +1,71 @@
+onCreateCourier(form: Courier) {  // --- COURIER LOGIC START
+
+  const fullName: string =
+    getSessionStorageValue('firstName') || getSessionStorageValue('lastName')
+      ? getSessionStorageValue('firstName') + ' ' + getSessionStorageValue('lastName')
+      : null;
+
+  const courier: Courier = {
+    requestId: this.eventId ? null : this.requestId,
+    eventId: this.eventId,
+    ...form,
+    createdBy: this.uid,
+    createdByUser: fullName,
+    createdOn: new Date()
+  };
+
+  this.initiatEventDataService.createCourier(courier, this.instructionSheet.stepName).subscribe((result) => {
+    this.instructionSheet['sideNavDetails'] = this.instructionSheet['sideNavDetails'] ?? {};
+    this.instructionSheet['sideNavDetails']['courierCount'] = result.courierCount;
+
+    this.courierDetails = {};
+    this.activeState[2] = false;
+
+    this.prepareSliderMenu();
+    this.sliderService.loadData('Courier');
+    this.onStatusUpdate(result, 'courier');
+  });
+}
+
+
+----------
+
+updateCourierValue(courier: Courier, index: number) {  // --- COURIER LOGIC START
+  this.onAddNew(index);
+  this.courierDetails = courier;
+}
+
+--------
+
+deleteCourier({ courierId, rowIndex }: { courierId: string; rowIndex: number }) { // --- COURIER LOGIC START
+  this.initiatEventDataService.deleteCourier(courierId, this.eventId, this.instructionSheet.stepName).subscribe((isDeleted) => {
+    if (isDeleted) {
+      this.onStatusUpdate(isDeleted, 'courierDeleted');
+      this.sliderService.loadData('Courier');
+      this.prepareSliderMenu();
+    }
+  });
+}
+
+
+-------
+case 'courier':
+  this.instructionSheet['sideNavDetails']['courierCount'] = record.courierCount;
+  break;
+
+case 'courierDeleted':
+  this.instructionSheet['sideNavDetails']['courierCount'] = (
+    parseInt(this.instructionSheet['sideNavDetails']['courierCount']) - 1
+  ).toString();
+  break;
+
+
+
+
+
+-----------
+
+
 package com.bnpparibas.dpw.service;
 
 import com.bnpparibas.dpw.entity.ExtTrackAndTraceMappingEntity;
