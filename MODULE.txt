@@ -1,3 +1,72 @@
+<ul class="courier-list">
+  <li *ngFor="let courier of couriers$ | async" class="courier-item">
+    
+    <!-- Header -->
+    <div class="courier-header">
+      <div>
+        <b>Courier Partner:</b>
+        <span>{{ courier.courierPartnerCategory }}</span>
+      </div>
+
+      <div class="waybill">
+        <b>Waybill No:</b>
+        <span>{{ courier.courierPartnerWaybillNo }}</span>
+      </div>
+    </div>
+
+    <!-- Meta -->
+    <div class="meta-details">
+      <div>
+        <span class="align">Created by:</span>
+        <span>
+          <i class="fas fa-user"></i> {{ courier.createdBy }}
+          &nbsp; <i class="fas fa-calendar"></i> {{ formatDate(courier.createdOn) }}
+        </span>
+      </div>
+
+      <div *ngIf="courier.updatedOn">
+        <span class="align">Updated by:</span>
+        <span>
+          <i class="fas fa-user"></i> {{ courier.updatedBy }}
+          &nbsp; <i class="fas fa-calendar"></i> {{ formatDate(courier.updatedOn) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="courier-actions">
+      <button
+        pButton
+        icon="pi pi-pencil"
+        class="p-button-sm p-button-text p-button-info"
+        (click)="onModifyCourier.emit(courier)"
+        [disabled]="isDisabled"
+        *ngIf="showModify"
+        adminSelenium="courier_modify_btn"
+      ></button>
+
+      <button
+        pButton
+        icon="pi pi-trash"
+        class="p-button-sm p-button-text p-button-danger"
+        (click)="onDeleteCourier.emit(courier)"
+        [disabled]="isDisabled"
+        *ngIf="showDelete"
+        adminSelenium="courier_delete_btn"
+      ></button>
+    </div>
+
+  </li>
+</ul>
+
+
+
+
+
+-----------------------
+
+
+
 package com.bnpparibas.dpw.controller;
 
 import com.bnpparibas.dpw.api.CourierApi;
