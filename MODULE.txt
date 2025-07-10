@@ -1,4 +1,98 @@
 
+@Slf4j
+@RequiredArgsConstructor
+@Service
+public class CourierServiceImpl implements CourierService {
+
+    private final CourierRepository courierRepository;
+    private final ReferentialUtil referentialUtil;
+    private final DpwSideNavCountRepository dpwSideNavCountRepository;
+
+    @Transactional
+    @Override
+    public Courier createCourier(String bnppuid, Courier courier, String stepName) {
+        CourierEntity entity = mapModelToEntity(courier);
+        entity.setCreatedBy(bnppuid);
+        entity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
+        entity.setCreatedByUser(referentialUtil.getUserNameInString(bnppuid, true));
+        entity.setUpdatedBy(bnppuid);
+        entity.setUpdatedOn(LocalDateTime.now(ZoneOffset.UTC));
+        entity.setLastModifiedBy(referentialUtil.getUserNameInString(bnppuid, true));
+        entity.setLastModifiedOn(LocalDateTime.now(ZoneOffset.UTC));
+
+        Courier saved = mapEntityToModel(courierRepository.save(entity));
+        updateCourierCount(saved.getEventId(), true);
+
+        return saved;
+    }
+
+    @Transactional
+    @Override
+    public Courier updateCourier(String bnppuid, Courier courier, String stepName) {
+        CourierEntity existing = courierRepository.findById(courier.getId())
+            .orElseThrow(() -> new DpwEntityNotFoundException("Courier not found", courier.getId().toString()));
+
+        courier.setCreatedBy(existing.getCreatedBy());
+        courier.setCreatedByUser(existing.getCreatedByUser());
+        courier.setCreatedOn(existing.getCreatedOn());
+
+        CourierEntity updatedEntity = mapModelToEntity(courier);
+        updatedEntity.setUpdatedBy(bnppuid);
+        updatedEntity.setUpdatedOn(LocalDateTime.now(ZoneOffset.UTC));
+        updatedEntity.setLastModifiedBy(referentialUtil.getUserNameInString(bnppuid, true));
+        updatedEntity.setLastModifiedOn(LocalDateTime.now(ZoneOffset.UTC));
+
+        return mapEntityToModel(courierRepository.save(updatedEntity));
+    }
+
+    @Transactional
+    @Override
+    public boolean deleteCourier(String courierId, String eventId, String stepName) {
+        Long id = Long.parseLong(courierId);
+        CourierEntity entity = courierRepository.findById(id)
+            .orElseThrow(() -> new DpwEntityNotFoundException("Courier not found", courierId));
+
+        courierRepository.delete(entity);
+        updateCourierCount(eventId, false);
+
+        return true;
+    }
+
+    private void updateCourierCount(String eventId, boolean isCreate) {
+        SideNavCountEntity countEntity = dpwSideNavCountRepository.findByEventId(eventId);
+        if (countEntity == null) {
+            countEntity = new SideNavCountEntity();
+            countEntity.setEventId(eventId);
+            countEntity.setCourierTotalCount(0L);
+            countEntity.setCourierActiveCount(0L);
+        }
+
+        Long total = countEntity.getCourierTotalCount() != null ? countEntity.getCourierTotalCount() : 0L;
+        Long active = countEntity.getCourierActiveCount() != null ? countEntity.getCourierActiveCount() : 0L;
+
+        if (isCreate) {
+            countEntity.setCourierTotalCount(total + 1);
+            countEntity.setCourierActiveCount(active + 1);
+        } else {
+            countEntity.setCourierTotalCount(Math.max(0, total - 1));
+            countEntity.setCourierActiveCount(Math.max(0, active - 1));
+        }
+
+        dpwSideNavCountRepository.save(countEntity);
+    }
+
+    private CourierEntity mapModelToEntity(Courier courier) {
+        // map model to entity (manual or mapstruct-based)
+    }
+
+    private Courier mapEntityToModel(CourierEntity entity) {
+        // map entity to model (manual or mapstruct-based)
+    }
+}
+
+
+
+----------------
 
 .courier-list {
   padding: 0.5rem;
