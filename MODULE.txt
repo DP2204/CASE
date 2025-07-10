@@ -1,3 +1,79 @@
+
+
+.courier-list {
+  padding: 0.5rem;
+  
+  .courier-card {
+    background: #d1ede8;
+    border: 1px solid #d1ede8;
+    border-radius: 5px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    font-family: $font-family-BNPPSansBold;
+
+    .row {
+      margin: 0;
+    }
+
+    .col, .col-auto, .col.text-end {
+      padding: 0.25rem 0;
+    }
+
+    hr {
+      border-top: 1px solid #bbb;
+      margin: 0.75rem 0;
+    }
+
+    .btn-sm {
+      font-size: 0.85rem;
+    }
+
+    .btn-outline-secondary {
+      color: #504d4d;
+      border-color: #504d4d;
+
+      &:hover {
+        color: #0d0d13;
+        border-color: #0d0d13;
+      }
+
+      i {
+        margin-right: 0.25rem;
+      }
+    }
+
+    .btn-danger {
+      background-color: #e74c3c;
+      border: none;
+
+      i {
+        color: white;
+      }
+    }
+
+    .courier-footer {
+      font-size: 0.9rem;
+      color: #0e5549;
+
+      div {
+        margin-bottom: 0.2rem;
+
+        i {
+          margin-right: 0.3rem;
+          color: #0d0d13;
+        }
+
+        .fa-calendar {
+          margin-left: 1rem;
+        }
+      }
+    }
+  }
+}
+
+
+--------------
+
 <div class="courier-list" *ngFor="let courier of couriers$ | async">
   <div class="courier-card">
     
