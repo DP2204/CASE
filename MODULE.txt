@@ -1,4 +1,60 @@
+<div class="courier-list" *ngFor="let courier of couriers$ | async">
+  <div class="courier-card">
+    
+    <!-- Top section -->
+    <div class="row align-items-start justify-content-between">
+      <!-- Left: Courier Partner & Waybill -->
+      <div class="col">
+        <div><strong>Courier Partner:</strong> {{ courier.courierPartnerCategory }}</div>
+        <div><strong>Waybill No:</strong> {{ courier.courierPartnerWaybillNo }}</div>
+      </div>
 
+      <!-- Right: Delete button -->
+      <div class="col-auto">
+        <button 
+          class="btn btn-danger btn-sm"
+          [disabled]="isDisabled"
+          (click)="deleteCourier.emit(courier)">
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+    </div>
+
+    <hr class="my-2" />
+
+    <!-- Bottom section -->
+    <div class="row align-items-end justify-content-between mt-2">
+      <!-- Bottom-left: Modify Button -->
+      <div class="col-auto">
+        <button 
+          class="btn btn-outline-secondary btn-sm"
+          [disabled]="isDisabled"
+          (click)="onEdit.emit(courier)">
+          <i class="pi pi-pencil me-1"></i> Modify
+        </button>
+      </div>
+
+      <!-- Bottom-right: Created/Updated Info -->
+      <div class="col text-end courier-footer">
+        <div>
+          <i class="fa fa-user"></i> Created by: {{ courier.createdByUser }}
+          <i class="fa fa-calendar ms-2"></i> {{ formatDate(courier.createdOn) }}
+        </div>
+        <div>
+          <i class="fa fa-user"></i> Updated by: {{ courier.lastModifiedBy || courier.updatedBy }}
+          <i class="fa fa-calendar ms-2"></i> {{ formatDate(courier.lastModifiedOn || courier.updatedOn) }}
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+
+
+
+
+-------
 .courier-list {
   .courier-card {
     background-color: #f0fdfc;
