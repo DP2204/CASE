@@ -1,4 +1,77 @@
 
+.courier-list {
+  .courier-card {
+    background-color: #f0fdfc;
+    border: 1px solid #cce3e1;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1rem;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 14px;
+
+    .row {
+      margin: 0;
+    }
+
+    .col,
+    .col-auto {
+      padding: 0.25rem 0.5rem;
+    }
+
+    .btn {
+      font-size: 13px;
+      padding: 0.3rem 0.6rem;
+    }
+
+    .btn-outline-secondary {
+      border-color: #6c757d;
+      color: #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-danger {
+      background-color: #dc3545;
+      border: none;
+    }
+
+    .btn-danger i {
+      font-size: 14px;
+    }
+
+    .courier-footer {
+      font-size: 13px;
+      color: #333;
+
+      i.fa {
+        margin-right: 4px;
+        color: #444;
+      }
+
+      .fa-calendar {
+        margin-left: 10px;
+        color: #888;
+      }
+
+      div {
+        margin-bottom: 4px;
+      }
+    }
+
+    hr {
+      border-color: #d0e0df;
+      margin: 0.5rem 0;
+    }
+  }
+}
+
+
+------------------
+
+
 import { Component, OnInit, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Courier } from '@api/controller';
