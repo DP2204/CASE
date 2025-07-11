@@ -1,4 +1,174 @@
 
+@Service
+public class CourierServiceImpl extends
+        AbstractAdminServiceImpl<CourierEntity, Courier, CourierRepository, CourierRepositoryCustom> 
+        implements CourierService {
+
+    @Autowired
+    private CourierRepository courierRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private DpwEventHelper dpwEventHelper;
+
+    @Autowired
+    private DpwSideNavCountRepository dpwSideNavCountRepository;
+
+    @Autowired
+    private ReferentialUtil referentialUtil;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Courier createCourier(String bnppuid, Courier courier, String stepName) {
+        validateEventId(courier.getEventId());
+
+        if (stepName != null) {
+            dpwEventHelper.checkLockForAllApis(stepName, bnppuid, courier.getEventId());
+        }
+
+        // Create Courier Entity
+        CourierEntity entity = new CourierEntity();
+        entity.setEventId(courier.getEventId());
+        entity.setCourierPartnerCategory(courier.getCourierPartnerCategory());
+        entity.setCourierPartnerWaybillNo(courier.getCourierPartnerWaybillNo());
+
+        // Set the username from ReferentialUtil
+        String resolvedCreatedBy = referentialUtil.getUserNameInString(bnppuid, true);
+        entity.setCreatedBy(resolvedCreatedBy);
+        entity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
+
+        CourierEntity saved = courierRepository.save(entity);
+
+        // Update the count for Courier
+        updateCourierCount(courier.getEventId(), 1);  // Increment count by 1 when a courier is created
+
+        return mapEntityToModel(saved);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Courier updateCourier(String bnppuid, String courierId, Courier courier, String stepName) {
+        long id;
+        try {
+            id = Long.parseLong(courierId);
+        } catch (NumberFormatException ex) {
+            throw new DpwEntityNotFoundException("Invalid courier ID format: " + courierId);
+        }
+
+        validateEventId(courier.getEventId());
+
+        Optional<CourierEntity> optional = courierRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new DpwEntityNotFoundException("Courier entry not found for id: " + courierId);
+        }
+
+        if (stepName != null) {
+            dpwEventHelper.checkLockForAllApis(stepName, bnppuid, courier.getEventId());
+        }
+
+        CourierEntity entity = optional.get();
+        entity.setCourierPartnerCategory(courier.getCourierPartnerCategory());
+        entity.setCourierPartnerWaybillNo(courier.getCourierPartnerWaybillNo());
+
+        // Set the updated username from ReferentialUtil
+        String resolvedUpdatedBy = referentialUtil.getUserNameInString(bnppuid, true);
+        entity.setUpdatedBy(resolvedUpdatedBy);
+        entity.setUpdatedOn(LocalDateTime.now(ZoneOffset.UTC));
+
+        CourierEntity saved = courierRepository.save(entity);
+
+        return mapEntityToModel(saved);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Map<String, String> deleteCourier(String courierId, String bnppuid, String stepName) {
+        Long id;
+
+        try {
+            id = Long.parseLong(courierId);
+        } catch (NumberFormatException ex) {
+            throw new DpwEntityNotFoundException("Invalid courier ID format: " + courierId);
+        }
+
+        Optional<CourierEntity> optional = courierRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new DpwEntityNotFoundException("Courier entry not found for id: " + courierId);
+        }
+
+        CourierEntity entity = optional.get();
+
+        if (stepName != null) {
+            dpwEventHelper.checkLockForAllApis(stepName, bnppuid, entity.getEventId());
+        }
+
+        courierRepository.deleteById(id);
+
+        // Update the count for Courier (decrement count by 1)
+        updateCourierCount(entity.getEventId(), -1);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Courier deleted successfully");
+
+        return response;
+    }
+
+    @Override
+    public List<Courier> getCourierListByEventId(String eventId, String bnppuid) {
+        List<CourierEntity> list = courierRepository.findByEventId(eventId);
+
+        // Fetching the SideNav count details
+        SideNavCountEntity dpwSideNavEntity = dpwSideNavCountRepository.findByEventId(eventId);
+
+        Long courierCount = 0L;
+        if (dpwSideNavEntity != null) {
+            courierCount = dpwSideNavEntity.getCourierTotalCount();  // Get the total count
+        }
+
+        // Map the entities to models and set the count
+        List<Courier> couriers = list.stream().map(entity -> {
+            Courier courier = mapEntityToModel(entity);
+            courier.setCourierCount(courierCount.toString());  // Add the count to each courier
+            return courier;
+        }).collect(Collectors.toList());
+
+        return couriers;
+    }
+
+    private void updateCourierCount(String eventId, int increment) {
+        SideNavCountEntity dpwSideNavEntity = dpwSideNavCountRepository.findByEventId(eventId);
+
+        if (dpwSideNavEntity == null) {
+            dpwSideNavEntity = new SideNavCountEntity();
+            dpwSideNavEntity.setEventId(eventId);
+            dpwSideNavEntity.setCourierTotalCount(0L);
+            dpwSideNavEntity.setCourierActiveCount(0L);
+        }
+
+        // Update the counts
+        Long totalCount = dpwSideNavEntity.getCourierTotalCount() + increment;
+        dpwSideNavEntity.setCourierTotalCount(totalCount);
+        dpwSideNavEntity.setCourierActiveCount(dpwSideNavEntity.getCourierActiveCount() + increment); // Increment active count
+
+        dpwSideNavCountRepository.save(dpwSideNavEntity);
+    }
+
+    private void validateEventId(String eventId) {
+        if (!eventRepository.findById(eventId).isPresent()) {
+            throw new DpwEntityNotFoundException("Invalid eventId: " + eventId);
+        }
+    }
+}
+
+
+
+----------
+
+
+
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
