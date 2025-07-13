@@ -1,3 +1,42 @@
+@Test
+public void testDeleteCourier() {
+    // Arrange
+    CourierEntity courierEntity = DpwRepositoryTestHelper.createCourier(); // ID is Long
+    String courierIdStr = String.valueOf(courierEntity.getId()); // convert to String
+
+    // Prepare InlineResponse200 manually
+    InlineResponse200 response = new InlineResponse200();
+    response.setMessage("Courier deleted successfully");
+    response.setCourierCount("0");
+
+    // Mocks
+    given(courierRepository.findById(Long.parseLong(courierIdStr)))
+        .willReturn(Optional.of(courierEntity));
+
+    doNothing().when(courierRepository).delete(courierEntity);
+
+    given(dpwSideNavCountRepository.findByEventId(courierEntity.getEventId()))
+        .willReturn(new SideNavCountEntity());
+
+    // Act
+    InlineResponse200 result = courierService.deleteCourier(
+        "bnppuid",
+        courierIdStr,
+        "Initiate",
+        "30004",
+        "FR"
+    );
+
+    // Assert
+    assertThat(result).isNotNull();
+    assertThat(result.getMessage()).isEqualTo("Courier deleted successfully");
+    assertThat(result.getCourierCount()).isEqualTo("0");
+}
+
+
+
+
+,----------------
 package com.bnpparibas.dpw.service;
 
 import com.bnpparibas.dpw.converter.DpwDTOConverter;
