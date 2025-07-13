@@ -1,3 +1,69 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { StoreModule } from '@ngrx/store';
+
+import { CreateCourierComponent } from './create-courier.component';
+import { InitiatEventDataService } from 'app/initiate-event/shared/initiate-event-data.service';
+import { SliderService } from 'app/initiate-event/services/slider.service';
+import { HTTPStatus } from 'app/services/loading-indicator';
+
+describe('CreateCourierComponent', () => {
+  let component: CreateCourierComponent;
+  let fixture: ComponentFixture<CreateCourierComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [CreateCourierComponent],
+      imports: [
+        ReactiveFormsModule,
+        HttpClientTestingModule,
+        StoreModule.forRoot({})
+      ],
+      providers: [
+        FormBuilder,
+        InitiatEventDataService,
+        SliderService,
+        HTTPStatus
+      ],
+      teardown: { destroyAfterEach: false }
+    }).compileComponents();
+  });
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(CreateCourierComponent);
+    component = fixture.componentInstance;
+
+    // Initialize required input values before running tests
+    component.eventId = 'EVT123';
+    component.uid = 'USR001';
+    component.instructionSheet = {
+      stepName: 'Initiate',
+      sideNavDetails: {}
+    } as any;
+
+    fixture.detectChanges();
+  });
+
+  it('should create the CreateCourierComponent', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should build the form with default values', () => {
+    expect(component.form).toBeTruthy();
+    expect(component.form.get('courierPartnerWaybillNo')).toBeTruthy();
+    expect(component.form.valid).toBeFalsy(); // initially invalid
+  });
+
+  // Add more tests for form submission, successful API calls, etc.
+});
+
+
+
+
+
+------------
+
 @Test
 public void testCreateCourier() {
     Courier courier = new Courier();
