@@ -1,4 +1,36 @@
+@Test
+public void testUpdateCourier() {
+    // Arrange
+    CourierEntity courierEntity = DpwRepositoryTestHelper.createCourier(); // Returns CourierEntity with Long id and String eventId
+    Courier courier = DpwDTOConverter.convert(courierEntity, Courier.class); // Converts to model object
 
+    // Mock getReferenceById (expects Long)
+    given(courierRepository.getReferenceById(courier.getId())).willReturn(courierEntity);
+
+    // Mock save
+    given(courierRepository.save(any(CourierEntity.class))).willReturn(courierEntity);
+
+    // Mock side nav count repository (expects Long eventId — convert from String)
+    given(dpwSideNavCountRepository.findByEventId(Long.valueOf(courier.getEventId())))
+        .willReturn(DpwRepositoryTestHelper.createDpwSideNavCount());
+
+    // Act
+    Courier result = courierService.updateCourier(
+        "bnppuid",
+        String.valueOf(courier.getId()), // id as String
+        courier,
+        "Initiate"
+    );
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(courier.getId(), result.getId());
+    assertEquals(courier.getEventId(), result.getEventId());
+}
+
+
+
+------------------------
 @Service
 public class CourierServiceImpl extends
         AbstractAdminServiceImpl<CourierEntity, Courier, CourierRepository, CourierRepositoryCustom> 
