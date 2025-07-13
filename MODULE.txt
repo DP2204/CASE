@@ -1,4 +1,36 @@
 @Test
+public void testCreateCourier() {
+    Courier courier = new Courier();
+    courier.setEventId("1");
+    courier.setCourierPartnerCategory("DHL");
+    courier.setCourierPartnerWaybillNo("WB123");
+    
+    CourierEntity courierEntity = DpwRepositoryTestHelper.createCourier();
+
+    // Fix this for void return method
+    willDoNothing().given(dpwEventHelper).checkLockForAllApis(any(), any(), any());
+
+    // Mock repository calls
+    given(eventRepository.findById("1")).willReturn(Optional.of(DpwRepositoryTestHelper.createEventEntity()));
+    given(courierRepository.save(any(CourierEntity.class))).willReturn(courierEntity);
+    given(dpwSideNavCountRepository.findByEventId("1")).willReturn(new SideNavCountEntity());
+
+    Courier result = courierService.createCourier("bnppuid", courier, "Initiate");
+
+    assertNotNull(result);
+    assertEquals("1", result.getEventId());
+}
+
+
+
+
+
+
+
+
++------------
+
+@Test
 public void testUpdateCourier() {
     // Arrange
     CourierEntity courierEntity = DpwRepositoryTestHelper.createCourier(); // Returns CourierEntity with Long id and String eventId
