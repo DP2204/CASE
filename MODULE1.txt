@@ -1,3 +1,40 @@
+
+@Test
+public void testUpdateCourier() {
+    String bnppuid = "test-user";
+    String stepName = "Initiate";
+
+    Courier courier = new Courier();
+    courier.setId("1");
+    courier.setEventId("1");
+    courier.setCourierPartnerCategory("Updated Category");
+
+    CourierEntity courierEntity = DpwRepositoryTestHelper.createCourier();
+
+    // Setup mocks
+    given(courierRepository.findById(1L)).willReturn(Optional.of(courierEntity));
+    given(eventRepository.findById("1")).willReturn(Optional.of(new EventEntity())); // 🔥 Important
+    given(referentialUtil.getUserNameInString(eq(bnppuid), eq(true))).willReturn("Test User");
+    given(courierRepository.save(any(CourierEntity.class))).willReturn(courierEntity);
+
+    SideNavCountEntity countEntity = new SideNavCountEntity();
+    countEntity.setEventId("1");
+    countEntity.setCourierTotalCount(1L);
+    countEntity.setCourierActiveCount(1L);
+    given(dpwSideNavCountRepository.findByEventId("1")).willReturn(countEntity);
+
+    // Call service
+    Courier result = courierService.updateCourier(bnppuid, "1", courier, stepName);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals("Updated Category", result.getCourierPartnerCategory());
+}
+
+
+
+--------
+
 @Test
 public void testDeleteCourier() {
     // Arrange
