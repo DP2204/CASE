@@ -1,4 +1,57 @@
 
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { StoreModule } from '@ngrx/store';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+
+import { CourierListComponent } from './courier-list.component';
+import { SliderService } from 'app/initiate-event/services/slider.service';
+import { InitiatEventDataService } from 'app/initiate-event/shared/initiate-event-data.service';
+import { HTTPStatus } from 'app/services/loading-indicator';
+
+describe('CourierListComponent', () => {
+  let component: CourierListComponent;
+  let fixture: ComponentFixture<CourierListComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [CourierListComponent],
+      imports: [
+        HttpClientTestingModule,
+        ReactiveFormsModule,
+        StoreModule.forRoot({})
+      ],
+      providers: [
+        FormBuilder,
+        HTTPStatus,
+        InitiatEventDataService,
+        SliderService
+      ],
+      teardown: { destroyAfterEach: false }
+    }).compileComponents();
+  });
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(CourierListComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create the CourierListComponent', () => {
+    expect(component).toBeTruthy();
+  });
+
+  // You can now extend:
+  // - test ngOnInit()
+  // - test deleteCourier()
+  // - test modify/save/cancel actions
+});
+
+
+
+
+??_______________
+
 @Test
 public void testUpdateCourier() {
     String bnppuid = "test-user";
