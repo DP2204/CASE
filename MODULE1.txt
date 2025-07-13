@@ -1,3 +1,102 @@
+package com.bnpparibas.dpw.service;
+
+import com.bnpparibas.dpw.converter.DpwDTOConverter;
+import com.bnpparibas.dpw.entity.CourierEntity;
+import com.bnpparibas.dpw.entity.SideNavCountEntity;
+import com.bnpparibas.dpw.model.Courier;
+import com.bnpparibas.dpw.model.InlineResponse200;
+import com.bnpparibas.dpw.repository.*;
+import com.bnpparibas.dpw.helper.DpwRepositoryTestHelper;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Optional;
+
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
+
+@RunWith(SpringRunner.class)
+public class CourierServiceImplTest {
+
+    @InjectMocks
+    private CourierServiceImpl courierService;
+
+    @Mock
+    private CourierRepository courierRepository;
+
+    @Mock
+    private DpwSideNavCountRepository dpwSideNavCountRepository;
+
+    private CourierEntity courierEntity;
+
+    @Before
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        courierEntity = DpwRepositoryTestHelper.createCourier();
+    }
+
+    @Test
+    public void testCreateCourier() {
+        Courier courier = DpwDTOConverter.convert(courierEntity, Courier.class);
+        SideNavCountEntity countEntity = new SideNavCountEntity();
+
+        given(courierRepository.save(any(CourierEntity.class))).willReturn(courierEntity);
+        given(dpwSideNavCountRepository.findByEventId(courier.getEventId())).willReturn(countEntity);
+
+        Courier result = courierService.createCourier(courier, "Initiate");
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals("1", result.getEventId());
+        Assert.assertEquals("FirstName-LastName", result.getCreatedByUser());
+    }
+
+    @Test
+    public void testUpdateCourier() {
+        Courier courier = DpwDTOConverter.convert(courierEntity, Courier.class);
+        courier.setId(courierEntity.getId());
+
+        given(courierRepository.getReferenceById(courier.getId())).willReturn(courierEntity);
+        given(courierRepository.save(any(CourierEntity.class))).willReturn(courierEntity);
+        given(dpwSideNavCountRepository.findByEventId(courier.getEventId())).willReturn(new SideNavCountEntity());
+
+        Courier result = courierService.updateCourier(courier, "Initiate");
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(courierEntity.getId(), result.getId());
+        Assert.assertEquals("1", result.getEventId());
+    }
+
+    @Test
+    public void testDeleteCourier() {
+        String courierId = "1";
+        String eventId = "1";
+        String stepName = "Initiate";
+
+        given(courierRepository.findById(courierId)).willReturn(Optional.of(courierEntity));
+        doNothing().when(courierRepository).deleteById(courierId);
+        given(dpwSideNavCountRepository.findByEventId(eventId)).willReturn(new SideNavCountEntity());
+
+        InlineResponse200 result = courierService.deleteCourier(courierId, eventId, stepName);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals("Courier deleted successfully", result.getMessage());
+    }
+}
+
+
+-------------------
+
+
+
+
+
+
 onCreateCourier(form: Courier) {  // --- COURIER LOGIC START
 
   const fullName: string =
