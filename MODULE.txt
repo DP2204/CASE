@@ -1,3 +1,83 @@
+
+@Service
+public class TrackTraceService {
+
+    private static final Logger log = LoggerFactory.getLogger(TrackTraceService.class);
+
+    @Autowired
+    private XmlStrategyContext xmlStrategyContext;
+
+    @Autowired
+    private TntQueuePublisher tntQueuePublisher;   // already used in FE (or create one)
+
+    public void trigger(ConnexisData data, Element tnxRecord) {
+        // Only proceed if mapping is present
+        ConnexisAutoISMapping mapping = data.getConnexisAutoISMapping();
+        if (mapping == null) {
+            return;
+        }
+
+        // same conditions you mentioned (customer, step=AutoIS, status=event.status)
+        boolean isCustomerOne = data.isCustomerOne();
+        boolean stepOk   = "AutoIS".equalsIgnoreCase(mapping.getStep());
+        boolean statusOk = Objects.equals(mapping.getStatus(),
+                                          tnxRecord.getChildText("STATUS"));
+
+        if (!isCustomerOne || !stepOk || !statusOk) {
+            return;
+        }
+
+        try {
+            // Build request for XML
+            ExternalTNTRequest req = ExternalTNTRequest.fromConnexisData(data, tnxRecord);
+
+            // Generate the XML file
+            File xmlFile = xmlStrategyContext.generateXml(req, "/tmp");
+
+            // Push to queue (whatever the FE used)
+            tntQueuePublisher.publish(xmlFile);
+
+            log.info("Track&Trace XML successfully generated and sent for event {}", data.getEventId());
+        } catch (Exception ex) {
+            log.error("Track&Trace XML generation failed for {}", data.getEventId(), ex);
+        }
+    }
+}
+
+++++++++++++
+
+
+
+@Autowired
+private TrackTraceService trackTraceService;
+
+private RequestExtended generateRequestEventModel(ConnexisData connexisData, Element tnxRecord) {
+    log.info("Starting to generate Request Event Model for Connexis");
+
+    // 👉 trigger Track & Trace *before* the existing treatment logic
+    trackTraceService.trigger(connexisData, tnxRecord);
+
+    RequestExtended request = new RequestExtended();
+    if (Objects.equals(connexisData.getTreatmentType(), TREATMENT_TYPE_ATTACHMENT)) {
+        request = treatmentTypeAttachment(connexisData, tnxRecord);
+    } else if (Objects.equals(connexisData.getTreatmentType(), TREATMENT_TYPE_EVENT)) {
+        request = treatmentTypeEvent(connexisData, tnxRecord);
+    } else if (connexisData.getTreatmentType() == null) {
+        request = processor.createRequest(tnxRecord, connexisData);
+        connexisData.setProcessedAs(CommonConstants.TREATMENT_TYPE_REQUEST);
+        log.info("Request Event Model Generated, will be treated as: '{}'.",
+                 connexisData.getProcessedAs());
+    }
+    return request;
+}
+
+
+
+
+
+-----------------------------
+
+
 handleCourierEvent(event: any) {
   if (event.action === 'SAVE') {
     // Ensure sideNavDetails and courierDetails exist
