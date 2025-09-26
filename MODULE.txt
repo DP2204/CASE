@@ -1,4 +1,67 @@
+public class CXTHelper {
 
+    private CXTHelper() {}
+
+    public static ExternalTNTRequest toExternalTNTRequest(
+            ExternalTrackAndTraceMapping mapping,
+            Request createdRequest) {
+
+        if (mapping == null) {
+            return null;
+        }
+
+        ExternalTNTRequest req = new ExternalTNTRequest();
+
+        // --- From Mapping ---
+        req.setBranchCode(mapping.getBranchCode());
+        req.setCountryCode(mapping.getCountryCode());
+        req.setStatusCxt(mapping.getStatusCxt());
+        req.setProdCode(mapping.getProdCode());
+        req.setTnxTypeCode(mapping.getTnxTypeCode());
+        req.setSubTnxTypeCode(mapping.getSubTnxTypeCode());
+        req.setProdStatCode(mapping.getProdStatCode());
+        req.setTnxStatCode(mapping.getTnxStatCode());
+
+        // --- From Request (event details) ---
+        if (createdRequest != null && createdRequest.getEvent() != null) {
+            req.setEventId(createdRequest.getEvent().getId());
+
+            if (createdRequest.getEvent().getSystemCreationDate() != null) {
+                req.setEventCreationDateTime(createdRequest.getEvent().getSystemCreationDate());
+            } else {
+                req.setEventCreationDateTime(LocalDateTime.now());
+            }
+        }
+
+        // --- Additional fields from Request (enrichment) ---
+        if (createdRequest != null) {
+            // Applicant / company / beneficiary data
+            req.setCounterPartyName(createdRequest.getApplicantAbbvName());   // map applicant name
+            req.setCustomerId(createdRequest.getBeneficiaryName());           // map beneficiary name
+
+            // Amounts and currency
+            if (createdRequest.getTransactionDetails() != null) {
+                req.setTnxAmt(createdRequest.getTransactionDetails().getTnxAmt());
+                req.setCurCode(createdRequest.getTransactionDetails().getTnxCurCode());
+            }
+        }
+
+        // TODO: If companyName, applicantAbbvName, beneficiaryName must be explicit in XML,
+        // you should either:
+        //  1. Add them as fields in ExternalTNTRequest
+        //  2. Or reuse counterPartyName/customerId if they match business meaning
+
+        return req;
+    }
+}
+
+
+
+
+
+++++++++++++++++++++
+
+ 
 @Service
 public class TrackTraceService {
 
