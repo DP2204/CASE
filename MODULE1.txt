@@ -1,3 +1,69 @@
+package com.bnpparibas.mql.helper;
+
+import com.bnpparibas.dpw.controller.model.Request;
+import com.bmpparibas.dpw.mql.model.ExternalTNTRequest;
+import com.bmpparibas.dpw.referential.model.ExternalTrackAndTraceMapping;
+
+import java.time.LocalDateTime;
+
+public class CXTHelper {
+
+    private CXTHelper() {}
+
+    public static ExternalTNTRequest toExternalTNTRequest(
+            ExternalTrackAndTraceMapping mapping,
+            Request createdRequest
+    ) {
+        if (mapping == null) return null;
+
+        ExternalTNTRequest req = new ExternalTNTRequest();
+
+        // Mapping fields from ExternalTrackAndTraceMapping
+        req.setBranchCode(mapping.getBranchCode());
+        req.setCountryCode(mapping.getCountryCode());
+        req.setStatusCxt(mapping.getStatusCxt());
+        req.setProdCode(mapping.getProdCode());
+        req.setTnxTypeCode(mapping.getTnxTypeCode());
+        req.setSubTnxTypeCode(mapping.getSubTnxTypeCode());
+        req.setProdStatCode(mapping.getProdStatCode());
+        req.setTnxStatCode(mapping.getTnxStatCode());
+
+        // Mapping fields from createdRequest
+        if (createdRequest != null && createdRequest.getEvent() != null) {
+            req.setEventId(createdRequest.getEvent().getId());
+            if (createdRequest.getEvent().getSystemCreationDate() != null) {
+                req.setEventCreationDateTime(createdRequest.getEvent().getSystemCreationDate());
+            } else {
+                req.setEventCreationDateTime(LocalDateTime.now());
+            }
+        } else {
+            req.setEventCreationDateTime(LocalDateTime.now());
+        }
+
+        // Optional fields you might have in ExternalTNTRequest
+        // Leave null if no source available
+        req.setTnxAmt(null);
+        req.setCurCode(null);
+        req.setCounterPartyName(null);
+        req.setCustomerId(null);
+        req.setConnexisRequestRefId(null);
+        req.setConnexisRequestTnxId(null);
+        req.setEbCusId(null);
+        req.setEbBanId(null);
+        req.setBoStatusUpdate(null);
+        req.setSubTnxStatCode(null);
+        req.setMfr(null);
+        req.setLivr(null);
+        req.setUmfr(null);
+
+        return req;
+    }
+}
+
+
+
+-------------------_----------------------
+
 
 public class CXTHelper {
 
