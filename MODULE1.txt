@@ -1,3 +1,75 @@
+
+
+package com.bnpparibas.mql.helper;
+
+import com.bnpparibas.dpw.controller.model.Request;
+import com.bnpparibas.dpw.mql.model.ExternalTNTRequest;
+import com.bnpparibas.dpw.referential.model.ExternalTrackAndTraceMapping;
+
+import java.time.LocalDateTime;
+
+public class CXTHelper {
+
+    private CXTHelper() {}
+
+    public static ExternalTNTRequest toExternalTNTRequest(
+            ExternalTrackAndTraceMapping mapping,
+            Request createdRequest,
+            ConnexisData connexisData) {
+
+        if (mapping == null) return null;
+
+        ExternalTNTRequest req = new ExternalTNTRequest();
+
+        // 🔹 From Referential Mapping (codes)
+        req.setBranchCode(mapping.getBranchCode());
+        req.setCountryCode(mapping.getCountryCode());
+        req.setProdCode(mapping.getProdCode());
+        req.setTnxTypeCode(mapping.getTnxTypeCode());
+        req.setSubTnxTypeCode(mapping.getSubTnxTypeCode());
+        req.setProdStatCode(mapping.getProdStatCode());
+        req.setTnxStatCode(mapping.getTnxStatCode());
+        req.setStatusCxt(mapping.getStatusCxt());
+
+        // 🔹 From Event (createdRequest)
+        if (createdRequest != null && createdRequest.getEvent() != null) {
+            req.setEventId(createdRequest.getEvent().getId());
+            req.setEventCreationDateTime(
+                createdRequest.getEvent().getSystemCreationDate() != null
+                        ? createdRequest.getEvent().getSystemCreationDate()
+                        : LocalDateTime.now()
+            );
+
+            // Example business fields from Event
+            req.setCompanyName(createdRequest.getEvent().getCompanyName());
+            req.setTnxAmt(createdRequest.getEvent().getTransactionAmount());
+            req.setCurCode(createdRequest.getEvent().getCurrency());
+            req.setApplicantAbbvName(createdRequest.getEvent().getApplicantName());
+            req.setBeneficiaryName(createdRequest.getEvent().getBeneficiaryName());
+        }
+
+        // 🔹 From ConnexisData (if additional info required)
+        if (connexisData != null) {
+            req.setCustomerId(connexisData.getCustomerId());
+            req.setConnexisRequestRefId(connexisData.getRequestRefId());
+            req.setConnexisRequestTnxId(connexisData.getRequestTnxId());
+        }
+
+        // 🔹 Static / derived fields if required
+        req.setBoStatusUpdate("Y"); // defaulted as in expected XML
+
+        return req;
+    }
+}
+
+
+
+
+
+
+------------------------------------------
+
+
 package com.yourcompany.project.helper;
 
 import com.yourcompany.project.model.ExternalTrackAndTraceMapping;
