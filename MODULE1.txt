@@ -1,4 +1,69 @@
 
+public class CXTHelper {
+
+    private CXTHelper() {
+        // Utility class
+    }
+
+    public static ExternalTNTRequest toExternalTNTRequest(ExternalTrackAndTraceMapping mapping,
+                                                          ExternalTNTRequest createdRequest,
+                                                          ConnexisData connexisData) {
+        if (mapping == null && createdRequest == null && connexisData == null) {
+            return new ExternalTNTRequest();
+        }
+
+        ExternalTNTRequest request = new ExternalTNTRequest();
+
+        // --- Mapping fields from Referential (mapping) ---
+        if (mapping != null) {
+            request.setBranchCode(mapping.getBranchCode());
+            request.setCountryCode(mapping.getCountryCode());
+            request.setPgpeCode(mapping.getPgpeCode());
+            request.setAction(mapping.getAction());
+            request.setStatusCst(mapping.getStatusCst());
+            request.setStatusCxt(mapping.getStatusCxt());
+            request.setProdCode(mapping.getProdCode());
+            request.setTnxTypeCode(mapping.getTnxTypeCode());
+            request.setSubTnxTypeCode(mapping.getSubTnxTypeCode());
+            request.setProdStatCode(mapping.getProdStatCode());
+            request.setTnxStatCode(mapping.getTnxStatCode());
+        }
+
+        // --- Fields from created request (input request) ---
+        if (createdRequest != null) {
+            request.setEventId(createdRequest.getEventId());
+            request.setMfr(createdRequest.getMfr());
+            request.setLivr(createdRequest.getLivr());
+            request.setUmfr(createdRequest.getUmfr());
+            request.setSubTnxStatCode(createdRequest.getSubTnxStatCode());
+            request.setBoStatusUpdate(createdRequest.getBoStatusUpdate());
+            request.setEventCreationDateTime(createdRequest.getEventCreationDateTime());
+            request.setTnxAmt(createdRequest.getTnxAmt());
+            request.setCurCode(createdRequest.getCurCode());
+            request.setCounterPartyName(createdRequest.getCounterPartyName());
+            request.setCustomerId(createdRequest.getCustomerId());
+            request.setEbCusId(createdRequest.getEbCusId());
+            request.setEbBanId(createdRequest.getEbBanId());
+        }
+
+        // --- Fields from ConnexisData (if present) ---
+        if (connexisData != null) {
+            request.setConnexisRequestRefId(connexisData.getRequestRefId());
+            request.setConnexisRequestTnxId(connexisData.getRequestTnxId());
+        }
+
+        return request;
+    }
+}
+
+
+
+
+
+
+
+
++++++++++++++++++++++
 
 package com.bnpparibas.mql.helper;
 
