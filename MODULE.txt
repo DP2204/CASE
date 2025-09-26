@@ -4,6 +4,68 @@ public class CXTHelper {
 
     public static ExternalTNTRequest toExternalTNTRequest(
             ExternalTrackAndTraceMapping mapping,
+            RequestEvent event) {
+
+        if (mapping == null) return null;
+
+        ExternalTNTRequest req = new ExternalTNTRequest();
+
+        // --- From Mapping ---
+        req.setBranchCode(mapping.getBranchCode());
+        req.setCountryCode(mapping.getCountryCode());
+        req.setStatusCxt(mapping.getStatusCxt());
+        req.setProdCode(mapping.getProdCode());
+        req.setTnxTypeCode(mapping.getTnxTypeCode());
+        req.setSubTnxTypeCode(mapping.getSubTnxTypeCode());
+        req.setProdStatCode(mapping.getProdStatCode());
+        req.setTnxStatCode(mapping.getTnxStatCode());
+        req.setSubTnxStatCode(mapping.getSubTnxStatCode());
+        req.setBoStatusUpdate(mapping.getBoStatusUpdate());
+
+        // --- From Event ---
+        if (event != null) {
+            req.setEventId(event.getId());
+            req.setMfr(event.getMfr());
+            req.setUmfr(event.getUmfr());
+            req.setLivr(event.getLivr());
+
+            req.setConnexisRequestRefId(event.getConnexisRequestRefId());
+            req.setConnexisRequestTnxId(event.getConnexisRequestTnxId());
+
+            req.setEbCusId(event.getEbCusId());
+            req.setEbBanId(event.getEbBanId());
+
+            // Event creation timestamp
+            req.setEventCreationDateTime(
+                event.getSystemCreationDate() != null
+                        ? event.getSystemCreationDate()
+                        : LocalDateTime.now()
+            );
+
+            // Optional: map financials if available
+            req.setTnxAmt(event.getAmount());
+            req.setCurCode(event.getCurCode());
+        }
+
+        return req;
+    }
+}
+
+
+
+
+
+
+
+-------------------
+
+
+public class CXTHelper {
+
+    private CXTHelper() {}
+
+    public static ExternalTNTRequest toExternalTNTRequest(
+            ExternalTrackAndTraceMapping mapping,
             Request createdRequest) {
 
         if (mapping == null) {
