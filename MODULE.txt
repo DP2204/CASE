@@ -1,3 +1,92 @@
+
+
+public static ExternalTNTRequest toExternalTNTRequest(
+        ExternalTrackAndTraceMapping mapping,
+        Request request,
+        RequestEvent event
+) {
+    if (mapping == null || request == null) {
+        return null;
+    }
+
+    ExternalTNTRequest req = new ExternalTNTRequest();
+
+    // ---- Basic request + event IDs ----
+    req.setBranchCode(request.getBranchCode());
+    req.setCountryCode(request.getCountryCode());
+
+    // Prefer request.getEventId(), fallback to event.getId()
+    req.setEventId(
+            request.getEventId() != null ? request.getEventId()
+                    : (event != null ? event.getId() : null)
+    );
+
+    // Prefer request values, fallback to event
+    req.setConnexisRequestRefId(
+            request.getConnexisRequestRefId() != null ? request.getConnexisRequestRefId()
+                    : (event != null ? event.getConnexisRequestRefId() : null)
+    );
+    req.setConnexisRequestTnxId(
+            request.getConnexisRequestTnxId() != null ? request.getConnexisRequestTnxId()
+                    : (event != null ? event.getConnexisRequestTnxId() : null)
+    );
+
+    // ---- Party details ----
+    if (event != null) {
+        req.setMfr(event.getMfr());
+        req.setUmfr(event.getUmfr());
+        req.setLivr(event.getLivr());
+    }
+
+    req.setEbBanId(request.getEbBanId());
+    req.setEbCusId(request.getEbCusId());
+
+    // ---- Transaction codes ----
+    req.setTnxTypeCode(
+            request.getTnxTypeCode() != null ? request.getTnxTypeCode() : mapping.getTnxTypeCode()
+    );
+    req.setSubTnxTypeCode(
+            request.getSubTnxTypeCode() != null ? request.getSubTnxTypeCode() : mapping.getSubTnxTypeCode()
+    );
+    req.setProdStatCode(
+            request.getProdStatCode() != null ? request.getProdStatCode() : mapping.getProdStatCode()
+    );
+    req.setTnxStatCode(
+            request.getTnxStatCode() != null ? request.getTnxStatCode() : mapping.getTnxStatCode()
+    );
+    req.setSubTnxStatCode(mapping.getStatusCxt());  // mapping drives this
+
+    // ---- Status handling ----
+    req.setBoStatusUpdate("Y"); // fixed flag (based on your XML output)
+    req.setStatusCxt(mapping.getStatusCxt());
+
+    // ---- Product code ----
+    req.setProdCode(
+            request.getProdCode() != null ? request.getProdCode() : mapping.getProdCode()
+    );
+
+    // ---- Dates ----
+    req.setEventCreationDateTime(
+            event != null && event.getSystemCreationDate() != null
+                    ? event.getSystemCreationDate()
+                    : LocalDateTime.now()
+    );
+
+    // ---- Amount & Currency ----
+    if (event != null) {
+        req.setTnxAmt(event.getAmount());
+        req.setCurCode(event.getCurCode());
+        req.setCounterPartyName(event.getCounterPartyCountry());
+    }
+
+    return req;
+}
+
+
+
+
+
+-----------------
 package com.example.helper;
 
 import com.example.model.ExternalTNTRequest;
