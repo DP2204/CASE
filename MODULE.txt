@@ -1,3 +1,92 @@
+package com.example.helper;
+
+import com.example.model.ExternalTNTRequest;
+import com.example.entity.ExtTrackAndTraceMapping;
+import com.example.entity.RequestEvent;
+import com.example.entity.RequestExtended;
+import com.example.entity.Request;
+
+import java.time.LocalDateTime;
+
+public class CXTHelper {
+
+    private CXTHelper() {
+        // Utility class
+    }
+
+    public static ExternalTNTRequest toExternalTNTRequest(
+            ExtTrackAndTraceMapping mapping,
+            RequestEvent event,
+            RequestExtended requestExtended,
+            Request request
+    ) {
+        ExternalTNTRequest req = new ExternalTNTRequest();
+
+        /* ========= 1. Mapping fields ========= */
+        if (mapping != null) {
+            req.setBranchCode(mapping.getBranchCode());
+            req.setCountryCode(mapping.getCountryCode());
+            req.setProdCode(mapping.getProdCode());
+            req.setTnxTypeCode(mapping.getTxnTypeCode());
+            req.setSubTnxTypeCode(mapping.getSubTxnTypeCode());
+            req.setProdStatCode(mapping.getProdStatCode());
+            req.setTnxStatCode(mapping.getTnxStatCode());
+            req.setSubTnxStatCode(mapping.getSubTnxStatCode());
+            req.setBoStatusUpdate(mapping.getBoStatusUpdate());
+            req.setStatusCxt(mapping.getStatusCxt());
+        }
+
+        /* ========= 2. Event fields ========= */
+        if (event != null) {
+            req.setEventId(event.getId());
+            req.setAfr(event.getAfr());
+            req.setUmfr(event.getUmfr());
+            req.setLivr(event.getLivr());
+
+            // Dates
+            req.setEventCreationDateTime(
+                event.getSystemCreationDate() != null ? event.getSystemCreationDate() : LocalDateTime.now()
+            );
+
+            // Financial
+            req.setTnxAmt(event.getAmount());
+            req.setCurCode(event.getCurCode());
+
+            // Parties
+            req.setCounterPartyName(event.getCusName());
+            req.setCustomerId(event.getCustMstNo());
+        }
+
+        /* ========= 3. Request Extended fields ========= */
+        if (requestExtended != null) {
+            req.setConnexisRequestRefId(requestExtended.getCustomerRef());
+            req.setConnexisRequestTnxId(requestExtended.getConnexisTransactionId());
+            req.setEbCusId(requestExtended.getEbCusId());
+            req.setEbBanId(requestExtended.getEbBanId());
+        }
+
+        /* ========= 4. Request fields ========= */
+        if (request != null) {
+            // Any additional request-level fields
+            if (request.getConnexisRequestRefId() != null) {
+                req.setConnexisRequestRefId(request.getConnexisRequestRefId());
+            }
+            if (request.getConnexisRequestTnxId() != null) {
+                req.setConnexisRequestTnxId(request.getConnexisRequestTnxId());
+            }
+            if (request.getEbCusId() != null) {
+                req.setEbCusId(request.getEbCusId());
+            }
+            if (request.getEbBanId() != null) {
+                req.setEbBanId(request.getEbBanId());
+            }
+        }
+
+        return req;
+    }
+}
+------------------
+
 
 public class CXTHelper {
 
