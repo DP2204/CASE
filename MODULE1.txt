@@ -1,3 +1,75 @@
+
+@Override
+public File generateXml(ExternalTNTRequest externalTandTRequest, String xmlFilePath) {
+    log.info("Generating XML for prodCode: {} and eventId: {}", 
+             externalTandTRequest.getProdCode(), externalTandTRequest.getEventId());
+
+    IcTnxRecord icTnxRecord = new IcTnxRecord();
+
+    // Set all common mandatory fields
+    setCommonFields(icTnxRecord, externalTandTRequest);
+
+    // Set application date always if no refId
+    if (StringUtils.isBlank(externalTandTRequest.getConnexisRequestRefId())) {
+        icTnxRecord.setAppl_date(
+            DateTimeUtil.getDateInDDMMYYYY(externalTandTRequest.getEventCreationDateTime())
+        );
+
+        // 👉 Only set currency + amounts if ConnexisRequestRefId is missing
+        if (StringUtils.isNotBlank(externalTandTRequest.getCurCode())) {
+            icTnxRecord.setTnx_cur_code(externalTandTRequest.getCurCode());
+            icTnxRecord.setIc_cur_code(externalTandTRequest.getCurCode());
+        }
+
+        if (externalTandTRequest.getTnxAmt() != null) {
+            String formattedAmt = formatAmount(externalTandTRequest.getTnxAmt());
+            icTnxRecord.setTnx_amt(formattedAmt);
+            icTnxRecord.setIc_amt(formattedAmt);
+            icTnxRecord.setIc_liab_amt(formattedAmt);
+        }
+    }
+
+    // Drawer / Customer details
+    if (StringUtils.isNotBlank(externalTandTRequest.getCustomerId()) && 
+        StringUtils.isNotBlank(externalTandTRequest.getBranchCode())) {
+
+        String drawerReference = externalTandTRequest.getCustomerId();
+        String branchCode = externalTandTRequest.getBranchCode();
+
+        if (drawerReference.length() >= 5 
+            && drawerReference.substring(0, 5).equalsIgnoreCase(branchCode)) {
+            icTnxRecord.setDrawer_reference(drawerReference);
+        }
+    }
+
+    icTnxRecord.setDrawee_name(externalTandTRequest.getCounterPartyName());
+    icTnxRecord.setCompany_name(externalTandTRequest.getEbCusId());
+    icTnxRecord.setDrawer_abbv_name(externalTandTRequest.getEbBanId());
+
+    AdditionalField additionalField = new AdditionalField(
+        "mo_event_id", "string", "transaction", externalTandTRequest.getEventId()
+    );
+    icTnxRecord.setAdditionalFields(List.of(additionalField));
+
+    return generateXmlFile(externalTandTRequest.getEventId(), icTnxRecord, xmlFilePath);
+}
+
+// helper
+private String formatAmount(String amt) {
+    try {
+        double value = Double.parseDouble(amt);
+        return String.format("%.2f", value); // always 2 decimal places
+    } catch (NumberFormatException e) {
+        return amt; // fallback
+    }
+}
+
+
+
+
+----------------------------------
+
+
 package com.bnpparibas.mql.helper;
 
 import com.bnpparibas.dpw.controller.model.Request;
