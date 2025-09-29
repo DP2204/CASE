@@ -1,4 +1,57 @@
+public static ExternalTNTRequest toExternalTNTRequest(
+        ExternalTrackAndTraceMapping mapping,
+        RequestExtended request,
+        RequestEvent event) {
 
+    if (mapping == null || request == null) return null;
+
+    ExternalTNTRequest req = new ExternalTNTRequest();
+
+    // Core mapping
+    req.setBranchCode(request.getBranchCode());
+    req.setCountryCode(request.getCountryCode());
+    req.setEventId(event != null ? event.getId() : request.getEventId());
+    req.setConnexisRequestRefId(request.getConnexisRequestRefId());
+    req.setConnexisRequestTnxId(request.getConnexisRequestTnxId());
+    req.setEbCusId(request.getEbCusId());
+    req.setEbBanId(request.getEbBanId());
+
+    // Event details
+    if (event != null) {
+        req.setHfr(event.getMfr());
+        req.setUmfr(event.getUmfr());
+        req.setLivr(event.getLivr());
+        req.setEventCreationDateTime(event.getSystemCreationDate() != null 
+            ? event.getSystemCreationDate() 
+            : LocalDateTime.now());
+        req.setTnxAmt(event.getAmount());
+        req.setCurCode(event.getCurCode());
+        req.setCounterPartyName(event.getCounterPartyCountry());
+        req.setCustomerRef(event.getCustomerRef());
+    }
+
+    // Mapping codes
+    req.setTnxTypeCode(request.getTnxTypeCode() != null ? request.getTnxTypeCode() : mapping.getTnxTypeCode());
+    req.setSubTnxTypeCode(request.getSubTnxTypeCode() != null ? request.getSubTnxTypeCode() : mapping.getSubTnxTypeCode());
+    req.setProdStatCode(request.getProdStatCode() != null ? request.getProdStatCode() : mapping.getProdStatCode());
+    req.setTnxStatCode(mapping.getTnxStatCode());
+    req.setSubTnxStatCode(mapping.getStatusCxt());
+    req.setBoStatusUpdate(mapping.getStatusCxt() != null ? "Y" : "N");
+    req.setProdCode(request.getProdCode() != null ? request.getProdCode() : mapping.getProdCode());
+    req.setStatusCxt(mapping.getStatusCxt());
+
+    // Optional fields
+    req.setDocReceptionBankDate(request.getDocReceptionBankDate());
+    req.setEventPriority(request.getEventPriority());
+    req.setIncomingFilename(request.getIncomingFilename());
+    req.setTargetCurrency(request.getTargetCurrency());
+    req.setMessageTypeId(event != null ? event.getMessageTypeId() : null);
+    req.setSenderRequestNumber(event != null ? event.getSenderRequestNumber() : null);
+
+    return req;
+}
+
+-------------
 
 public static ExternalTNTRequest toExternalTNTRequest(
         ExternalTrackAndTraceMapping mapping,
