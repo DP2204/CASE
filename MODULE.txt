@@ -1,3 +1,88 @@
+
+public class CXTHelper {
+
+    private CXTHelper() {}
+
+    public static ExternalTNTRequest toExternalTNTRequest(
+            ExternalTrackAndTraceMapping mapping,
+            Request request,
+            RequestEvent event) {
+
+        if (mapping == null || request == null) return null;
+
+        ExternalTNTRequest req = new ExternalTNTRequest();
+
+        req.setBranchCode(request.getBranchCode());
+        req.setCountryCode(request.getCountryCode());
+
+        // event id
+        req.setEventId(request.getEventId() != null
+                ? request.getEventId()
+                : (event != null ? event.getId() : null));
+
+        // reference ids
+        req.setConnexisRequestRefId(
+                request.getConnexisRequestRefId() != null
+                        ? request.getConnexisRequestRefId()
+                        : (event != null ? event.getConnexisRequestRefId() : null));
+        req.setConnexisRequestTnxId(
+                request.getConnexisRequestTnxId() != null
+                        ? request.getConnexisRequestTnxId()
+                        : (event != null ? event.getConnexisRequestTnxId() : null));
+
+        // identifiers from event
+        if (event != null) {
+            req.setMfr(event.getMfr());
+            req.setUmfr(event.getUmfr());
+            req.setLivr(event.getLivr());
+        }
+
+        req.setEbBanId(request.getEbBanId());
+        req.setEbCusId(request.getEbCusId());
+
+        // mapping fallbacks
+        req.setTnxTypeCode(
+                request.getTnxTypeCode() != null ? request.getTnxTypeCode() : mapping.getTnxTypeCode());
+        req.setSubTnxTypeCode(
+                request.getSubTnxTypeCode() != null ? request.getSubTnxTypeCode() : mapping.getSubTnxTypeCode());
+        req.setProdStatCode(
+                request.getProdStatCode() != null ? request.getProdStatCode() : mapping.getProdStatCode());
+        req.setTnxStatCode(mapping.getTnxStatCode());
+
+        // derived values
+        req.setSubTnxStatCode(mapping.getStatusCxt());
+        req.setBoStatusUpdate(mapping.getStatusCxt() != null ? "Y" : "N");
+
+        req.setProdCode(
+                request.getProdCode() != null ? request.getProdCode() : mapping.getProdCode());
+
+        // creation datetime
+        LocalDateTime creationDate = (request.getConnexisRequestRefId() == null)
+                ? (event != null && event.getSystemCreationDate() != null
+                    ? event.getSystemCreationDate()
+                    : LocalDateTime.now())
+                : null;
+        req.setEventCreationDateTime(creationDate);
+
+        // amount + currency
+        if (request.getConnexisRequestRefId() == null && event != null) {
+            req.setTnxAmt(event.getAmount());
+            req.setCurCode(event.getCurCode());
+            req.setCounterPartyName(event.getCounterPartyCountry());
+        }
+
+        // status cxt straight from mapping
+        req.setStatusCxt(mapping.getStatusCxt());
+
+        return req;
+    }
+}
+
+
+
+---------------------------------------
+
+
 public class CXTHelper {
 
     private CXTHelper() {}
