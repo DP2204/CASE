@@ -1,3 +1,28 @@
+I’ll be honest — I walked into the hackathon both nervous and excited. Nervous because I had no idea what exactly we were going to build, and excited because it was our first 24 hours in the company — with good food, fun games, and of course, free Wi-Fi! 😄 But it wasn’t only about coding — the organizers even arranged games and stand-up comedy sessions, which added so much freshness and energy. What made it even more interesting was working with a completely new group of people — folks I had never met before. Soon, strangers became teammates, we divided the work, ideas started flowing, and the real hackathon spirit kicked in — creativity, caffeine, and chaos. Truly, an unforgettable experience!
+
+
+Moving from campus to corporate felt like stepping into a whole new world. In college, we chased grades and deadlines; in the corporate world, we chase results and growth. The first few weeks were a mix of excitement and confusion — new tools, new faces, and endless meetings! Back in college, we used to study only at the end — just before exams. But here, every day feels like a new exam — with new tasks, new learning, and new challenges.
+
+What really helped was how the organizers arranged various training sessions. They set a perfect roadmap that guided us from academic habits to professional skills. In campus, we focused on projects, assignments, and attendance; but in corporate, it’s about structure, ownership, and confidence — something that builds day by day. The sessions were practical, interactive, and gave us a new mindset — one that truly fits the professional world. Slowly, I realized this journey isn’t about leaving college behind; it’s about continuing to learn — just with ID cards instead of admit cards.
+
+
+
+
+My role right now is as a Full Stack Developer — working with Java and Angular. In the beginning, I was assigned a small task that involved the team’s entire tech stack. Coming from a Python background, I had to learn everything from scratch. I spent extra hours exploring, trying, failing, and learning — and that’s when I realized growth here is like climbing a mountain. And honestly, I’m still on that trek!
+
+Team learning and setting up wasn’t easy for me at first. But the environment that my team and the organization created was so warm and supportive that anyone could easily adapt and start learning. Every day brings a new step, a new view, and a new challenge. I’ve learned that learning never stops — never ever stops — it just changes direction every day. But no matter where it turns, you just keep climbing.
+
+
+
+
+This has been one of the most important parts of my journey — the constant support from our managers and mentors. They always kept us engaged and made sure no one ever felt left out, whether in the team or in the workspace. The training sessions they planned were not just helpful, but truly well-structured and interactive. Because of them, fun and work both stayed perfectly balanced.
+
+Our daily calls helped us stay on track and see how we were progressing with our tasks. What I really appreciate is how approachable they’ve always been — whether it’s a technical doubt, a project challenge, or even something personal, they’re always ready to guide us. Their support made this learning journey smoother, motivating, and full of confidence.
+
+
+++++++++++++++++++++++++
+
+
 public static ExternalTNTRequest toExternalTNTRequest(
         ExternalTrackAndTraceMapping mapping,
         RequestExtended request,
