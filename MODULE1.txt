@@ -1,3 +1,9 @@
+During my six-month internship as a Full Stack Developer at GBIT ISPL – Trade DPP, Mumbai, I worked on the Conserto application. Conserto is an EDM and Workflow Management tool that helps organize trade finance requests between two countries or regions. It manages every step of the trade lifecycle — from customer requests in Connexis Trade and SWIFT to back-office processing in iVision.
+
+We started with KT sessions to understand the project, and then I was assigned small JIRA tasks. Coming from a Python background, it wasn’t easy, but with my team’s guidance, I learned Java, Spring Boot, and Angular. Every task taught me something new. The environment was warm and encouraging — I never felt left out. This internship truly helped me grow — not just as a developer, but as a learner every single day.
+
+
+
 
 @Override
 public File generateXml(ExternalTNTRequest externalTandTRequest, String xmlFilePath) {
