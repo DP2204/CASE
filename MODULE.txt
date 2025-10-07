@@ -1,3 +1,15 @@
+During my internship at GM IT APS, I worked on the Picasso application, which was deployed on a WebLogic server. Initially, the deployment process for the WAR file was completely manual, involving multiple steps that had to be performed carefully in a specific order.
+
+The process began with accessing the WebLogic console through CyberArk for secure login. Before deploying a new WAR file, we first had to stop all the slave nodes from the server to avoid any conflicts during deployment. Once the environment was prepared, we navigated to the WebLogic Administration Console, clicked on “Lock and Edit”, and proceeded to the Deployments section. From there, we selected the Install option, uploaded the latest WAR file, and installed it as an application.
+
+After installation, it was necessary to target the deployment to the correct cluster, activate the changes, and then start all the WebLogic nodes again. Finally, we would verify if the application started successfully and was accessible. This entire manual procedure was time-consuming and prone to human errors, especially during frequent deployments.
+
+To overcome these challenges, we worked on automating the deployment process using Jenkins and Ansible. We created Ansible roles and tasks to handle steps such as stopping and starting nodes, uploading the WAR file, deploying it to the correct cluster, and verifying the deployment status. A Jenkins pipeline was then designed to orchestrate this automation — integrating with Ansible to execute tasks sequentially and ensure a smooth deployment flow.
+This automation not only reduced deployment time significantly but also minimized manual intervention and errors, making the overall process more reliable and efficient. Through this project, I gained hands-on experience with DevOps tools like Jenkins and Ansible, and also developed a strong understanding of WebLogic server management and CI/CD pipeline implementation.
+
+
+-----------------------
+
 During my internship, my primary contribution was on the Track and Trace functionality of the Conserto application — a feature designed to provide visibility and traceability of trade events across different stages. I worked on enhancing the automation logic, ensuring that each event and its status could be accurately tracked within the workflow.
 
 To achieve this, I implemented the Auto IS mapping logic, which automatically links internal statuses between systems, reducing manual intervention and improving data consistency. This involved understanding complex trade event lifecycles, working closely with both the backend (Spring Boot) and frontend (Angular), and ensuring seamless integration within Conserto’s existing workflow.
