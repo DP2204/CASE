@@ -1,4 +1,92 @@
-During my six-month internship as a Full Stack Developer at GBIT ISPL – Trade DPP, Mumbai, I worked on the Conserto application. Conserto is an EDM and Workflow Management tool that helps organize trade finance requests between two countries or regions. It manages every step of the trade lifecycle — from customer requests in Connexis Trade and SWIFT to back-office processing in iVision.
+DGood morning everyone,
+I’m [Your Name], currently working as a Full Stack Developer Intern with GBIT ISPL – Trade DPP, Mumbai. Over the last six months, I’ve been part of a very exciting project called Conserto, which has been a huge learning experience — both technically and personally.
+
+So, what exactly is Conserto?
+Conserto is an internal application developed for Trade Finance operations at BNP Paribas. In simple words, it helps organize and manage all customer trade requests between two countries or regions.
+
+The Conserto application works across both Middle Office and Back Office operations — meaning it supports everything from the moment a trade request is received, till it is completely processed and recorded.
+
+It is both an EDM — Electronic Document Management tool, and a Workflow Management system.
+
+Think of it like a smart engine that automates and tracks the journey of a trade event — such as a Letter of Credit or Collection — right from creation to completion. Every document, every approval, and every correction is managed inside Conserto.
+
+
+---
+
+Key Functionalities of Conserto:
+
+1️⃣ Queue Management —
+Conserto automatically organizes pending requests, identifies priorities, and shows them in a “To-do list.” It helps users focus on what’s important first.
+
+2️⃣ Workflow Handling —
+Each trade event passes through multiple validation levels — like 2-eye, 4-eye, or 6-eye checks — depending on business rules. This ensures accuracy, compliance, and traceability.
+
+3️⃣ Roles and Permissions —
+Every user has a specific role:
+
+Producers from the Middle Office initiate and validate transactions.
+
+Processors in the Back Office handle the data entry and final processing.
+
+The Center of Excellence team manages complex transactions.
+
+And Investigators verify document attachments and handle claims.
+
+
+4️⃣ Transverse Features —
+Conserto even allows communication between users, setting reminders, alerts, and managing throwbacks or reviews. It maintains a complete audit trail for every transaction, ensuring full transparency.
+
+
+---
+
+Now, coming to my contribution and learning:
+
+In the initial weeks, we had detailed KT sessions to understand how the application actually fits into BNP Paribas’s Trade ecosystem — how customer requests flow from Connexis Trade or SWIFT into Conserto, and then to iVision, where they’re processed and completed.
+
+After the knowledge sessions, I was assigned a few JIRA tasks related to the Conserto tech stack, which includes Java, Spring Boot, Angular, and database handling.
+
+Coming from a Python background, this was a completely new world for me. I still remember my first few days — debugging something simple felt like solving a mystery. 😅
+
+But slowly, with constant guidance from my mentors and teammates, I began to understand the structure — how every API, workflow, and front-end component plays its part.
+
+I started working on small enhancements and bug fixes in modules like queue visualization and workflow tracking, and also explored how exceptions are handled during document validation.
+
+What made this experience even better was how well the team supported me. The environment they created was incredibly warm — I could reach out anytime with questions, whether technical or functional. Daily stand-ups and review calls helped me stay on track and understand how my work contributed to the bigger picture.
+
+
+---
+
+What I truly learned from this project is that real-world development is not just about writing code — it’s about understanding the business need behind every line of that code.
+
+In college, we just built projects to submit. But here, I learned how each feature goes through multiple layers — development, validation, review, and deployment — all with real-time coordination between teams.
+
+Conserto also taught me about collaboration — how different roles, from Middle Office to Back Office, work together in a single workflow system to deliver accurate results for clients across the globe.
+
+
+---
+
+If I describe my journey in one line, I’d say it’s been like climbing a mountain — tough at the start, but every step brings a new view.
+Each task, each review, and even each bug helped me learn something new.
+
+The constant support from my managers and mentors played a huge role — they never let me feel left out. They balanced fun and learning perfectly, with engaging training sessions and open communication.
+
+
+---
+
+And if I look back, from the hackathon experience to understanding Conserto’s workflows, from struggling with backend logic to finally seeing things work on production — it’s been a complete transformation.
+
+This internship didn’t just make me a better developer — it taught me ownership, teamwork, and the joy of learning something new every single day.
+
+
+---
+
+To conclude, I’d like to say that Conserto wasn’t just a project for me — it was a journey of discovery, patience, and growth. I’m truly grateful to my team, mentors, and the organization for creating an environment where learning never stops.
+
+Thank you! 🙏
+
+-----------------------------------66666-
+
+during my six-month internship as a Full Stack Developer at GBIT ISPL – Trade DPP, Mumbai, I worked on the Conserto application. Conserto is an EDM and Workflow Management tool that helps organize trade finance requests between two countries or regions. It manages every step of the trade lifecycle — from customer requests in Connexis Trade and SWIFT to back-office processing in iVision.
 
 We started with KT sessions to understand the project, and then I was assigned small JIRA tasks. Coming from a Python background, it wasn’t easy, but with my team’s guidance, I learned Java, Spring Boot, and Angular. Every task taught me something new. The environment was warm and encouraging — I never felt left out. This internship truly helped me grow — not just as a developer, but as a learner every single day.
 
