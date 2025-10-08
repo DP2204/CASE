@@ -1,3 +1,104 @@
+Good afternoon everyone,
+I’m Dhruv Panchal, and today I’d like to share my 6-month journey with BNP Paribas — a journey that started with curiosity, grew through collaboration, and shaped into something I’m truly proud of: my work on the Track and Trace functionality within the Conserto Application.
+
+When I joined, I came across Conserto, an application that has already been live for around three years. It’s a core part of Trade Finance, designed to organize and streamline customer requests across both Middle Office and Back Office operations through iVision — or as we call it, IGS (iVision Global Services).
+
+Conserto isn’t just another app — it’s a Workflow and Electronic Document Management system that ensures every trade transaction, like Letters of Credit and Collections, moves smoothly through its lifecycle. It integrates with multiple microservices — like BPM (Camunda) for workflow orchestration, DocStore for managing documents, and Referential Data Service for real-time information retrieval.
+
+
+---
+
+🌱 The Beginning – My Role and Challenge
+
+When I joined, the Track & Trace feature had just started taking shape. It was an exciting opportunity because I got to work from the very beginning of this module — right from understanding the business requirement to implementing and testing it technically.
+
+This module’s goal was to map and trace trade events throughout their journey — connecting systems like Connexis, SWIFT, and iVision, and ensuring both the customer and internal teams could see every step of a transaction in real time.
+
+
+---
+
+⚙️ My Technical Contribution
+
+Now coming to my main contribution — I worked on the Track & Trace Mapping module and related functionalities.
+
+This involved:
+
+Designing and implementing the ExtTrackAndTraceMapping API — which dynamically retrieves and filters trade data using Spring Boot, JPA Specifications, and a custom RSQL parser for flexible querying.
+
+Implementing priority-based logic with Comparator and PriorityQueue to ensure the most relevant mapping record is always selected based on business rules.
+
+Adding wildcard and null-safe filtering to handle real-world data inconsistencies.
+
+
+I also integrated it with Referential data services and made sure the API handled all five mandatory parameters and four optional ones gracefully — maintaining both performance and accuracy.
+
+
+---
+
+📦 The Courier Partner Enhancement
+
+Later, I contributed to the Courier Partner module, which allowed users to input and track courier details — such as the DHL tracker number or courier reference — directly from the Conserto interface.
+
+Here, I worked on both the front-end interaction logic and back-end API integration, ensuring proper validation rules (like max 25 characters, format restrictions, and permission control).
+This feature improved transparency between trade operations and logistics teams — a small but powerful step towards a fully connected workflow.
+
+
+---
+
+💡 Automation and Deployment
+
+One of my biggest learnings came from the automation and deployment side.
+After completing development, I was responsible for testing the service in Jenkins — validating build success, ensuring test cases passed, and confirming data flow through all dependent microservices.
+
+Once validated, we moved to UAT and production deployment, collaborating with the SRE (Site Reliability Engineering) team to ensure stability and rollback safety.
+This hands-on exposure taught me the importance of CI/CD pipelines, error monitoring, and log tracking — crucial for any live banking system.
+
+
+---
+
+🧠 Tech Stack and Tools
+
+Throughout this project, I worked with:
+
+Java & Spring Boot for backend API development
+
+JPA & Specifications for database querying
+
+RSQL parser for dynamic filtering
+
+Swagger & OpenAPI for interface contracts
+
+Jenkins for CI/CD integration
+
+Git & Bitbucket for version control
+
+SQL & Postman for testing
+
+
+
+---
+
+🚀 Reflection and Future Vision
+
+Looking back, I feel fortunate that I joined when Track & Trace was still at its foundation stage — it gave me the chance to build something from scratch, understand its architecture, and see how it fits into a global-scale application like Conserto.
+
+Working with a live production system that supports multiple regions — FRB, FORTIS, CBE, MEA, and APAC — taught me how even a single API or a validation rule can impact users across continents.
+
+As I look forward, I aim to take more ownership of independent modules, continue contributing to Trade Finance digitalization, and apply the same passion and precision that shaped my first six months here.
+
+
+---
+
+✨ Closing
+
+In short, my journey was not just about coding — it was about connecting business needs with technology, about ensuring every small enhancement improves someone’s workflow somewhere in the world.
+
+Thank you BNP Paribas, for giving me this opportunity to grow, learn, and contribute to something that truly matters.
+
+
+
+------------------------------------------
+
 During my internship at GM IT APS, I worked on the Picasso application, which was deployed on a WebLogic server. Initially, the deployment process for the WAR file was completely manual, involving multiple steps that had to be performed carefully in a specific order.
 
 The process began with accessing the WebLogic console through CyberArk for secure login. Before deploying a new WAR file, we first had to stop all the slave nodes from the server to avoid any conflicts during deployment. Once the environment was prepared, we navigated to the WebLogic Administration Console, clicked on “Lock and Edit”, and proceeded to the Deployments section. From there, we selected the Install option, uploaded the latest WAR file, and installed it as an application.
