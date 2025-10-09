@@ -1,4 +1,86 @@
 Good afternoon everyone,
+I’m Dhruv Panchal, a developer from the GBIT ISPL Trade – DPP Conserto team, Mumbai.
+Over the past six months, I’ve been fortunate to contribute to one of the key projects within Trade Finance — the Conserto application.
+
+
+---
+
+🏗️ Project Overview (≈1–1.5 min)
+
+Conserto is an Electronic Document Management and Workflow Management tool that connects the Middle Office and Back Office teams, handling customer trade requests like Letters of Credit and Collections.
+
+It integrates several core microservices —
+
+Camunda BPM for workflow orchestration,
+
+DocStore for document and annotation management, and
+
+Referential Data Service for real-time data retrieval.
+
+
+When I joined, Conserto was already a mature, live product — used globally for over three years.
+That’s exactly when a new and exciting initiative began — the Track & Trace feature, aimed at improving the visibility of trade events throughout their entire lifecycle.
+
+And that’s where my journey began — I got the opportunity to work on this module right from scratch.
+
+
+---
+
+💻 My Contribution (≈2–2.5 min)
+
+My major contribution was building the Track & Trace Mapping module, which forms the backbone of this feature.
+I developed the backend logic using Java, Spring Boot, and JPA Specifications, integrating with PostgreSQL and OpenAPI.
+
+The goal was to enable intelligent mapping between trade events — automating how transactions flow between Connexis and iVision.
+
+Technically, I implemented a custom RSQL-based filtering system, allowing users to query trade data dynamically using flexible parameters.
+I also used a PriorityQueue and Comparator-based logic to ensure that when multiple records matched, the system would automatically select the most relevant mapping — based on predefined business rules.
+
+Additionally, I implemented wildcard and null-safe handling, ensuring no request ever failed because of partial or incomplete data.
+This made the API far more resilient and business-friendly.
+
+Once my API logic was stable, I was responsible for testing and CI/CD deployment — working closely with the SRE team using Jenkins to validate builds, monitor logs, and ensure smooth production rollout.
+I also prepared unit tests to maintain stability and traceability in future enhancements.
+
+But my contribution didn’t stop at the backend.
+I was also involved in enhancing the frontend experience for the Courier Partner feature, a new screen introduced under Track & Trace.
+
+Here, I worked on the Angular-based interface, which allowed users to enter and track Courier Partner and Waybill numbers (like DHL references).
+I integrated backend APIs with frontend form controls, handled validation logic, and ensured role-based access permissions were respected.
+It was a great experience seeing how backend and frontend connect to deliver a complete user journey.
+
+Together, these contributions made the Track & Trace module more interactive, automated, and reliable — improving operational transparency for teams across multiple regions.
+
+Tech Stack Used:
+Java | Spring Boot | JPA Specifications | RSQL | SQL | OpenAPI | Angular | Jenkins | Git | Bitbucket
+
+
+---
+
+🌱 Result & Reflection (≈40 sec)
+
+The Track & Trace enhancements helped automate complex workflows and gave our teams clear visibility over trade transactions — saving time and reducing manual dependency.
+For me, the best moment was seeing something I built go live and actually make life easier for end users — that’s a different kind of happiness!
+
+
+---
+
+🙌 Conclusion & Gratitude (≈1 min)
+
+Looking back, I realize this internship was not just about writing code — it was about learning how things connect: technology, process, and people.
+
+We all came from different mindsets and technical backgrounds, but our mentors and managers created an environment that made learning natural.
+They were always approachable — whether it was a technical blocker or a design doubt — and ensured we were never left out.
+Their constant guidance, daily sync calls, and feedback helped me grow from a learner into a more confident developer.
+
+This journey taught me that in corporate life, learning never stops — it just changes direction every day.
+And I’m still climbing that mountain, one line of code at a time.
+“Thank you all for guiding, supporting, and helping me turn every challenge into a chance to learn something new.
+
+
+
+
+Good afternoon everyone,
 I’m Dhruv Panchal, and today I’d like to share my 6-month journey with BNP Paribas — a journey that started with curiosity, grew through collaboration, and shaped into something I’m truly proud of: my work on the Track and Trace functionality within the Conserto Application.
 
 When I joined, I came across Conserto, an application that has already been live for around three years. It’s a core part of Trade Finance, designed to organize and streamline customer requests across both Middle Office and Back Office operations through iVision — or as we call it, IGS (iVision Global Services).
