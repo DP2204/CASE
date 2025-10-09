@@ -1,3 +1,7 @@
+Another major part of my contribution was the XML generation module, which automatically creates structured XML files summarizing each trade event.
+This XML data is then transmitted to other systems, enabling seamless synchronization and traceability between Conserto and external applications like iVision.
+In simple terms, it helped bridge the gap between systems — making the Track & Trace process faster, more accurate, and fully automated.
+
 Good afternoon everyone,
 I’m Dhruv Panchal, a developer from the GBIT ISPL Trade – DPP Conserto team, Mumbai.
 Over the past six months, I’ve been fortunate to contribute to one of the key projects within Trade Finance — the Conserto application.
