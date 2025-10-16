@@ -1,3 +1,92 @@
+import java.time.LocalDateTime;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
+
+public class CXTHelper {
+
+    private CXTHelper() {}
+
+    public static ExternalTNTRequest toExternalTNTRequest(
+            ExternalTrackAndTraceMapping mapping,
+            RequestExtended request,
+            RequestEvent event) {
+
+        if (mapping == null || request == null) {
+            return null;
+        }
+
+        ExternalTNTRequest req = new ExternalTNTRequest();
+
+        // Basic identifiers
+        req.setBranchCode(request.getBranchCode());
+        req.setCountryCode(request.getCountryCode());
+        req.setEventId(ObjectUtils.defaultIfNull(
+                Optional.ofNullable(event).map(RequestEvent::getId).orElse(null),
+                request.getEventId())
+        );
+
+        // Connexis reference fields
+        req.setConnexisRequestRefId(request.getConnexisRequestRefId());
+        req.setConnexisRequestTnxId(request.getConnexisRequestTnxId());
+
+        // EB details
+        req.setEbCusId(request.getEbCusId());
+        req.setEbBanId(request.getEbBanId());
+
+        // Event-related fields
+        if (event != null) {
+            req.setMfr(event.getMfr());
+            req.setUmfr(event.getUmfr());
+            req.setLivr(event.getLivr());
+            req.setEventCreationDateTime(
+                    ObjectUtils.defaultIfNull(event.getSystemCreationDate(), LocalDateTime.now())
+            );
+            req.setTnxAmt(event.getAmount());
+            req.setCurCode(event.getCurCode());
+            req.setCounterPartyName(event.getCounterPartyCountry());
+            req.setCustomerId(event.getCustomerRef());
+        }
+
+        // Mapping-related fields (fallback if not from request)
+        req.setTnxTypeCode(StringUtils.defaultIfBlank(
+                request.getTnxTypeCode(), mapping.getTnxTypeCode())
+        );
+
+        req.setSubTnxTypeCode(StringUtils.defaultIfBlank(
+                request.getSubTnxTypeCode(), mapping.getSubTnxTypeCode())
+        );
+
+        req.setProdStatCode(StringUtils.defaultIfBlank(
+                request.getProdStatCode(), mapping.getProdStatCode())
+        );
+
+        req.setTnxStatCode(StringUtils.defaultIfBlank(
+                mapping.getTnxStatCode(), null)
+        );
+
+        req.setSubTnxStatCode(StringUtils.defaultIfBlank(
+                mapping.getStatusCxt(), null)
+        );
+
+        req.setBoStatusUpdate(StringUtils.defaultIfBlank(
+                mapping.getBoStatusUpdate(), "")
+        );
+
+        req.setProdCode(StringUtils.defaultIfBlank(
+                request.getProdCode(), mapping.getProdCode())
+        );
+
+        req.setStatusCxt(StringUtils.defaultIfBlank(
+                mapping.getStatusCxt(), null)
+        );
+
+        return req;
+    }
+}
+
+++++++++
+
 Another major part of my contribution was the XML generation module, which automatically creates structured XML files summarizing each trade event.
 This XML data is then transmitted to other systems, enabling seamless synchronization and traceability between Conserto and external applications like iVision.
 In simple terms, it helped bridge the gap between systems — making the Track & Trace process faster, more accurate, and fully automated.
