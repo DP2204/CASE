@@ -1,3 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Application Access Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fb;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        table {
+            width: 85%;
+            margin: 25px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        th, td {
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f3f3f3;
+        }
+    </style>
+</head>
+<body>
+    <h2>Application Access Summary</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Application Name</th>
+                <th>Check Type</th>
+                <th>Status</th>
+                <th>Check Type</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {# ---------- SONARQUBE ---------- #}
+            {% if sonarVars and sonarVars.main_url %}
+            <tr style="height:32.0pt;">
+                <td rowspan="2">SonarQube</td>
+
+                <td>CLI access</td>
+                <td style="color: {{ cli_status[1] }}">{{ cli_status[0] }}</td>
+
+                <td>UI access</td>
+                <td style="color: {{ url_open_status[1] }}">{{ url_open_status[0] }}</td>
+            </tr>
+            {% endif %}
+
+            {# ---------- ARTIFACTORY ---------- #}
+            {% for instance, url in artifactory_urls.items() %}
+            <tr style="height:32.0pt;">
+                <td rowspan="2">Artifactory {{ url }}</td>
+
+                <td>CLI access</td>
+                <td style="color: {{ artifactory_status_colour[instance]['cli'] }}">
+                    {{ artifactory_check_result[instance]['cliresponse'] }}
+                </td>
+
+                <td>UI access</td>
+                <td style="color: {{ artifactory_status_colour[instance]['ui'] }}">
+                    {{ artifactory_check_result[instance]['uilogin'] }}
+                </td>
+            </tr>
+            {% endfor %}
+
+            {# ---------- BITBUCKET (if you have) ---------- #}
+            {% if bitbucket_status %}
+            <tr style="height:32.0pt;">
+                <td rowspan="2">Bitbucket</td>
+
+                <td>CLI access</td>
+                <td style="color: {{ bitbucket_status['cli'][1] }}">
+                    {{ bitbucket_status['cli'][0] }}
+                </td>
+
+                <td>UI access</td>
+                <td style="color: {{ bitbucket_status['ui'][1] }}">
+                    {{ bitbucket_status['ui'][0] }}
+                </td>
+            </tr>
+            {% endif %}
+
+        </tbody>
+    </table>
+</body>
+</html>
+
+
+-------------------
+
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
