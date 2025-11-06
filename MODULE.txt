@@ -1,3 +1,18 @@
+EventEntity findTopByMfrOrderBySystemCreationDateDesc(String mfr);
+
+@Autowired
+private EventRepository eventRepository;
+
+public String getLatestConnexisRequestRefId(String mfr) {
+    EventEntity latestEvent = eventRepository.findTopByMfrOrderBySystemCreationDateDesc(mfr);
+    return latestEvent != null ? latestEvent.getConnexisRequestRefId() : null;
+}
+
+
+
+
+
+
 @Query("SELECT e.connexisRequestRefId FROM EventEntity e " +
        "WHERE e.mfr = :mfr " +
        "ORDER BY e.systemCreationDate DESC")
