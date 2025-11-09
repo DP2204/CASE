@@ -1,3 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Bootstrap 5 CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f8f9fa;
+      overflow-x: hidden;
+    }
+    .sidebar {
+      height: 100vh;
+      background-color: #ffffff;
+      border-right: 1px solid #dee2e6;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+    .sidebar-header {
+      background-color: #198754;
+      color: #fff;
+      padding: 1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+    .sidebar a {
+      display: block;
+      padding: 10px 20px;
+      color: #212529;
+      text-decoration: none;
+    }
+    .sidebar a:hover {
+      background-color: #e9ecef;
+    }
+    .sidebar .dropdown-toggle::after {
+      float: right;
+      margin-top: 6px;
+    }
+    .content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+    .toggle-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1100;
+    }
+    @media (max-width: 992px) {
+      .sidebar {
+        left: -250px;
+      }
+      .sidebar.active {
+        left: 0;
+      }
+      .content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <i class="fa fa-bars me-2"></i> Menu
+    </div>
+    <a href="#">Home</a>
+    <a class="dropdown-toggle" data-bs-toggle="collapse" href="#leaveMenu" role="button">Leave</a>
+    <div class="collapse ps-3" id="leaveMenu">
+      <a href="#">Apply Leave</a>
+      <a href="#">Leave Balance</a>
+    </div>
+
+    <a class="dropdown-toggle" data-bs-toggle="collapse" href="#remoteMenu" role="button">Remote Working</a>
+    <div class="collapse ps-3" id="remoteMenu">
+      <a href="#">Request Remote Work</a>
+      <a href="#">View Status</a>
+    </div>
+
+    <a class="dropdown-toggle" data-bs-toggle="collapse" href="#reportMenu" role="button">Leave Reports</a>
+    <div class="collapse ps-3" id="reportMenu">
+      <a href="#">Monthly Report</a>
+      <a href="#">Yearly Report</a>
+    </div>
+
+    <a href="#">Allowance</a>
+    <a href="#">Exit Process</a>
+    <a href="#">Confirmation</a>
+    <a href="#">Women Night Shift</a>
+    <a href="#">AskHR Helpdesk</a>
+  </div>
+
+  <!-- Toggle button -->
+  <button class="btn btn-success toggle-btn" id="toggleBtn"><i class="fa fa-bars"></i></button>
+
+  <!-- Main content -->
+  <div class="content">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+  <script>
+    $('#toggleBtn').on('click', function () {
+      $('#sidebar').toggleClass('active');
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3 class="text-success mb-3">Dashboard</h3>
+  <p>Welcome to your HR Portal. Use the sidebar to navigate to different sections such as Leave, Remote Working, and Reports.</p>
+
+  <table id="example" class="table table-striped" style="width:100%">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Created Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Personal Leave</td>
+        <td>Leave for medical or personal reasons</td>
+        <td>2025-11-09</td>
+        <td><button class="btn btn-sm btn-success"><i class="fa fa-edit"></i></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+
+
+
+
+----------------
+
+
 EventEntity findTopByMfrOrderBySystemCreationDateDesc(String mfr);
 
 @Autowired
