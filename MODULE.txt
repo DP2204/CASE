@@ -1,3 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="text-success mb-3">Dashboard</h3>
+  <p>Welcome to your HR Portal. Use the sidebar to navigate to different sections such as Leave, Remote Working, and Reports.</p>
+  <div class="card p-4 shadow-sm">
+    <h5>Overview</h5>
+    <p>Here you can access all your HR-related tools and resources.</p>
+  </div>
+</div>
+{% endblock %}
+
+-------------------------------------
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}HR Portal{% endblock %}</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css"
+  />
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f8f9fa;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      height: 100vh;
+      background-color: #ffffff;
+      border-right: 1px solid #dee2e6;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .sidebar-header {
+      background-color: #198754;
+      color: #fff;
+      padding: 1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 10px 20px;
+      color: #212529;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: #e9ecef;
+    }
+
+    .sidebar .dropdown-toggle::after {
+      float: right;
+      margin-top: 6px;
+    }
+
+    /* Main content */
+    .content {
+      margin-left: 250px; /* <-- this keeps content on the right side */
+      padding: 30px;
+      transition: all 0.3s ease;
+    }
+
+    /* Toggle button for mobile */
+    .toggle-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1100;
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        left: -250px;
+      }
+
+      .sidebar.active {
+        left: 0;
+      }
+
+      .content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <i class="fa fa-bars me-2"></i> Menu
+    </div>
+
+    <a href="{{ url_for('home') }}">Home</a>
+
+    <a class="dropdown-toggle" data-bs-toggle="collapse" href="#leaveMenu" role="button">Leave</a>
+    <div class="collapse ps-3" id="leaveMenu">
+      <a href="#">Apply Leave</a>
+      <a href="#">Leave Balance</a>
+    </div>
+
+    <a class="dropdown-toggle" data-bs-toggle="collapse" href="#remoteMenu" role="button">Remote Working</a>
+    <div class="collapse ps-3" id="remoteMenu">
+      <a href="#">Request Remote Work</a>
+      <a href="#">View Status</a>
+    </div>
+
+    <a class="dropdown-toggle" data-bs-toggle="collapse" href="#reportMenu" role="button">Leave Reports</a>
+    <div class="collapse ps-3" id="reportMenu">
+      <a href="#">Monthly Report</a>
+      <a href="#">Yearly Report</a>
+    </div>
+
+    <a href="#">Allowance</a>
+    <a href="#">Exit Process</a>
+    <a href="#">Confirmation</a>
+    <a href="#">Women Night Shift</a>
+    <a href="#">AskHR Helpdesk</a>
+  </div>
+
+  <!-- Toggle Button -->
+  <button class="btn btn-success toggle-btn" id="toggleBtn">
+    <i class="fa fa-bars"></i>
+  </button>
+
+  <!-- Content Section -->
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- JS -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script>
+    $('#toggleBtn').on('click', function () {
+      $('#sidebar').toggleClass('active');
+    });
+  </script>
+</body>
+</html>
+
+++++++++++++++++++++++++++++
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
