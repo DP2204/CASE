@@ -1,4 +1,47 @@
 {% extends "base.html" %}
+{% block content %}
+
+<div style="padding: 20px;">
+
+    <h2 style="color:#1E8C3A; margin-bottom: 20px;">SOD Checks</h2>
+
+    <!-- Date Picker Form -->
+    <form action="/sod-checks" method="GET" 
+          style="background:#f4f4f4; padding:20px; border-radius:10px; width:380px;
+                 box-shadow:0 0 5px rgba(0,0,0,0.1); margin-bottom:20px;">
+
+        <label style="font-weight:bold;">Select Date:</label>
+        <input type="date" name="date" required value="{{ selected_date }}"
+               style="width:100%; padding:8px; margin:10px 0;
+                      border-radius:6px; border:1px solid #ccc;">
+
+        <button type="submit"
+                style="width:100%; background:#1E8C3A; color:white; padding:10px;
+                       border:none; border-radius:6px; cursor:pointer; font-size:16px;">
+            Load Data
+        </button>
+    </form>
+
+    <h3 style="color:#1E8C3A;">Data for {{ selected_date }}</h3>
+
+    <!-- ⭐ Paste your existing table here -->
+    {% if sod_data %}
+        {{ sod_data|safe }}
+    {% else %}
+        <p style="color:red;">No data found for this date.</p>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+
+
+---------------------------------
+
+
+{% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
 
