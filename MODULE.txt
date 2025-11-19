@@ -5,6 +5,67 @@
 
     <h2 style="color:#1E8C3A; margin-bottom: 20px;">SOD Checks</h2>
 
+    <!-- Date + Time Picker Form -->
+    <form action="/sod_checks" method="POST"
+          style="background:#f4f4f4; padding:20px; border-radius:10px; width:380px;
+                 box-shadow:0 0 5px rgba(0,0,0,0.1); margin-bottom:20px;">
+
+        <label style="font-weight:bold;">Select Date:</label>
+        <input type="date" name="selected_date" required value="{{ selected_date }}"
+               style="width:100%; padding:8px; margin:10px 0;
+                      border-radius:6px; border:1px solid #ccc;">
+
+        <label style="font-weight:bold;">Select Time:</label>
+        <select name="selected_time" required
+                style="width:100%; padding:8px; margin:10px 0;
+                       border-radius:6px; border:1px solid #ccc;">
+            
+            {% if available_times %}
+                {% for t in available_times %}
+                    <option value="{{ t }}" {% if t == selected_time %}selected{% endif %}>
+                        {{ t }}
+                    </option>
+                {% endfor %}
+            {% else %}
+                <option>No times available</option>
+            {% endif %}
+        </select>
+
+        <button type="submit"
+                style="width:100%; background:#1E8C3A; color:white; padding:10px;
+                       border:none; border-radius:6px; cursor:pointer; font-size:16px;">
+            Load Data
+        </button>
+    </form>
+
+    <h3 style="color:#1E8C3A;">
+        Data for {{ selected_date }} {{ selected_time }}
+    </h3>
+
+    {% if report_html %}
+        <!-- ⭐ IFRAME FOR EMBEDDING HTML REPORT ⭐ -->
+        <iframe 
+            srcdoc="{{ report_html|safe }}" 
+            style="width:100%; height:1000px; border:1px solid #ccc; border-radius:6px;">
+        </iframe>
+    {% else %}
+        <p style="color:red;">No report found for this date/time.</p>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+______________
+
+{% extends "base.html" %}
+{% block content %}
+
+<div style="padding: 20px;">
+
+    <h2 style="color:#1E8C3A; margin-bottom: 20px;">SOD Checks</h2>
+
     <!-- Date Picker Form -->
     <form action="/sod-checks" method="GET" 
           style="background:#f4f4f4; padding:20px; border-radius:10px; width:380px;
