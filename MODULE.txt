@@ -1,3 +1,118 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .sod-container {
+        padding: 20px;
+        margin-left: 260px; /* space for sidebar */
+        transition: margin-left 0.3s;
+    }
+
+    .sidebar-collapsed .sod-container {
+        margin-left: 80px;
+    }
+
+    .form-box {
+        background: #f4f4f4;
+        padding: 20px;
+        border-radius: 10px;
+        width: 380px;
+        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .form-box label {
+        font-weight: bold;
+    }
+
+    .form-box input,
+    .form-box select {
+        width: 100%;
+        padding: 8px;
+        margin: 10px 0;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .form-box button {
+        width: 100%;
+        background: #1E8C3A;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+</style>
+
+
+<!-- MAIN PAGE CONTENT -->
+<div class="sod-container" id="main-content">
+
+    <h2 style="color:#1E8C3A; margin-bottom: 20px;">SOD Checks</h2>
+
+    <!-- FORM START -->
+    <form action="/sod_checks" method="POST" class="form-box">
+
+        <!-- ENVIRONMENT DROPDOWN -->
+        <label>Environment:</label>
+        <select name="environment" required>
+            <option value="">Select Environment</option>
+            <option value="STG" {% if environment == 'STG' %}selected{% endif %}>STG</option>
+            <option value="PRD" {% if environment == 'PRD' %}selected{% endif %}>PRD</option>
+        </select>
+
+        <!-- DATE PICKER -->
+        <label>Select Date:</label>
+        <input type="date" name="selected_date" required value="{{ selected_date }}">
+
+        <!-- TIME DROPDOWN -->
+        <label>Select Time:</label>
+        <select name="selected_time" required>
+            {% if available_times %}
+                {% for t in available_times %}
+                    <option value="{{ t }}" {% if t == selected_time %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            {% else %}
+                <option value="">No Times Available</option>
+            {% endif %}
+        </select>
+
+        <button type="submit">Load Report</button>
+    </form>
+
+    <!-- REPORT HEADING -->
+    <h3 style="color:#1E8C3A;">
+        Data for {{ selected_date }}
+        {% if selected_time %} at {{ selected_time }} {% endif %}
+        {% if environment %} [{{ environment }}] {% endif %}
+    </h3>
+
+    <!-- REPORT IFRAME -->
+    {% if report_url %}
+    <iframe
+        src="{{ report_url }}"
+        style="width:100%; height:900px; border:1px solid #ccc; border-radius:6px;">
+    </iframe>
+    {% else %}
+        <p style="color:red;">No report found.</p>
+    {% endif %}
+
+</div>
+
+<!-- SIDEBAR TOGGLE JS -->
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const content = document.getElementById("main-content");
+        sidebar.classList.toggle("collapsed");
+        content.classList.toggle("sidebar-collapsed");
+    }
+</script>
+
+{% endblock %}
+jjjjjjj
 <!DOCTYPE html>
 <html>
 <head>
