@@ -1,4 +1,5 @@
-{% extends "base.html" %}
+
+      {% extends "base.html" %}
 {% block content %}
 
 <div class="page-container">
@@ -27,6 +28,88 @@
             <select name="selected_time" class="input-box" required>
                 {% if available_times %}
                     {% for t in available_times %}
+                        <option value="{{ t }}" {% if selected_time == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                {% else %}
+                    <option>No Times Available</option>
+                {% endif %}
+            </select>
+
+            <button type="submit" class="submit-btn">Load Report</button>
+        </form>
+    </div>
+
+    <!-- REPORT TITLE -->
+    <h3 class="report-title">
+        Data for {{ selected_date }} 
+        {% if selected_time %} at {{ selected_time }} {% endif %}
+        {% if environment %} ({{ environment }}) {% endif %}
+    </h3>
+
+    <!-- IFRAME (STATIC for Testing) -->
+    {% if report_url %}
+    <iframe src="{{ report_url }}" class="report-frame"></iframe>
+    {% endif %}
+
+</div>
+
+<style>
+.page-container {
+    padding: 30px;
+    margin-left: 260px; /* space for sidebar */
+}
+
+.title {
+    color: #1E8C3A;
+    margin-bottom: 20px;
+}
+
+.form-card {
+    width: 420px;
+    background: #f4f4f4;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.label {
+    font-weight: bold;
+}
+
+.input-box {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.submit-btn {
+    width: 100%;
+    background: #1E8C3A;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.report-title {
+    margin-top: 20px;
+    color: #1E8C3A;
+}
+
+.report-frame {
+    width: 100%;
+    height: 800px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+</style>
+
+{% endblock %}
+jjjjjjjjj         
                         <option value="{{ t }}" {% if selected_time == t %}selected{% endif %}>{{ t }}</option>
                     {% endfor %}
                 {% else %}
