@@ -1,3 +1,60 @@
+if (createdRequest != null && createdRequest.getEvent() != null) {
+
+    eventId = createdRequest.getEvent().getId();
+
+    // -------------------------
+    // FRONTEND CONDITION IN BACKEND
+    // -------------------------
+    String cxtStatus = request.getCxtTrackAndTraceStatus();
+    String connexisTnxId = Optional.ofNullable(createdRequest.getEvent().getConnexisRequestTnxId())
+            .orElse(request.getConnexisRequestTnxId());
+
+    String isUpdate = Optional.ofNullable(createdRequest.getEvent().getIsUpdate())
+            .orElse("No");
+
+    String ebCusFlag = request.getEbCusFlag();
+
+    boolean blockXml =
+            (FILE_PUBLISH_STATUS.equals(cxtStatus) && StringUtils.isBlank(connexisTnxId))
+                    || IS_UPDATE_FLAG.equals(isUpdate)
+                    || ALLOWED_EB_CUS.equals(ebCusFlag);
+
+    if (blockXml) {
+        log.info("[CXT] XML generation SKIPPED due to business rule check.");
+        return; // do NOT continue
+    }
+
+    // -------------------------
+    // AUTO-RSQL – NO MANUAL QUERY
+    // -------------------------
+    Map<String, Object> filters = new HashMap<>();
+    filters.put("branchCode", connexisData.getBranchCode());
+    filters.put("countryCode", connexisData.getCountryCode());
+    filters.put("prodCode", connexisData.getProdCode());
+
+    List<ExternalTrackAndTraceMapping> mappings =
+            referentialUtils.getExternalTrackAndTraceMapping(bnppuid, filters);
+
+    if (mappings != null && !mappings.isEmpty()) {
+
+        ExternalTrackAndTraceMapping mapping = mappings.get(0);
+
+        ExternalTNTRequest tntReq =
+                CXTHelper.toExternalTNTRequest(mapping, request, createdRequest.getEvent());
+
+        if (tntReq != null) {
+            externalTrackAndTraceService.sendDataToConnexis(tntReq, bnppuid);
+        }
+    }
+
+    stepName = Optional.ofNullable(createdRequest.getEvent().getStepName())
+            .filter(name -> !name.isEmpty())
+            .orElse(null);
+}
+
+
+----------------------
+
 <!-- Environment Dropdown -->
 <label class="label">Environment: </label>
 <select name="environment" class="input-box" required>
