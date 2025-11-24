@@ -1,3 +1,36 @@
+<!-- Environment Dropdown -->
+<label class="label">Environment: </label>
+<select name="environment" class="input-box" required>
+    <option value="">Select Environment</option>
+    <option value="stg" {% if environment=='stg' %}selected{% endif %}>STG</option>
+    <option value="prd" {% if environment=='prd' or not environment %}selected{% endif %}>PRD</option>
+</select>
+
+<label style="font-weight:bold;">Select Date: </label>
+<input type="date" id="dateField" name="selected_date" required 
+       value="{{ selected_date }}" 
+       style="width:100%; padding: 8px; border-radius: 6px; border:1px solid #ccc;">
+
+<label style="font-weight: bold;">Select Hour: </label>
+<select name="selected_time" required
+        style="width:100%; padding: 8px; margin:10px 0; border-radius: 6px; border:1px solid #ccc;">
+
+    {% if available_times %}
+        {% for t in available_times %}
+            <option value="{{t}}" {% if t==selected_hour %}selected{% endif %}>
+                {{t}}
+            </option>
+        {% endfor %}
+    {% endif %}
+</select>
+
+<script>
+  window.onload = function() {
+      let today = new Date().toISOString().split("T")[0];
+      document.getElementById("dateField").value = today;
+  };
+</script>
+hhhhh
 
       {% extends "base.html" %}
 {% block content %}
