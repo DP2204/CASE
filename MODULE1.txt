@@ -1,3 +1,65 @@
+from flask import Flask, render_template, request, jsonify
+import datetime
+
+app = Flask(__name__)
+
+# ---- Mock database ----
+mock_db = {
+    "2025-01-10": ["10:00 AM", "11:00 AM", "02:00 PM"],
+    "2025-01-11": ["09:00 AM", "01:00 PM"],
+    "2025-01-12": ["12:00 PM", "03:30 PM"]
+}
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+# -----------------------------
+# ✅ SOD PAGE ROUTE (You asked for this)
+# -----------------------------
+@app.route("/sod-checks", methods=["GET", "POST"])
+def sod_checks():
+    # Default environment and date
+    environment = request.form.get("environment", "prd")
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    selected_date = request.form.get("selected_date", today)
+    selected_time = request.form.get("selected_time", "")
+
+    # Fetch available times based on selected date
+    available_times = mock_db.get(selected_date, [])
+
+    # Only generate report if time is selected
+    report_html = "sample.html" if selected_time else None
+
+    return render_template(
+        "sod.html",
+        environment=environment,
+        selected_date=selected_date,
+        selected_time=selected_time,
+        available_times=available_times,
+        report_html=report_html
+    )
+
+
+# -----------------------------
+# ✅ AJAX endpoint for auto-populating time dropdown
+# -----------------------------
+@app.route("/get_time_slots", methods=["POST"])
+def get_time_slots():
+    data = request.get_json()
+    selected_date = data.get("selected_date")
+
+    # Match date exactly with mock_db keys
+    time_slots = mock_db.get(selected_date, [])
+
+    return jsonify({"time_slots": time_slots})
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+hhhhhhhh
 DGood morning everyone,
 I’m [Your Name], currently working as a Full Stack Developer Intern with GBIT ISPL – Trade DPP, Mumbai. Over the last six months, I’ve been part of a very exciting project called Conserto, which has been a huge learning experience — both technically and personally.
 
