@@ -1,4 +1,11 @@
+@app.route("/get_time_slots", methods=["POST"])
+def get_time_slots():
+    data = request.get_json()
+    selected_date = data.get("selected_date")
+    time_slots = mock_db.get(selected_date, [])
+    return jsonify({"time_slots": time_slots})
 <script>
+_______
 document.getElementById("dateField").addEventListener("change", function () {
 
     let selectedDate = this.value;
