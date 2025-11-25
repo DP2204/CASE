@@ -1,3 +1,36 @@
+<script>
+document.getElementById("dateField").addEventListener("change", function () {
+
+    let selectedDate = this.value;
+
+    // Make POST call to Flask route
+    fetch("/get_time_slots", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ selected_date: selectedDate })
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        let timeDropdown = document.querySelector("select[name='selected_time']");
+        timeDropdown.innerHTML = ""; // clear old values
+
+        if (data.time_slots.length > 0) {
+            data.time_slots.forEach(time => {
+                let opt = document.createElement("option");
+                opt.value = time;
+                opt.textContent = time;
+                timeDropdown.appendChild(opt);
+            });
+        } else {
+            let opt = document.createElement("option");
+            opt.textContent = "No time available";
+            timeDropdown.appendChild(opt);
+        }
+    });
+});
+</script>
+ddddd
 from flask import Flask, render_template, request
 import datetime
 
