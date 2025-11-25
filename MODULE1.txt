@@ -1,3 +1,68 @@
+from flask import Flask, render_template, request, jsonify
+import datetime
+
+app = Flask(__name__)
+
+# Mock DB of available times
+MOCK_DB = {
+    "11-20-2025": ["01:00", "02:00", "05:00"],
+    "11-21-2025": ["03:00", "04:00"],
+    "11-22-2025": ["02:00", "06:00", "07:00"],
+}
+
+def get_available_times(date):
+    return MOCK_DB.get(date, [])
+
+# Convert yyyy-mm-dd to mm-dd-yyyy
+def convert_date_format(date_str):
+    try:
+        dt = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+        return dt.strftime("%m-%d-%Y")
+    except:
+        return date_str
+
+@app.route("/")
+def home():
+    return render_template("base.html")
+
+@app.route("/sod-checks", methods=["GET", "POST"])
+def sod_page():
+    environment = request.form.get("environment", "prd")
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    selected_date_raw = request.form.get("selected_date", today)
+    selected_date = convert_date_format(selected_date_raw)
+    selected_hour = request.form.get("selected_time", "")
+    available_times = get_available_times(selected_date)
+    report_html = "sample.html" if selected_hour else None
+
+    return render_template(
+        "SOD.html",
+        environment=environment,
+        selected_date=selected_date_raw,
+        selected_hour=selected_hour,
+        available_times=available_times,
+        report_html=report_html
+    )
+
+# New route to get hours dynamically via AJAX
+@app.route("/get_hours", methods=["POST"])
+def get_hours():
+    selected_date_raw = request.json.get("date")
+    selected_date = convert_date_format(selected_date_raw)
+    hours = get_available_times(selected_date)
+    return jsonify(hours)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
 <div style="background:#f2f2f2; padding: 20px; margin-top:40px; margin-left:20px;">
 
     <h2 style="color:#1E8C3A; margin-bottom:20px;">Start of Day Checks</h2>
