@@ -100,6 +100,63 @@ if (createdRequest != null && createdRequest.getEvent() != null) {
   };
 </script>
 hhhhh
+from flask import Flask, render_template, request
+import datetime
+
+app = Flask(__name__)
+
+# ---- MOCK DATABASE ----
+# Dictionary: date → times
+MOCK_DB = {
+    "2025-11-20": ["01:00", "02:00", "05:00"],
+    "2025-11-21": ["03:00", "04:00"],
+    "2025-11-22": ["02:00", "06:00", "07:00"],
+}
+
+
+def get_available_times(date):
+    """Database ki jagah abhi dictionary se values fetch ho rahi hai."""
+    return MOCK_DB.get(date, [])
+
+
+@app.route("/")
+def home():
+    return render_template("base.html")
+
+
+@app.route("/sod-checks", methods=["GET", "POST"])
+def sod_checks():
+
+    # Environment default PRD
+    environment = request.form.get("environment", "prd")
+
+    # Date default today
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    selected_date = request.form.get("selected_date", today)
+
+    # Time selected by user
+    selected_hour = request.form.get("selected_time", "")
+
+    # Fetch times based on date
+    available_times = get_available_times(selected_date)
+
+    # Static HTML report
+    report_html = "sample.html" if selected_hour else None
+
+    return render_template(
+        "SOD.html",
+        environment=environment,
+        selected_date=selected_date,
+        selected_hour=selected_hour,
+        available_times=available_times,
+        report_html=report_html
+    )
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+hhhhh
 
       {% extends "base.html" %}
 {% block content %}
