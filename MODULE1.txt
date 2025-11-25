@@ -1,3 +1,63 @@
+from flask import Flask, render_template, request
+import datetime
+
+app = Flask(__name__)
+
+# MOCK DB : Date format MUST be mm-dd-yyyy
+MOCK_DB = {
+    "11-20-2025": ["01:00", "02:00", "05:00"],
+    "11-21-2025": ["03:00", "04:00"],
+    "11-22-2025": ["02:00", "06:00", "07:00"]
+}
+
+def get_available_times(date):
+    return MOCK_DB.get(date, [])
+
+def convert_date_format(date_str):
+    """Convert yyyy-mm-dd → mm-dd-yyyy to match MOCK_DB"""
+    try:
+        dt = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+        return dt.strftime("%m-%d-%Y")
+    except:
+        return date_str
+
+@app.route("/")
+def home():
+    return render_template("base.html")
+
+@app.route("/sod-checks", methods=["GET", "POST"])
+def sod_page():
+    environment = request.form.get("environment", "prd")
+
+    # Today's date in yyyy-mm-dd for HTML input
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    selected_date_raw = request.form.get("selected_date", today)
+
+    # Convert to match MOCK_DB
+    selected_date = convert_date_format(selected_date_raw)
+
+    selected_hour = request.form.get("selected_time", "")
+
+    available_times = get_available_times(selected_date)
+
+    # Static HTML Report
+    report_html = "sample.html" if selected_hour else None
+
+    return render_template(
+        "SOD.html",
+        environment=environment,
+        selected_date=selected_date_raw,  # keep original format for UI
+        selected_hour=selected_hour,
+        available_times=available_times,
+        report_html=report_html
+    )
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+---------------
+
 from flask import Flask, render_template, request, jsonify
 import datetime
 
