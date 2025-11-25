@@ -1,3 +1,68 @@
+<body>
+
+<div style="padding: 20px; margin-top: 40px; margin-left: 20px;">
+
+<form method="POST" action="/sod">
+
+    <label style="font-weight:bold;">Select Date:</label>
+    <input type="date"
+           id="dateField"
+           name="selected_date"
+           value=""
+           required
+           style="width:100%; padding: 8px; border-radius: 6px; border:1px solid #ccc;">
+
+
+    <label style="font-weight:bold;">Select Hour:</label>
+    <select id="timeDropdown"
+            name="selected_time"
+            required
+            style="width:100%; padding: 8px; margin:10px 0; border-radius: 6px; border:1px solid #ccc;">
+        <option disabled selected>Select date first</option>
+    </select>
+
+</form>
+
+
+<script>
+// ---------- SET TODAY BY DEFAULT ----------
+document.getElementById("dateField").value = new Date().toISOString().split("T")[0];
+
+
+// ---------- WHEN DATE CHANGES → FETCH TIME SLOTS ----------
+document.getElementById("dateField").addEventListener("change", function () {
+
+    let selectedDate = this.value;
+
+    fetch("/get_time_slots", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ selected_date: selectedDate })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        let dropdown = document.getElementById("timeDropdown");
+        dropdown.innerHTML = "";  // Clear old options
+
+        if (data.time_slots.length > 0) {
+            data.time_slots.forEach(t => {
+                let opt = document.createElement("option");
+                opt.value = t;
+                opt.textContent = t;
+                dropdown.appendChild(opt);
+            });
+        } else {
+            let opt = document.createElement("option");
+            opt.textContent = "No time available";
+            dropdown.appendChild(opt);
+        }
+    });
+});
+</script>
+
+</body>
+final
 @app.route("/get_time_slots", methods=["POST"])
 def get_time_slots():
     data = request.get_json()
