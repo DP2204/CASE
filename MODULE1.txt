@@ -1,3 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SOD Checks</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body style="background:#f2f2f2;">
+
+<div style="padding:20px; margin-top:40px; margin-left:20px;">
+
+    <h2 style="color:#1E8C3A; margin-bottom:20px;">Start of Day Checks</h2>
+
+    <form action="/sod-checks" method="POST"
+          style="background:#F4F4F4; padding:20px; border-radius:8px; box-shadow:0 0 5px rgba(0,0,0,0.1);">
+
+        <!-- Environment Dropdown -->
+        <label class="fw-bold">Environment:</label>
+        <select id="envSelect" name="environment" class="form-control mb-3" required>
+            <option value="prd" {% if environment == 'prd' %}selected{% endif %}>PRD</option>
+            <option value="stg" {% if environment == 'stg' %}selected{% endif %}>STG</option>
+        </select>
+
+        <!-- Select Date -->
+        <label class="fw-bold">Select Date:</label>
+        <input type="date" id="dateField" name="selected_date" class="form-control mb-3"
+               required value="{{ selected_date }}">
+
+        <!-- Select Hour -->
+        <label class="fw-bold">Select Hour:</label>
+        <select name="selected_time" class="form-control mb-3" required>
+            {% if available_times %}
+                {% for t in available_times %}
+                    <option value="{{ t }}" {% if t == selected_hour %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            {% else %}
+                <option>No time Available</option>
+            {% endif %}
+        </select>
+
+        <button type="submit"
+                style="width:100%; background:#1E8C3A; color:white; padding:10px; border:none; font-size:16px;">
+            Load Data
+        </button>
+    </form>
+
+    <br><br>
+
+    {% if report_html %}
+        <iframe src="{{ report_html }}" style="width:100%; height:700px; border:1px solid #aaa; border-radius:8px;"></iframe>
+    {% else %}
+        <p style="color:red;">No report found for this date/time.</p>
+    {% endif %}
+
+</div>
+
+<script>
+    // Set default date only if user has not submitted the form yet
+    window.onload = function () {
+        let currentDate = new Date().toISOString().split("T")[0];
+
+        {% if not selected_date %}
+        document.getElementById("dateField").value = currentDate;
+        {% endif %}
+    }
+</script>
+
+</body>
+</html>
+55555555
 <body>
 
 <div style="padding: 20px; margin-top: 40px; margin-left: 20px;">
