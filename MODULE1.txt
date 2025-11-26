@@ -1,3 +1,85 @@
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    left: -260px;       /* hidden */
+    top: 0;
+    width: 260px;
+    height: 100%;
+    background: #ffffff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.15);
+    transition: left 0.3s ease;
+    z-index: 2000;
+    padding-top: 10px;
+}
+
+/* When active: slide in */
+.sidebar.active {
+    left: 0;
+}
+
+/* Sidebar links */
+.sidebar a {
+    display: block;
+    padding: 12px 20px;
+    font-size: 16px;
+    color: #222;
+    text-decoration: none;
+}
+.sidebar a:hover {
+    background: #efefef;
+}
+
+/* Menu button */
+.menu-btn {
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    background: #2E7D32;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 3000;
+    border-radius: 4px;
+}
+
+/* Arrow button */
+.close-arrow {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+/* Sidebar header row */
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Overlay */
+#overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    display: none;
+    z-index: 1500;
+}
+#overlay.show {
+    display: block;
+}
+
+
+
+
+
+
+
+
 <script>
 const sidebar = document.getElementById("sidebar");
 const menuBtn = document.getElementById("menuBtn");
