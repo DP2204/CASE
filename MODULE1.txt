@@ -1,3 +1,28 @@
+<!-- Menu Button -->
+<button id="menuBtn" class="menu-btn">☰</button>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <button id="closeArrow" class="close-arrow">←</button>
+        <h3>Menu</h3>
+    </div>
+
+    <a href="#">Home</a>
+    <a href="#">Leave</a>
+    <a href="#">Remote Working</a>
+    <a href="#">Allowance</a>
+    <a href="#">Exit Process</a>
+</div>
+
+<!-- Overlay -->
+<div id="overlay"></div>
+
+
+
+
+
+
 /* Sidebar */
 .sidebar {
     position: fixed;
