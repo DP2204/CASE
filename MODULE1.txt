@@ -1,3 +1,29 @@
+<script>
+const sidebar = document.getElementById("sidebar");
+const menuBtn = document.getElementById("menuBtn");
+const closeArrow = document.getElementById("closeArrow");
+const overlay = document.getElementById("overlay");
+
+function openSidebar() {
+    sidebar.classList.add("active");
+    overlay.classList.add("show");
+}
+
+function closeSidebar() {
+    sidebar.classList.remove("active");
+    overlay.classList.remove("show");
+}
+
+menuBtn.onclick = openSidebar;
+closeArrow.onclick = closeSidebar;
+overlay.onclick = closeSidebar;
+</script>
+
+
+
+
+
+
 from flask import Flask, render_template, request, jsonify
 import datetime
 
