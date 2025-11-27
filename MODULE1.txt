@@ -1,3 +1,295 @@
+app.py# app.py
+from flask import Flask, render_template, request, jsonify
+import datetime
+from controller import get_db_session, sod
+
+app = Flask(__name__)
+
+# -------------------------
+# Helpers
+# -------------------------
+def convert_date_format(date_str):
+    """
+    If user sends yyyy-mm-dd, return same.
+    If user sends mm-dd-yyyy, convert to yyyy-mm-dd.
+    Also tolerate small mistakes.
+    """
+    if not date_str:
+        return None
+
+    # Try parse yyyy-mm-dd
+    try:
+        dt = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        return dt
+    except Exception:
+        pass
+
+    # Try parse mm-dd-yyyy (common in your mock data)
+    try:
+        dt = datetime.datetime.strptime(date_str, "%m-%d-%Y").date()
+        return dt
+    except Exception:
+        # fallback: return original string as-is (caller must handle)
+        return None
+
+
+# -------------------------
+# ROUTES
+# -------------------------
+@app.route("/")
+def index():
+    # render a page that will include the SOD form (or redirect to proper UI)
+    return render_template("base.html")
+
+
+@app.route("/sod-checks", methods=["GET", "POST"])
+def sod_page():
+    session = get_db_session()
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    selected_date_raw = request.form.get("selected_date", today)
+    selected_hour = request.form.get("selected_time", "")
+
+    # convert incoming date string (supports yyyy-mm-dd and mm-dd-yyyy)
+    selected_date_obj = convert_date_format(selected_date_raw)
+    available_times = []
+
+    if selected_date_obj:
+        # Query DB for uploadhour values for that date
+        rows = (
+            session.query(sod.uploadhour)
+            .filter(sod.uploaddate == selected_date_obj)
+            .order_by(sod.uploadhour)
+            .all()
+        )
+        available_times = [str(r[0]).zfill(2) for r in rows]  # keep string like "01", "02" to match UI
+
+    report_html = None
+    if selected_hour:
+        # fetch report for that date+hour
+        try:
+            sh_int = int(selected_hour)
+            row = (
+                session.query(sod)
+                .filter(sod.uploaddate == selected_date_obj, sod.uploadhour == sh_int)
+                .first()
+            )
+            if row:
+                report_html = row.report
+        except Exception as e:
+            print("Error fetching report:", e)
+
+    return render_template(
+        "SOD.html",
+        environment=request.form.get("environment", "prd"),
+        selected_date=selected_date_raw,
+        selected_hour=selected_hour,
+        available_times=available_times,
+        report_html=report_html,
+    )
+
+
+# New route to get hours dynamically via AJAX (expects JSON with {"date": "yyyy-mm-dd"})
+@app.route("/get_hours", methods=["POST"])
+def get_hours():
+    data = request.get_json() or {}
+    selected_date_raw = data.get("date")
+    selected_date_obj = convert_date_format(selected_date_raw)
+
+    if not selected_date_obj:
+        return jsonify([])
+
+    session = get_db_session()
+    rows = (
+        session.query(sod.uploadhour)
+        .filter(sod.uploaddate == selected_date_obj)
+        .order_by(sod.uploadhour)
+        .all()
+    )
+    hours = [str(r[0]).zfill(2) for r in rows]
+    return jsonify(hours)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+controller. py# controller.py
+import datetime
+from sqlalchemy import create_engine, Column, Integer, Date, Text
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.schema import CreateSchema
+import psycopg2
+
+# -------------------------
+# CONFIG - change these
+# -------------------------
+DB_USER = "username"
+DB_PASS = "password"
+DB_HOST = "localhost"
+DB_PORT = "5432"
+DB_NAME = "yourdb"
+schema_name = "public"   # change if needed
+
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+# -------------------------
+# ENGINE & SCHEMA
+# -------------------------
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+# create schema if not exists (Postgres)
+try:
+    with engine.connect() as connection:
+        connection.execute(CreateSchema(schema_name, if_not_exists=True))
+        # no explicit commit needed for DDL in most setups; this is fine
+except Exception as e:
+    # if schema already exists or DB user has no rights, ignore or log
+    print("Create schema warning:", e)
+
+SessionLocal = sessionmaker(autoflush=True, bind=engine)
+Base = declarative_base()
+
+
+# -------------------------
+# Optional raw psycopg2 connection helper
+# -------------------------
+def getConnection(host, port, database, username, password):
+    try:
+        conn = psycopg2.connect(user=username, password=password, host=host, port=port, database=database)
+        return conn
+    except Exception as e:
+        print(f"Not able to connect with error: {e}")
+        return None
+
+
+# -------------------------
+# MODEL
+# -------------------------
+class sod(Base):
+    __tablename__ = "sod_prd"
+    __table_args__ = {"schema": schema_name}
+
+    # composite primary key using primary_key=True on both columns
+    uploaddate = Column(Date, primary_key=True, default=datetime.date.today)
+    uploadhour = Column(Integer, primary_key=True, nullable=False)
+    report = Column(Text, nullable=False)
+
+    def __repr__(self):
+        return f"{self.uploaddate}, {self.uploadhour}, {self.report}"
+
+
+# create tables if not exists
+def init_db():
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("DB tables created/checked successfully")
+    except SQLAlchemyError as e:
+        print("Error creating tables:", e)
+
+
+# provide a session factory
+def get_db_session():
+    return SessionLocal()
+
+
+# init on import (optional)
+init_db()
+
+
+sod.html
+<!-- templates/SOD.html -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Start of Day Checks</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- jQuery CDN (ensure server can access internet) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Bootstrap CSS (optional) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div style="background:#f2f2f2; padding: 20px; margin-top:20px; margin-left:20px;">
+    <h2 style="color:#1EBCAA; margin-bottom:20px;">Start of Day Checks</h2>
+
+    <form action="/sod-checks" method="POST" style="background: #F4F474; padding:20px; border-radius: 3px; box-shadow:0 0 5px rgba(0,0,0,0.2)">
+      <!-- Environment -->
+      <label class="fw-bold">Environment:</label>
+      <select id="environment" name="environment" class="form-control mb-3" required>
+        <option value="prd" {% if environment == "prd" %}selected{% endif %}>PRD</option>
+        <option value="stg" {% if environment == "stg" %}selected{% endif %}>STG</option>
+      </select>
+
+      <!-- Select Date -->
+      <label class="fw-bold">Select Date:</label>
+      <input type="date" id="selected_date" name="selected_date" class="form-control mb-3" required value="{{ selected_date if selected_date else '' }}">
+
+      <!-- Select Hour -->
+      <label class="fw-bold">Select Hour:</label>
+      <select id="selected_time" name="selected_time" class="form-control mb-3" required>
+        {% if available_times %}
+          {% for t in available_times %}
+            <option value="{{ t }}" {% if selected_hour == t %}selected{% endif %}>{{ t }}:00</option>
+          {% endfor %}
+        {% else %}
+          <option value="">No time available</option>
+        {% endif %}
+      </select>
+
+      <button type="submit" style="width:100%; background:#1EBCAA; color:white; padding:10px; border:none; font-size:16px">Load Data</button>
+    </form>
+
+    <br>
+
+    <!-- Report area (if any) -->
+    <div id="report_area" style="margin-top:20px;">
+      {% if report_html %}
+        <h4>Report</h4>
+        <div style="white-space:pre-wrap; background:#fff; padding:10px; border-radius:4px; border:1px solid #ddd;">
+          {{ report_html|safe }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+<script>
+$(document).ready(function(){
+  // When date changes, call /get_hours
+  $("#selected_date").on("change", function(){
+    let dateVal = $(this).val(); // yyyy-mm-dd
+    if(!dateVal) return;
+
+    $.ajax({
+      url: "/get_hours",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ date: dateVal }),
+      success: function(hours) {
+        let dropdown = $("#selected_time");
+        dropdown.empty();
+
+        if (!hours || hours.length === 0) {
+          dropdown.append('<option value="">No time available</option>');
+          return;
+        }
+
+        hours.forEach(function(h){
+          dropdown.append(`<option value="${h}">${h}:00</option>`);
+        });
+      },
+      error: function(err) {
+        console.error("Error fetching hours", err);
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
+
+
+
+
 <!-- Menu Button -->
 <button id="menuBtn" class="menu-btn">☰</button>
 
