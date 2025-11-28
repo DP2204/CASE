@@ -1,3 +1,55 @@
+from flask import Flask, request, jsonify
+import datetime
+
+app = Flask(__name__)
+
+# Assuming your models and SessionLocal / get_db_session() are already defined:
+# SodPrd, SodStg
+
+def convert_date_format(date_str):
+    """Convert date string 'YYYY-MM-DD' to datetime.date"""
+    try:
+        return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+    except Exception:
+        return None
+
+@app.route("/get_hours", methods=["POST"])
+def get_hours():
+    data = request.get_json() or {}
+    raw_date = data.get("date")
+    table_name = data.get("table")  # "prd" or "stg"
+
+    selected_date_obj = convert_date_format(raw_date)
+    if not selected_date_obj:
+        return jsonify([])
+
+    session = get_db_session()  # your existing session function
+
+    try:
+        # Select table based on input
+        if table_name == "prd":
+            model = SodPrd
+        elif table_name == "stg":
+            model = SodStg
+        else:
+            return jsonify([])  # unknown table
+
+        rows = (
+            session.query(model.uploadhour)
+            .filter(model.uploaddate == selected_date_obj)
+            .order_by(model.uploadhour)
+            .all()
+        )
+
+        hours = [str(r[0]).zfill(2) for r in rows]
+        return jsonify(hours)
+    finally:
+        session.close()
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
 <!DOCTYPE html>
 <html>
 <head>
