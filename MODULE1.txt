@@ -1,3 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SOD Checks</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+<body>
+
+<h2>SOD CHECKS</h2>
+
+<!-- ENVIRONMENT SELECTION -->
+<label>Environment:</label>
+<select id="environment">
+    <option value="pro">Production</option>
+    <option value="stg">Staging</option>
+</select>
+
+<br><br>
+
+<!-- DATE -->
+<label>Select Date:</label>
+<input type="date" id="date">
+
+<br><br>
+
+<!-- HOURS -->
+<label>Select Hour:</label>
+<select id="hour">
+    <option value="">-- Select Hour --</option>
+</select>
+
+<script>
+    // On Date Change → Auto Load Hours
+    $("#date, #environment").on("change", function () {
+
+        let date = $("#date").val();
+        let env = $("#environment").val();
+
+        if (!date) return;
+
+        $.ajax({
+            url: "/get-hours",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                date: date,
+                environment: env
+            }),
+            success: function (hours) {
+                $("#hour").empty();
+
+                if (hours.length === 0) {
+                    $("#hour").append(`<option>No data</option>`);
+                    return;
+                }
+
+                hours.forEach(function (h) {
+                    $("#hour").append(`<option value="${h}">${h}</option>`);
+                });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
+
+
+
+
 from sqlalchemy import create_engine, Column, Integer, Text, Date
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.schema import CreateSchema
