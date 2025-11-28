@@ -1,3 +1,86 @@
+@app.route("/sod-checks", methods=["GET", "POST"])
+def sod_page():
+
+    session = get_db()
+    today = datetime.date.today().strftime("%Y-%m-%d")
+
+    raw_date = request.form.get("selected_date", today)
+    selected_hour = request.form.get("selected_time", "")
+    selected_date_obj = convert_date_format(raw_date)
+
+    available_times = []
+
+    # -------------------------------------------------------
+    # FETCH HOURS FROM PRD + STG BOTH
+    # -------------------------------------------------------
+    if selected_date_obj:
+        try:
+            prd_rows = (
+                session.query(SodPrd.uploadhour)
+                .filter(SodPrd.uploaddate == selected_date_obj)
+                .all()
+            )
+
+            stg_rows = (
+                session.query(SodStg.uploadhour)
+                .filter(SodStg.uploaddate == selected_date_obj)
+                .all()
+            )
+
+            merged = set([r[0] for r in prd_rows] + [r[0] for r in stg_rows])
+            available_times = [str(h).zfill(2) for h in sorted(merged)]
+
+        except Exception as e:
+            print("Error fetching hours:", e)
+
+    # -------------------------------------------------------
+    # FETCH REPORT → PRD PRIORITY, ELSE STG
+    # -------------------------------------------------------
+    report_html = None
+
+    if selected_hour:
+        try:
+            sh_int = int(selected_hour)
+
+            # First try PRD
+            row = (
+                session.query(SodPrd)
+                .filter(
+                    SodPrd.uploaddate == selected_date_obj,
+                    SodPrd.uploadhour == sh_int
+                )
+                .first()
+            )
+
+            # If not in PRD, check STG
+            if not row:
+                row = (
+                    session.query(SodStg)
+                    .filter(
+                        SodStg.uploaddate == selected_date_obj,
+                        SodStg.uploadhour == sh_int
+                    )
+                    .first()
+                )
+
+            if row:
+                report_html = row.report
+
+        except Exception as e:
+            print("Error fetching report:", e)
+
+    return render_template(
+        "sod.html",
+        environment=request.form.get("environment", "prod"),
+        selected_date=raw_date,
+        selected_hour=selected_hour,
+        available_times=available_times,
+        report_html=report_html,
+    )
+
+
+
+
 @app.route("/get-hours", methods=["POST"])
 def get_hours():
     data = request.get_json() or {}
