@@ -1,3 +1,60 @@
+@app.route("/sod-checks", methods=["GET", "POST"])
+def sod_page():
+    session = get_db_session()
+
+    # Default date today
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    raw_date = request.form.get("selected_date", today)
+    selected_hour = request.form.get("selected_time", "")
+    
+    # Convert incoming date string
+    selected_date_obj = convert_date_format(raw_date)
+
+    # Choose which table to use (example: based on a form field 'environment')
+    environment = request.form.get("environment", "prd")  # prd or stg
+    if environment == "prd":
+        model = SodPrd
+    else:
+        model = SodStg
+
+    available_times = []
+    report_html = None
+
+    if selected_date_obj:
+        # Fetch available hours for selected date
+        rows = (
+            session.query(model.uploadhour)
+            .filter(model.uploaddate == selected_date_obj)
+            .order_by(model.uploadhour)
+            .all()
+        )
+        available_times = [str(r[0]).zfill(2) for r in rows]
+
+    # Fetch report if hour is selected
+    if selected_hour:
+        try:
+            sh_int = int(selected_hour)
+            row = (
+                session.query(model)
+                .filter(model.uploaddate == selected_date_obj, model.uploadhour == sh_int)
+                .first()
+            )
+            if row:
+                report_html = row.report
+        except Exception as e:
+            print("Error fetching report:", e)
+
+    return render_template(
+        "SOD.html",
+        environment=environment,
+        selected_date=raw_date,
+        selected_hour=selected_hour,
+        available_times=available_times,
+        report_html=report_html
+    )
+
+
+
 from flask import Flask, request, jsonify
 import datetime
 
