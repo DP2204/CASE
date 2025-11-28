@@ -1,3 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SOD Checks</title>
+
+    <!-- NEW: jQuery added for AJAX -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+<div style="background:#f2f212; padding:20px; margin-top:40px; margin-left:20px;">
+
+    <h2 style="color:#1EBCAA; margin-bottom:20px;">Start of Day Checks</h2>
+
+    <!-- FORM START -->
+    <form action="/sod-checks" method="POST" style="background:#F4F474; padding:20px; border-radius:3px;">
+
+        <!-- ENVIRONMENT DROPDOWN (PRD/STG) -->
+        <label><b>Environment:</b></label>
+        <select id="env" name="environment" class="form-control mb-3">
+            <option value="prd" {% if environment == 'prd' %}selected{% endif %}>PRD</option>
+            <option value="stg" {% if environment == 'stg' %}selected{% endif %}>STG</option>
+        </select>
+
+        <!-- DATE PICKER -->
+        <label><b>Select Date:</b></label>
+        <input type="date" id="dateField" name="selected_date" class="form-control mb-3"
+               value="{{ selected_date }}" required>
+
+        <!-- HOUR DROPDOWN (auto-filled by AJAX) -->
+        <label><b>Select Hour:</b></label>
+        <select id="hourField" name="selected_hour" class="form-control mb-3">
+            {% if available_times %}
+                {% for hr in available_times %}
+                    <option value="{{ hr }}" {% if selected_hour == hr %}selected{% endif %}>{{ hr }}</option>
+                {% endfor %}
+            {% else %}
+                <option>No time available</option>
+            {% endif %}
+        </select>
+
+        <button type="submit" style="width:100%; background:#1E8CCA; color:white; padding:10px; border:none;">
+            Load Data
+        </button>
+    </form>
+
+    <!-- REPORT RENDERING -->
+    {% if report_html %}
+        {% include report_html %}
+    {% endif %}
+
+</div>
+
+
+<!-- NEW: AJAX CODE to auto-refresh hours -->
+<script>
+    $("#dateField, #env").on("change", function () {
+
+        let selectedDate = $("#dateField").val();
+        let env = $("#env").val();
+
+        $.ajax({
+            url: "/get_hours",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                date: selectedDate,
+                environment: env
+            }),
+
+            success: function (hours) {
+
+                let dropdown = $("#hourField");
+                dropdown.empty();   // NEW: clear previous values
+
+                if (hours.length === 0) {
+                    dropdown.append('<option>No time available</option>');
+                } else {
+                    hours.forEach(function (h) {
+                        dropdown.append(`<option value="${h}">${h}</option>`);
+                    });
+                }
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
+
+
+
+
+
 from flask import Flask, render_template, request, jsonify
 import datetime
 
