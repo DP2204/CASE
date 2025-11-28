@@ -1,3 +1,97 @@
+from sqlalchemy import create_engine, Column, Integer, Text, Date
+from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.schema import CreateSchema
+import datetime
+import psycopg2
+
+DATABASE_URL = "postgresql+psycopg2://username:password@host:port/dbname"
+
+# ----------------------------------------------------------
+# ENGINE
+# ----------------------------------------------------------
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True
+)
+
+# ----------------------------------------------------------
+# CREATE SCHEMA IF NOT EXISTS
+# ----------------------------------------------------------
+schema_name = "sod"
+
+try:
+    with engine.connect() as connection:
+        connection.execute(CreateSchema(schema_name, if_not_exists=True))
+        print("Schema checked/created successfully.")
+except Exception as e:
+    print("Create schema warning:", e)
+
+# ----------------------------------------------------------
+# SESSION
+# ----------------------------------------------------------
+SessionLocal = sessionmaker(autoflush=True, bind=engine)
+Base = declarative_base()
+
+def get_db():
+    return SessionLocal()
+
+# ----------------------------------------------------------
+# OPTIONAL DIRECT CONNECTION VIA psycopg2
+# ----------------------------------------------------------
+def getConnection(host, port, database, username, password):
+    try:
+        conn = psycopg2.connect(
+            user=username,
+            password=password,
+            host=host,
+            port=port,
+            database=database
+        )
+        return conn
+    except Exception as e:
+        print(f"Not able to connect with error: {e}")
+        return None
+
+# ----------------------------------------------------------
+# TABLE 1 : sod_prd
+# ----------------------------------------------------------
+class SodPrd(Base):
+    __tablename__ = "sod_prd"
+    __table_args__ = {'schema': schema_name}
+
+    uploaddate = Column(Date, primary_key=True, default=datetime.date.today)
+    uploadhour = Column(Integer, primary_key=True, nullable=False)
+    report = Column(Text, nullable=False)
+
+    def __repr__(self):
+        return f"{self.uploaddate}, {self.uploadhour}, {self.report}"
+
+
+# ----------------------------------------------------------
+# TABLE 2 : sod_stg
+# ----------------------------------------------------------
+class SodStg(Base):
+    __tablename__ = "sod_stg"
+    __table_args__ = {'schema': schema_name}
+
+    uploaddate = Column(Date, primary_key=True, default=datetime.date.today)
+    uploadhour = Column(Integer, primary_key=True, nullable=False)
+    report = Column(Text, nullable=False)
+
+    def __repr__(self):
+        return f"{self.uploaddate}, {self.uploadhour}, {self.report}"
+
+
+# ----------------------------------------------------------
+# CREATE TABLES
+# ----------------------------------------------------------
+Base.metadata.create_all(engine)
+
+print("Tables created successfully.")
+
+
+
+
 @app.route("/sod-checks", methods=["GET", "POST"])
 def sod_page():
 
