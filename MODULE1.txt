@@ -1,3 +1,101 @@
+from flask import Flask, render_template, request, jsonify
+import datetime
+
+# Import your controller functions
+from controller import (
+    get_hours_from_prd,
+    get_hours_from_stg,
+    get_report_from_prd,
+    get_report_from_stg
+)
+
+app = Flask(__name__)
+
+
+# ---------------------------
+# Convert yyyy-mm-dd → date
+# ---------------------------
+def convert_date(date_str):
+    try:
+        return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+    except:
+        return None
+
+
+# ---------------------------
+# MAIN SOD PAGE
+# ---------------------------
+@app.route("/sod-checks", methods=["GET", "POST"])
+def sod_page():
+    environment = request.form.get("environment", "prd")
+
+    # Get today's date if no selection
+    today = datetime.date.today().strftime("%Y-%m-%d")
+
+    selected_date_raw = request.form.get("selected_date", today)
+    date_obj = convert_date(selected_date_raw)
+
+    selected_hour = request.form.get("selected_hour", "")
+
+    # Fetch hours from DB depending on environment
+    if environment.lower() == "prd":
+        available_times = get_hours_from_prd(date_obj)
+    else:
+        available_times = get_hours_from_stg(date_obj)
+
+    report_html = None
+
+    # If hour is selected → fetch report
+    if selected_hour:
+        hour_int = int(selected_hour)
+        try:
+            if environment.lower() == "prd":
+                report_html = get_report_from_prd(date_obj, hour_int)
+            else:
+                report_html = get_report_from_stg(date_obj, hour_int)
+        except Exception as e:
+            print("Error fetching report:", e)
+            report_html = None
+
+    return render_template(
+        "sod.html",
+        environment=environment,
+        selected_date=selected_date_raw,
+        selected_hour=selected_hour,
+        available_times=available_times,
+        report_html=report_html
+    )
+
+
+# ---------------------------
+# AJAX API → get hours
+# ---------------------------
+@app.route("/get_hours", methods=["POST"])
+def get_hours():
+    req = request.json
+    environment = req.get("environment")
+    raw_date = req.get("date")
+
+    date_obj = convert_date(raw_date)
+
+    # PRD or STG
+    if environment.lower() == "prd":
+        hours = get_hours_from_prd(date_obj)
+    else:
+        hours = get_hours_from_stg(date_obj)
+
+    return jsonify(hours)
+
+
+# ---------------------------
+# Start Flask App
+# ---------------------------
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
 app.py# app.py
 from flask import Flask, render_template, request, jsonify
 import datetime
