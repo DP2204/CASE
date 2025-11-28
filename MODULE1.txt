@@ -1,3 +1,47 @@
+@app.route("/get-hours", methods=["POST"])
+def get_hours():
+    data = request.get_json() or {}
+
+    raw_date = data.get("date")
+    selected_date_obj = convert_date_format(raw_date)
+
+    if not selected_date_obj:
+        return jsonify([])
+
+    session = get_db()
+
+    try:
+        # Fetch from PRD
+        prd_rows = (
+            session.query(SodPrd.uploadhour)
+            .filter(SodPrd.uploaddate == selected_date_obj)
+            .all()
+        )
+
+        # Fetch from STG
+        stg_rows = (
+            session.query(SodStg.uploadhour)
+            .filter(SodStg.uploaddate == selected_date_obj)
+            .all()
+        )
+
+        # Merge both and keep unique
+        merged = set([r[0] for r in prd_rows] + [r[0] for r in stg_rows])
+
+        # Convert to sorted + zfill string format
+        hours = [str(h).zfill(2) for h in sorted(merged)]
+
+        return jsonify(hours)
+
+    except Exception as e:
+        print("Error in get-hours:", e)
+        return jsonify([])
+
+
+
+
+
+
 @app.route("/sod-checks", methods=["GET", "POST"])
 def sod_page():
     session = get_db_session()
