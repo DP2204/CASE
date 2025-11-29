@@ -1,4 +1,48 @@
 from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+# Make sure SOD_PRD, SOD_STG, convert_date_format, and get_session_and_model are imported
+
+@app.route("/generate-report", methods=["POST"])
+def generate_report():
+    data = request.get_json() or {}
+    environment = data.get("environment", "prd").lower()
+    raw_date = data.get("date")
+    hour = data.get("hour")
+
+    # Convert date
+    selected_date_obj = convert_date_format(raw_date)
+    if not selected_date_obj:
+        return jsonify({"report": "Invalid date"})
+
+    # Get session and model based on environment
+    session, table = get_session_and_model(environment)
+
+    try:
+        # Fetch the row for selected date and hour
+        row = session.query(table).filter(
+            table.uploaddate == selected_date_obj,
+            table.uploadhour == int(hour)
+        ).first()
+
+        if not row:
+            report_text = "No report found"
+        else:
+            report_text = row.report
+
+    except Exception as e:
+        print("Error generating report:", e)
+        report_text = "Error fetching report"
+    finally:
+        session.close()
+
+    return jsonify({"report": report_text})
+
+
+
+
+from flask import Flask, request, jsonify
 from sqlalchemy import create_engine, Column, Integer, Date, Text
 from sqlalchemy.orm import declarative_base, sessionmaker
 import datetime
