@@ -1,3 +1,104 @@
+# API used by frontend to populate hours dynamically
+@app.route("/get-hours", methods=["POST"])
+def get_hours():
+    data = request.get_json() or {}
+
+    raw_date = data.get("date")
+    environment = data.get("environment", "prd").strip().lower()
+
+    print("Environment received:", environment)
+
+    selected_date_obj = convert_date_format(raw_date)
+    if not selected_date_obj:
+        return jsonify({"hours": []})
+
+    # -------- Correct table selection --------
+    if environment in ["prd", "pro"]:
+        table = SOD_PRD
+    elif environment == "stg":
+        table = SOD_STG
+    else:
+        print("Invalid environment:", environment)
+        return jsonify({"hours": []})
+    # -----------------------------------------
+
+    session = get_db_session()
+    try:
+        rows = (
+            session.query(table.uploadhour)
+            .filter(table.uploaddate == selected_date_obj)
+            .order_by(table.uploadhour)
+            .all()
+        )
+
+        hours = [str(r[0]).zfill(2) for r in rows]
+
+    except Exception as e:
+        print("Error in get_hours:", e)
+        hours = []
+
+    finally:
+        session.close()
+
+    return jsonify({"hours": hours})
+
+
+# API: generate report (called by frontend)
+@app.route("/generate-report", methods=["POST"])
+def generate_report():
+    data = request.get_json() or {}
+
+    environment = data.get("environment", "prd").strip().lower()
+    raw_date = data.get("date")
+    hour = data.get("hour")
+
+    selected_date_obj = convert_date_format(raw_date)
+    if not selected_date_obj:
+        return jsonify({"report": "Invalid date"})
+
+    # -------- Correct table selection --------
+    if environment in ["prd", "pro"]:
+        table = SOD_PRD
+    elif environment == "stg":
+        table = SOD_STG
+    else:
+        print("Invalid environment:", environment)
+        return jsonify({"report": "Invalid environment"})
+    # -----------------------------------------
+
+    session = get_db_session()
+    try:
+        row = (
+            session.query(table)
+            .filter(
+                table.uploaddate == selected_date_obj,
+                table.uploadhour == int(hour)
+            )
+            .first()
+        )
+
+        if not row:
+            report = "No report found"
+        else:
+            report = row.report
+
+    except Exception as e:
+        print("Error generating report:", e)
+        report = "Error fetching report"
+
+    finally:
+        session.close()
+
+    return jsonify({"report": report})
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
 @app.route("/get-hours", methods=["POST"])
 def get_hours():
     data = request.get_json() or {}
