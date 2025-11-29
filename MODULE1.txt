@@ -1,3 +1,55 @@
+<script>
+$(document).ready(function () {
+
+    // When user changes PRD/STG environment
+    $("#environment").change(function () {
+        let env = $(this).val().toLowerCase();
+        console.log("Selected environment:", env);
+
+        // Clear hours dropdown
+        $("#selected_time").empty();
+        $("#selected_time").append(`<option value="">Select Time</option>`);
+
+        // Trigger date change again to load new hours of that environment
+        $("#selected_date").trigger("change");
+    });
+
+    // Load hours automatically when date changes
+    $("#selected_date").change(function () {
+        let selectedDate = $(this).val();
+        let env = $("#environment").val().toLowerCase();
+
+        console.log("Fetching hours for:", env);
+
+        $.ajax({
+            url: "/get-hours",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                date: selectedDate,
+                environment: env
+            }),
+            success: function (response) {
+                $("#selected_time").empty();
+                $("#selected_time").append(`<option value="">Select Time</option>`);
+
+                response.hours.forEach(hr => {
+                    $("#selected_time").append(`<option value="${hr}">${hr}</option>`);
+                });
+            },
+            error: function () {
+                alert("Error loading hours");
+            }
+        });
+    });
+
+});
+</script>
+
+
+
+
+
 # controller.py
 import datetime
 import os
