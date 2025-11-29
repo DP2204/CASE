@@ -1,3 +1,424 @@
+# controller.py
+import datetime
+import os
+
+import psycopg2
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    Text,
+    Date,
+    inspect,
+)
+from sqlalchemy.schema import CreateSchema
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+# ------------------------------
+# CONFIG - set environment variables or replace with actual values
+# ------------------------------
+DB_USER = os.getenv("DB_USER", "username")
+DB_PASS = os.getenv("DB_PASS", "password")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "database")
+SCHEMA_NAME = os.getenv("DB_SCHEMA", "sod")
+
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+# ------------------------------
+# ENGINE / SESSION
+# ------------------------------
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+SessionLocal = sessionmaker(autoflush=True, bind=engine)
+Base = declarative_base()
+
+# Make sure schema exists (Postgres)
+try:
+    with engine.connect() as connection:
+        inspector = inspect(engine)
+        # Create schema only if it doesn't exist
+        if SCHEMA_NAME not in inspector.get_schema_names():
+            connection.execute(CreateSchema(SCHEMA_NAME))
+except Exception as e:
+    print("Create schema warning:", e)
+
+# ------------------------------
+# Optional: simple psycopg2 connection helper
+# ------------------------------
+def getConnection(host, port, database, username, password):
+    """
+    Returns a raw psycopg2 connection or None on failure.
+    Useful for quick ad-hoc queries outside SQLAlchemy.
+    """
+    try:
+        conn = psycopg2.connect(
+            user=username,
+            password=password,
+            host=host,
+            port=port,
+            database=database,
+        )
+        return conn
+    except Exception as e:
+        print(f"Not able to connect with error: {e}")
+        return None
+
+# ------------------------------
+# MODELS
+# ------------------------------
+class SOD_PRD(Base):
+    __tablename__ = "sod_prd"
+    __table_args__ = {"schema": SCHEMA_NAME}
+
+    uploaddate = Column(Date, primary_key=True, default=datetime.date.today)
+    uploadhour = Column(Integer, primary_key=True, nullable=False)
+    report = Column(Text, nullable=False)
+
+    def __repr__(self):
+        return f"<SOD_PRD {self.uploaddate} {self.uploadhour}>"
+
+
+class SOD_STG(Base):
+    __tablename__ = "sod_stg"
+    __table_args__ = {"schema": SCHEMA_NAME}
+
+    uploaddate = Column(Date, primary_key=True, default=datetime.date.today)
+    uploadhour = Column(Integer, primary_key=True, nullable=False)
+    report = Column(Text, nullable=False)
+
+    def __repr__(self):
+        return f"<SOD_STG {self.uploaddate} {self.uploadhour}>"
+
+# If you want SQLAlchemy to create tables if missing (optional):
+def create_tables():
+    Base.metadata.create_all(bind=engine)
+
+# ------------------------------
+# DB SESSION ACCESSOR
+# ------------------------------
+def get_db_session():
+    """
+    Returns a new SQLAlchemy Session instance.
+    Caller should close the session when done: session.close()
+    """
+    return SessionLocal()
+
+
+
+
+
+
+
+
+# app.py
+import datetime
+from flask import Flask, render_template, request, jsonify
+
+from controller import (
+    get_db_session,
+    SOD_PRD,
+    SOD_STG,
+    create_tables,
+    SCHEMA_NAME,
+)
+
+app = Flask(__name__)
+
+# Optionally ensure tables exist (uncomment if you want SQLAlchemy to create)
+# create_tables()
+
+def convert_date_format(date_str):
+    """
+    Accepts yyyy-mm-dd or mm-dd-yyyy and returns a date object.
+    Returns None on failure.
+    """
+    if not date_str:
+        return None
+    try:
+        # try ISO yyyy-mm-dd
+        dt = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        return dt
+    except Exception:
+        pass
+
+    try:
+        # try mm-dd-yyyy
+        dt = datetime.datetime.strptime(date_str, "%m-%d-%Y").date()
+        return dt
+    except Exception:
+        return None
+
+
+@app.route("/")
+def home():
+    return render_template("base.html")  # keep your existing base.html
+
+
+@app.route("/ServiceNow", methods=["GET", "POST"])
+def ServiceNow():
+    return render_template("ServiceNow-Dashboard.html")
+
+
+@app.route("/Dynatrace", methods=["GET", "POST"])
+def Dynatrace():
+    return render_template("Dynatrace.html")
+
+
+@app.route("/sod-checks", methods=["GET", "POST"])
+def sod_checks():
+    """
+    Renders SOD.html (or SOD template) and processes form submissions.
+    Form fields expected:
+      - environment: "prd" or "stg"
+      - selected_date: yyyy-mm-dd (HTML date input)
+      - selected_time: hour value (e.g. "01" or 1)
+    """
+    session = get_db_session()
+
+    today = datetime.date.today().strftime("%Y-%m-%d")
+
+    raw_date = request.form.get("selected_date", today)
+    selected_hour = request.form.get("selected_time", "")
+
+    selected_date_obj = convert_date_format(raw_date)
+
+    available_times = []
+    report_html = None
+
+    # Choose table based on environment (form value or default to prd)
+    environment = request.form.get("environment", "prd").lower()
+    table = SOD_PRD if environment == "prd" else SOD_STG
+
+    if selected_date_obj:
+        try:
+            rows = (
+                session.query(table.uploadhour)
+                .filter(table.uploaddate == selected_date_obj)
+                .order_by(table.uploadhour)
+                .all()
+            )
+            # keep format like "01", "02" for dropdown
+            available_times = [str(r[0]).zfill(2) for r in rows]
+        except Exception as e:
+            print("Error fetching hours:", e)
+
+    if selected_hour:
+        try:
+            sh_int = int(selected_hour)
+            row = (
+                session.query(table)
+                .filter(table.uploaddate == selected_date_obj, table.uploadhour == sh_int)
+                .first()
+            )
+            if row:
+                report_html = row.report
+        except Exception as e:
+            print("Error fetching report:", e)
+
+    session.close()
+
+    return render_template(
+        "SOD.html",
+        environment=environment,
+        selected_date=raw_date,
+        selected_hour=selected_hour,
+        available_times=available_times,
+        report_html=report_html,
+    )
+
+
+# API used by frontend to populate hours dynamically
+@app.route("/get-hours", methods=["POST"])
+def get_hours():
+    data = request.get_json() or {}
+    raw_date = data.get("date")
+    environment = data.get("environment", "prd").lower()
+
+    selected_date_obj = convert_date_format(raw_date)
+    if not selected_date_obj:
+        return jsonify({"hours": []})
+
+    table = SOD_PRD if environment == "prd" else SOD_STG
+
+    session = get_db_session()
+    try:
+        rows = (
+            session.query(table.uploadhour)
+            .filter(table.uploaddate == selected_date_obj)
+            .order_by(table.uploadhour)
+            .all()
+        )
+        hours = [str(r[0]).zfill(2) for r in rows]
+    except Exception as e:
+        print("Error in get_hours:", e)
+        hours = []
+    finally:
+        session.close()
+
+    return jsonify({"hours": hours})
+
+
+# API: generate report (called by frontend)
+@app.route("/generate-report", methods=["POST"])
+def generate_report():
+    data = request.get_json() or {}
+    environment = data.get("environment", "prd").lower()
+    raw_date = data.get("date")
+    hour = data.get("hour")
+
+    selected_date_obj = convert_date_format(raw_date)
+    if not selected_date_obj:
+        return jsonify({"report": "Invalid date"})
+
+    table = SOD_PRD if environment == "prd" else SOD_STG
+
+    session = get_db_session()
+    try:
+        row = (
+            session.query(table)
+            .filter(table.uploaddate == selected_date_obj, table.uploadhour == int(hour))
+            .first()
+        )
+        if not row:
+            report = "No report found"
+        else:
+            report = row.report
+    except Exception as e:
+        print("Error generating report:", e)
+        report = "Error fetching report"
+    finally:
+        session.close()
+
+    return jsonify({"report": report})
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SOD Checks</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" 
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            background: #f2f2f2;
+            padding: 20px;
+        }
+        .card {
+            margin: auto;
+            width: 80%;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+    <h2>SOD Checks</h2>
+    <form action="/sod-checks" method="POST">
+
+        <!-- Environment -->
+        <label><b>Select Environment</b></label>
+        <select name="environment" class="form-control mb-3">
+            <option value="pro" {% if environment == "pro" %}selected{% endif %}>PRD</option>
+            <option value="stg" {% if environment == "stg" %}selected{% endif %}>STG</option>
+        </select>
+
+        <!-- Date -->
+        <label><b>Select Date</b></label>
+        <input type="date" 
+               id="selected_date" 
+               name="selected_date"
+               value="{{ selected_date }}"
+               class="form-control mb-3">
+
+        <!-- Hours -->
+        <label><b>Select Hour</b></label>
+        <select name="selected_time" id="selected_time" class="form-control mb-3">
+            {% if available_times %}
+                {% for t in available_times %}
+                    <option value="{{ t }}" {% if selected_hour == t %}selected{% endif %}>
+                        {{ t }}:00
+                    </option>
+                {% endfor %}
+            {% else %}
+                <option>No time available</option>
+            {% endif %}
+        </select>
+
+        <button class="btn btn-primary" style="width:100%;">Load Data</button>
+    </form>
+
+    <hr>
+
+    <h4>Report</h4>
+    <div style="white-space: pre-wrap; background:#fff; padding:15px; border-radius:8px; border:1px solid #ddd;">
+        {{ final_report | safe }}
+    </div>
+
+</div>
+
+
+<script>
+$(document).ready(function () {
+
+    $("#selected_date").on("change", function () {
+        let dateVal = $(this).val();
+        let env = $("select[name='environment']").val();
+
+        if (!dateVal) return;
+
+        $.ajax({
+            url: "/get-hours",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                date: dateVal,
+                environment: env
+            }),
+            success: function (resp) {
+
+                let hoursDropdown = $("#selected_time");
+                hoursDropdown.empty();
+
+                if (resp.hours && resp.hours.length > 0) {
+                    resp.hours.forEach(function (h) {
+                        hoursDropdown.append(`<option value="${h}">${h}:00</option>`);
+                    });
+                } else {
+                    hoursDropdown.append(`<option>No time available</option>`);
+                }
+            },
+            error: function (err) {
+                console.error("Error fetching hours:", err);
+            }
+        });
+
+    });
+
+});
+</script>
+
+</body>
+</html>
+
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
