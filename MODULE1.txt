@@ -1,3 +1,85 @@
+from flask import Flask, request, jsonify
+from sqlalchemy import create_engine, Column, Integer, Date, Text
+from sqlalchemy.orm import declarative_base, sessionmaker
+import datetime
+
+app = Flask(__name__)
+Base = declarative_base()
+
+# --- Database URLs ---
+PRD_DATABASE_URL = "postgresql://username:password@prd_host:port/prd_database"
+STG_DATABASE_URL = "postgresql://username:password@stg_host:port/stg_database"  # separate if needed
+
+# --- Engines & Sessions ---
+PRD_ENGINE = create_engine(PRD_DATABASE_URL, pool_pre_ping=True)
+STG_ENGINE = create_engine(STG_DATABASE_URL, pool_pre_ping=True)
+
+PRD_SessionLocal = sessionmaker(bind=PRD_ENGINE, autoflush=True)
+STG_SessionLocal = sessionmaker(bind=STG_ENGINE, autoflush=True)
+
+# --- Models ---
+class SOD_PRD(Base):
+    __tablename__ = "sod_prd"
+    __table_args__ = {"schema": "sod"}  # replace with your actual PRD schema
+
+    uploaddate = Column(Date, primary_key=True, default=datetime.date.today)
+    uploadhour = Column(Integer, primary_key=True, nullable=False)
+    report = Column(Text, nullable=False)
+
+class SOD_STG(Base):
+    __tablename__ = "sod_stg"
+    __table_args__ = {"schema": "sod"}  # replace with your actual STG schema
+
+    uploaddate = Column(Date, primary_key=True, default=datetime.date.today)
+    uploadhour = Column(Integer, primary_key=True, nullable=False)
+    report = Column(Text, nullable=False)
+
+# --- Utility ---
+def convert_date_format(raw_date):
+    try:
+        for fmt in ("%Y-%m-%d", "%m-%d-%Y"):
+            try:
+                return datetime.datetime.strptime(raw_date, fmt).date()
+            except:
+                continue
+        return None
+    except:
+        return None
+
+def get_session_and_model(environment):
+    if environment.lower() == "prd":
+        return PRD_SessionLocal(), SOD_PRD
+    else:
+        return STG_SessionLocal(), SOD_STG
+
+# --- Route ---
+@app.route("/get-hours", methods=["POST"])
+def get_hours():
+    data = request.get_json() or {}
+    raw_date = data.get("date")
+    environment = data.get("environment", "prd")
+
+    selected_date_obj = convert_date_format(raw_date)
+    if not selected_date_obj:
+        return jsonify({"hours": []})
+
+    session, model = get_session_and_model(environment)
+
+    try:
+        hours = session.query(model.uploadhour).filter(model.uploaddate == selected_date_obj).all()
+        return jsonify({"hours": [h[0] for h in hours]})
+    except Exception as e:
+        print("Error fetching hours:", e)
+        return jsonify({"hours": []})
+    finally:
+        session.close()
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
 # API used by frontend to populate hours dynamically
 @app.route("/get-hours", methods=["POST"])
 def get_hours():
