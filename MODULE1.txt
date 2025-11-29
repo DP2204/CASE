@@ -1,3 +1,49 @@
+@app.route("/get-hours", methods=["POST"])
+def get_hours():
+    data = request.get_json() or {}
+
+    raw_date = data.get("date")
+    environment = data.get("environment", "prd").strip().lower()
+
+    print("ENV RECEIVED:", environment)
+
+    selected_date_obj = convert_date_format(raw_date)
+    if not selected_date_obj:
+        return jsonify({"hours": []})
+
+    # ←← MOST IMPORTANT FIX
+    if environment == "prd" or environment == "pro":
+        table = sod_prd
+    elif environment == "stg":
+        table = sod_stg
+    else:
+        print("Invalid environment:", environment)
+        return jsonify({"hours": []})
+
+    session = get_db_session()
+    try:
+        rows = (
+            session.query(table.uploadhour)
+            .filter(table.uploaddate == selected_date_obj)
+            .order_by(table.uploadhour)
+            .all()
+        )
+
+        hours = [str(r[0]).zfill(2) for r in rows]
+
+    except Exception as e:
+        print("Error in get-hours:", e)
+        hours = []
+
+    finally:
+        session.close()
+
+    return jsonify({"hours": hours})
+
+
+
+
+
 <script>
 $(document).ready(function () {
 
