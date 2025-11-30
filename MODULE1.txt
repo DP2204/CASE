@@ -1,3 +1,46 @@
+@app.route("/get-hours", methods=["POST"])
+def get_hours_api():
+    data = request.get_json() or {}
+
+    env = data.get("env")      # "prd" or "stg"
+    raw_date = data.get("date")
+
+    if not env or not raw_date:
+        return jsonify([])
+
+    # Convert date (supports yyyy-mm-dd or mm-dd-yyyy)
+    selected_date_obj = convert_date_format(raw_date)
+    if not selected_date_obj:
+        return jsonify([])
+
+    # Pick model
+    if env.lower() == "prd":
+        Model = SodPRD
+    elif env.lower() == "stg":
+        Model = SodSTG
+    else:
+        return jsonify([])
+
+    session = get_db_session()
+
+    try:
+        rows = (
+            session.query(Model.uploadhour)
+            .filter(Model.uploaddate == selected_date_obj)
+            .order_by(Model.uploadhour)
+            .all()
+        )
+
+        hours = [str(r[0]).zfill(2) for r in rows]
+        return jsonify(hours)
+
+    except Exception as e:
+        print("ERROR loading hours:", e)
+        return jsonify([])
+
+
+
+
 @app.route("/get-hours")
 def get_hours_api():
     env = request.args.get("env")
