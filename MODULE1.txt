@@ -1,3 +1,32 @@
+function loadHours() {
+    const env = document.getElementById("env").value;
+    const date = document.getElementById("date").value;
+
+    if (!date) return;
+
+    fetch(`/get-hours?env=${env}&date=${date}`)
+        .then(res => res.json())
+        .then(data => {
+            const hourSelect = document.getElementById("hour");
+            hourSelect.innerHTML = "";
+
+            if (data.error || !data.data || data.data.length === 0) {
+                hourSelect.innerHTML = `<option>Error loading hours</option>`;
+                return;
+            }
+
+            data.data.forEach(row => {
+                hourSelect.innerHTML += `<option>${row.run_hour}</option>`;
+            });
+        })
+        .catch(err => {
+            document.getElementById("hour").innerHTML =
+                `<option>Error loading hours</option>`;
+        });
+}
+
+
+
 <script>
 $(document).ready(function () {
 
