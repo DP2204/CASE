@@ -1,5 +1,25 @@
 <script>
 function resetForm() {
+    // Reset environment
+    document.getElementById("environment").value = "";
+
+    // Set today's date
+    let today = new Date().toISOString().split("T")[0];
+    document.getElementById("selected_date").value = today;
+
+    // Clear hours dropdown
+    document.getElementById("selected_time").innerHTML =
+        "<option>No time available</option>";
+
+    // Clear report
+    document.getElementById("report_html").innerHTML = "";
+}
+</script>
+
+
+
+<script>
+function resetForm() {
     document.getElementById("environment").value = "";
     document.getElementById("selected_date").value = "";
     document.getElementById("selected_time").innerHTML = "<option>No time available</option>";
