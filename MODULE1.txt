@@ -1,3 +1,52 @@
+<script>
+function fetchHours() {
+
+    const env = document.getElementById("environment").value.trim().toLowerCase();
+    const date = document.getElementById("selected_date").value;
+
+    // Clear dropdown first
+    const hourDropdown = document.getElementById("selected_time");
+    hourDropdown.innerHTML = "<option>Loading...</option>";
+
+    if (!env || !date) {
+        hourDropdown.innerHTML = "<option>No time available</option>";
+        return;
+    }
+
+    fetch("/get-hours", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            env: env,
+            date: date
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hourDropdown.innerHTML = "";
+
+        if (!Array.isArray(data) || data.length === 0) {
+            hourDropdown.innerHTML = "<option>No time available</option>";
+            return;
+        }
+
+        data.forEach(h => {
+            const opt = document.createElement("option");
+            opt.value = h;
+            opt.textContent = h;
+            hourDropdown.appendChild(opt);
+        });
+    })
+    .catch(err => {
+        console.error("Error fetching hours:", err);
+        hourDropdown.innerHTML = "<option>Error loading hours</option>";
+    });
+}
+</script>
+
+
+
+
 @app.route("/get-hours", methods=["POST"])
 def get_hours_api():
     data = request.get_json() or {}
