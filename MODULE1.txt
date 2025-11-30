@@ -1,4 +1,28 @@
 <script>
+function loadData() {
+    // Get selected values
+    let environment = document.getElementById("environment").value;
+    let date = document.getElementById("selected_date").value;
+
+    // Optional: clear previous report
+    document.getElementById("report_html").innerHTML = "Loading...";
+
+    // Fetch data from server without refreshing the page
+    fetch(`/get_report?env=${environment}&date=${date}`)
+        .then(response => response.text()) // or .json() if your server returns JSON
+        .then(data => {
+            document.getElementById("report_html").innerHTML = data;
+        })
+        .catch(error => {
+            console.error("Error fetching report:", error);
+            document.getElementById("report_html").innerHTML = "Error loading data.";
+        });
+}
+</script>
+
+
+
+<script>
 window.onload = function() {
     // Reset environment dropdown
     let env = document.getElementById("environment");
