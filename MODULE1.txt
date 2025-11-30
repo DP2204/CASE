@@ -1,3 +1,25 @@
+@app.route("/get-hours")
+def get_hours_api():
+    env = request.args.get("env")
+    date_str = request.args.get("date")
+
+    if not env or not date_str:
+        return jsonify({"error": "Missing parameters"})
+
+    try:
+        dt = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+    except:
+        return jsonify({"error": "Invalid date format"})
+
+    table = "sod_" + env.lower()      # auto pick sod_prd or sod_stg
+
+    result = get_hours(env, table, dt, dt)
+
+    return jsonify(result)
+
+
+
+
 function loadHours() {
     const env = document.getElementById("env").value;
     const date = document.getElementById("date").value;
