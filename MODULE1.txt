@@ -1,3 +1,25 @@
+<script>
+window.onload = function() {
+    // Reset environment dropdown
+    let env = document.getElementById("environment");
+    if(env) env.value = "";
+
+    // Set today's date
+    let today = new Date().toISOString().split("T")[0];
+    let dateInput = document.getElementById("selected_date");
+    if(dateInput) dateInput.value = today;
+
+    // Clear hours dropdown
+    let hours = document.getElementById("selected_time");
+    if(hours) hours.innerHTML = "<option>No time available</option>";
+
+    // Clear report
+    let reportDiv = document.getElementById("report_html");
+    if(reportDiv) reportDiv.innerHTML = "";
+};
+</script> 
+
+
 function resetForm() {
     // Reset environment dropdown
     document.getElementById("environment").value = "";
