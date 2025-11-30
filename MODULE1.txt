@@ -1,3 +1,75 @@
+<script>
+$(document).ready(function () {
+
+    $("#selected_date").on("change", function () {
+        let dateval = $(this).val();
+        let env = $("#environment").val();
+        let dropdown = $("#selected_time");
+
+        if (!dateval || !env) {
+            dropdown.empty();
+            dropdown.append('<option value="">Select environment & date</option>');
+            return;
+        }
+
+        $.ajax({
+            url: "/get_hours",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                env: env,
+                date: dateval
+            }),
+            success: function (hours) {
+                dropdown.empty();
+
+                if (!hours || hours.length === 0) {
+                    dropdown.append('<option value="">No time available</option>');
+                    return;
+                }
+
+                hours.forEach(function (h) {
+                    dropdown.append(`<option value="${h}">${h}</option>`);
+                });
+            },
+            error: function (err) {
+                console.error("Error fetching hours:", err);
+                dropdown.empty();
+                dropdown.append('<option value="">Error loading hours</option>');
+            }
+        });
+
+    });
+
+});
+</script>
+
+<!-- Environment -->
+<label class="fw-bold">Environment</label>
+<select id="environment" name="environment" class="form-control mb-3" required>
+    <option value="">-- Select Environment --</option>
+    <option value="prd" {% if environment == 'prd' %}selected{% endif %}>PRD</option>
+    <option value="stg" {% if environment == 'stg' %}selected{% endif %}>STG</option>
+</select>
+
+<!-- Select Date -->
+<label class="fw-bold">Select Date:</label>
+<input type="date" id="selected_date" name="selected_date"
+       class="form-control mb-3" required value="{{ selected_date }}">
+
+<!-- Select Hour -->
+<label class="fw-bold">Select Hour:</label>
+<select id="selected_time" name="selected_time" class="form-control mb-3" required>
+    {% if available_times %}
+        {% for t in available_times %}
+            <option value="{{ t }}" {% if selected_hour == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+    {% else %}
+        <option value="">No time available</option>
+    {% endif %}
+</select>
+
+
 @app.route("/sod-checks", methods=["GET", "POST"])
 def sod_page():
 
