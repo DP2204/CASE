@@ -1,4 +1,14 @@
 <script>
+function resetForm() {
+    document.getElementById("environment").value = "";
+    document.getElementById("selected_date").value = "";
+    document.getElementById("selected_time").innerHTML = "<option>No time available</option>";
+    document.getElementById("report_html").innerHTML = "";
+}
+</script>
+
+
+<script>
 function fetchHours() {
 
     const env = document.getElementById("environment").value.trim().toLowerCase();
