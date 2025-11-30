@@ -1,3 +1,27 @@
+function resetForm() {
+    // Reset environment dropdown
+    document.getElementById("environment").value = "";
+
+    // Set today's date
+    let today = new Date().toISOString().split("T")[0];
+    document.getElementById("selected_date").value = today;
+
+    // Clear hours dropdown
+    document.getElementById("selected_time").innerHTML =
+        "<option>No time available</option>";
+
+    // Clear report
+    let reportDiv = document.getElementById("report_html");
+    if (reportDiv) {
+        reportDiv.innerHTML = ""; // remove old report
+    }
+
+    // Optional: disable "Load Report" button until new selections
+    // document.getElementById("load_button").disabled = true;
+}
+
+
+
 <script>
 function resetForm() {
     // Reset environment
