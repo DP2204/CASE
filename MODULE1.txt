@@ -1,3 +1,48 @@
+<input type="date" id="selected_date">
+<select id="selected_time"></select>
+<button id="loadDataBtn">Load Data</button>
+
+<div id="reportContainer"></div>
+
+<script>
+document.getElementById("loadDataBtn").addEventListener("click", function(event) {
+    event.preventDefault();  // prevent page refresh
+
+    const selectedDate = document.getElementById("selected_date").value;
+    const selectedHour = document.getElementById("selected_time").value;
+
+    const formData = new FormData();
+    formData.append("selected_date", selectedDate);
+    formData.append("selected_time", selectedHour);
+
+    fetch("/get-report", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update available hours dropdown
+        const hourDropdown = document.getElementById("selected_time");
+        hourDropdown.innerHTML = ""; // clear existing options
+        data.available_times.forEach(hour => {
+            const option = document.createElement("option");
+            option.value = hour;
+            option.textContent = hour;
+            hourDropdown.appendChild(option);
+        });
+
+        // Show report
+        const reportContainer = document.getElementById("reportContainer");
+        reportContainer.innerHTML = data.report_html || "<p>No report found for selected date/hour</p>";
+    })
+    .catch(err => console.error(err));
+});
+</script>
+
+
+
+
+
 from flask import Flask, request, jsonify
 import datetime
 
