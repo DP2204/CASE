@@ -1,3 +1,40 @@
+@app.route("/load-report", methods=["POST"])
+def load_report():
+    try:
+        data = request.get_json()
+        print("\nRECEIVED JSON:", data)
+
+        env = data.get("environment")
+        date = data.get("selected_date")
+        hour = data.get("selected_time")
+
+        print("ENV:", env)
+        print("DATE:", date)
+        print("HOUR:", hour)
+
+        # Make sure this function exists in your code
+        report = generate_report(env, date, hour)
+
+        return jsonify({
+            "success": True,
+            "report_html": report
+        })
+
+    except Exception as e:
+        print("\nERROR IN /load-report")
+        print(str(e))
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
 <script>
 
 function loadReport(event) {
