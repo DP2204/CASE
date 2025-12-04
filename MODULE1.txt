@@ -1,3 +1,25 @@
+def generate_report(env, date, hour):
+    """
+    Replace this code with your actual logic to fetch report.
+    """
+    try:
+        # Example: fetch report from your sod_prd / sod_stg tables
+        if env == "prd":
+            result = db.session.query(PrdModel).filter_by(uploaddate=date, uploadhour=hour).first()
+        else:
+            result = db.session.query(StgModel).filter_by(uploaddate=date, uploadhour=hour).first()
+
+        if result:
+            return result.report_text   # adjust to your column name
+        else:
+            return "No report found for this date and hour."
+
+    except Exception as e:
+        return f"Error loading report: {str(e)}"
+
+
+
+
 <script>
 
 // ---------------- LOAD REPORT AJAX (NO PAGE REFRESH) ----------------
