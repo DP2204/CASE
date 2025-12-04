@@ -1,3 +1,50 @@
+<script>
+
+function loadReport(event) {
+    event.preventDefault();
+
+    const env = document.getElementById("environment").value;
+    const date = document.getElementById("selected_date").value;
+    const hour = document.getElementById("selected_time").value;
+
+    const reportArea = document.getElementById("report-area");
+    reportArea.innerHTML = "<p style='color:white;'>Loading report...</p>";
+
+    fetch("/load-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            environment: env,
+            selected_date: date,
+            selected_time: hour
+        })
+    })
+    .then(response => {
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            reportArea.innerHTML = `
+                <h5 style="color:#1EBC3A;">Report for ${date} at ${hour}</h5>
+                <div class="border p-3 bg-white" style="white-space: pre-wrap;">
+                    ${data.report_html}
+                </div>
+            `;
+        } else {
+            reportArea.innerHTML = `<p style='color:red;'>${data.error}</p>`;
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        reportArea.innerHTML = "<p style='color:red;'>Error loading report.</p>";
+    });
+}
+
+</script>
+
+
+
+
 @app.route("/load-report", methods=["POST"])
 def load_report():
     try:
