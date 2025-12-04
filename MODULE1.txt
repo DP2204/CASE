@@ -1,3 +1,30 @@
+@app.route("/load-report", methods=["POST"])
+def load_report():
+    try:
+        data = request.get_json()
+        print("\n=== RECEIVED JSON ===")
+        print(data)
+
+        env = data.get("environment")
+        date = data.get("selected_date")
+        hour = data.get("selected_time")
+
+        print("ENV:", env)
+        print("DATE:", date)
+        print("HOUR:", hour)
+
+        report = generate_report(env, date, hour)
+
+        return jsonify({"success": True, "report_html": report})
+
+    except Exception as e:
+        print("\n=== ERROR IN /load-report ===")
+        print(str(e))
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+
+
 def generate_report(env, date, hour):
     """
     Replace this code with your actual logic to fetch report.
