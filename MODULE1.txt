@@ -1,3 +1,37 @@
+@app.route("/load-report", methods=["POST"])
+def load_report():
+    try:
+        data = request.get_json()
+        print("Received data:", data)
+
+        env = data.get("environment")
+        date = data.get("selected_date")
+        hour = data.get("selected_time")    # ✅ FIXED KEY
+
+        if not (env and date and hour):
+            return jsonify({
+                "success": False,
+                "error": "Environment, date or hour missing."
+            }), 400
+
+        # Your function to generate the report
+        report = generate_report(env, date, hour)
+
+        return jsonify({
+            "success": True,
+            "report_html": report
+        })
+
+    except Exception as e:
+        print("ERROR:", e)
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
+
+
 <div style="background: #121212; padding: 20px; margin-top:70px; margin-left:100px; margin-right:100px">
 
     <h2 style="color: #1E9C3A; margin-bottom: 20px;">SOD Checks</h2>
