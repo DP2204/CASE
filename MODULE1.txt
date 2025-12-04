@@ -1,3 +1,30 @@
+def generate_report(env, date, hour):
+    try:
+        session = get_db_session()
+
+        # Select table by environment
+        if env == "prd":
+            result = session.query(SodPRD).filter_by(
+                uploaddate=date,
+                uploadhour=hour
+            ).first()
+        else:
+            result = session.query(SodSTG).filter_by(
+                uploaddate=date,
+                uploadhour=hour
+            ).first()
+
+        if result:
+            return result.report   # <-- your actual column name
+        else:
+            return "No report found for this date and hour."
+
+    except Exception as e:
+        return f"Error loading report: {str(e)}"
+
+
+
+
 <script>
 function loadReport(event) {
     event.preventDefault();
