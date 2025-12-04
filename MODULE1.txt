@@ -1,3 +1,51 @@
+<form id="reportForm" autocomplete="off">
+
+    <!-- Environment -->
+    <label class="fw-bold">Select Environment:</label>
+    <select id="environment" name="environment" class="form-control mb-3" required>
+        <option value="prd" selected>PRD</option>
+        <option value="stg">STG</option>
+    </select>
+
+    <!-- Select Date -->
+    <label class="fw-bold">Select Date:</label>
+    <input type="date" id="selected_date" name="selected_date" class="form-control mb-3">
+
+    <!-- LOAD DATA BUTTON INSIDE FORM -->
+    <button type="submit"
+        style="width: 20%; background:#1EBC3A; color:white; padding:10px; border:none; font-size:16px;">
+        Load Data
+    </button>
+
+</form>
+
+<!-- REPORT -->
+<div id="report_html"></div>
+
+<script>
+document.getElementById("reportForm").addEventListener("submit", function(event) {
+    event.preventDefault();   // 🔥 STOP PAGE REFRESHING COMPLETELY
+
+    let env = document.getElementById("environment").value;
+    let date = document.getElementById("selected_date").value;
+
+    document.getElementById("report_html").innerHTML = "Loading...";
+
+    fetch(`/get_report?env=${env}&date=${date}`)
+        .then(res => res.text())
+        .then(data => {
+            document.getElementById("report_html").innerHTML = data;
+        })
+        .catch(err => {
+            document.getElementById("report_html").innerHTML = "Error loading report";
+        });
+});
+</script>
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
