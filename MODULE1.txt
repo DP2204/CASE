@@ -1,3 +1,55 @@
+from flask import Flask, request, jsonify
+import datetime
+
+app = Flask(__name__)
+
+@app.route("/get-report", methods=["POST"])
+def get_report():
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    raw_date = request.form.get("selected_date", today)
+    selected_hour = request.form.get("selected_time", "")
+
+    selected_date_obj = convert_date_format(raw_date)  # your date conversion function
+    available_times = []
+    report_html = None
+
+    if Model and selected_date_obj:
+        # Fetch all hours for the selected date
+        rows = (
+            session.query(Model.uploadhour)
+            .filter(Model.uploaddate == selected_date_obj)
+            .order_by(Model.uploadhour)
+            .all()
+        )
+        available_times = [str(r[0]).zfill(2) for r in rows]
+
+        if selected_hour:
+            try:
+                sh_int = int(selected_hour)
+                row = (
+                    session.query(Model)
+                    .filter(
+                        Model.uploaddate == selected_date_obj,
+                        Model.uploadhour == sh_int
+                    )
+                    .first()
+                )
+                if row:
+                    report_html = row.report
+            except Exception as e:
+                print("Error fetching report:", e)
+
+    # Return JSON instead of rendering template
+    return jsonify({
+        "available_times": available_times,
+        "report_html": report_html
+    })
+
+
+
+
+
+
 window.onload = function () {
 
     const Form = document.getElementById("Form");
