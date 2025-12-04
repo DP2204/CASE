@@ -1,3 +1,142 @@
+<div style="background: #121212; padding: 20px; margin-top:70px; margin-left:100px; margin-right:100px">
+
+    <h2 style="color: #1E9C3A; margin-bottom: 20px;">SOD Checks</h2>
+
+    <!-- REMOVE FORM REFRESH -->
+    <form id="sodForm" onsubmit="loadReport(event)">
+        
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+
+                <!-- ENVIRONMENT -->
+                <label class="fw-bold">Select Environment:</label>
+                <select id="environment" name="environment" onchange="fetchHours()" class="form-control mb-3" required>
+                    <option value="">-- Select Environment --</option>
+                    <option value="prd">PRD</option>
+                    <option value="stg">STG</option>
+                </select>
+
+                <!-- DATE -->
+                <label class="fw-bold">Select Date:</label>
+                <input type="date" id="selected_date" name="selected_date" onchange="fetchHours()" class="form-control mb-3" required>
+
+                <!-- HOUR -->
+                <label class="fw-bold">Select Hour:</label>
+                <select id="selected_time" name="selected_time" class="form-control mb-3" required>
+                    <option value="">-- Select Hour --</option>
+                </select>
+
+            </div>
+
+        </div>
+
+        <!-- LOAD BUTTON -->
+        <button type="submit"
+            style="display: block; width: 100%; background: #1EBC3A; color: white; padding: 10px; border:none; font-size:16px; margin-top:10px;">
+            Load Data
+        </button>
+
+    </form>
+
+    <!-- DYNAMIC REPORT AREA -->
+    <div id="report-area" class="mt-4" style="color:white;">
+        <p class="text-muted">No report loaded.</p>
+    </div>
+</div>
+
+
+<script>
+
+// ---------------- FETCH HOURS (NO REFRESH) ----------------
+function fetchHours() {
+
+    const env = document.getElementById("environment").value;
+    const date = document.getElementById("selected_date").value;
+
+    const hourDropdown = document.getElementById("selected_time");
+    hourDropdown.innerHTML = "<option>Loading...</option>";
+
+    if (!env || !date) {
+        hourDropdown.innerHTML = "<option>-- Select Hour --</option>";
+        return;
+    }
+
+    fetch("/get-hours", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ env: env, date: date })
+    })
+    .then(res => res.json())
+    .then(data => {
+        hourDropdown.innerHTML = "";
+        
+        if (!data || data.length === 0) {
+            hourDropdown.innerHTML = "<option>No hours available</option>";
+            return;
+        }
+
+        data.forEach(h => {
+            const opt = document.createElement("option");
+            opt.value = h;
+            opt.textContent = h;
+            hourDropdown.appendChild(opt);
+        });
+    })
+    .catch(err => {
+        console.error("Error:", err);
+        hourDropdown.innerHTML = "<option>Error loading hours</option>";
+    });
+}
+
+
+
+// ---------------- LOAD REPORT AJAX (NO REFRESH) ----------------
+function loadReport(event) {
+    event.preventDefault();  // STOP PAGE REFRESH
+
+    const env = document.getElementById("environment").value;
+    const date = document.getElementById("selected_date").value;
+    const hour = document.getElementById("selected_time").value;
+
+    const reportArea = document.getElementById("report-area");
+    reportArea.innerHTML = "<p style='color:white;'>Loading report...</p>";
+
+    fetch("/load-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            environment: env,
+            selected_date: date,
+            selected_time: hour
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            reportArea.innerHTML = `
+                <h5 style="color:#1EBC3A;">Report for ${date} at ${hour}</h5>
+                <div class="border p-3 bg-white" style="white-space: pre-wrap;">
+                    ${data.report_html}
+                </div>
+            `;
+        } else {
+            reportArea.innerHTML = `<p style="color:red;">${data.error}</p>`;
+        }
+    })
+    .catch(err => {
+        console.error("Error:", err);
+        reportArea.innerHTML = "<p style='color:red;'>Error loading report.</p>";
+    });
+}
+
+</script>
+
+
+
+
+
+
 <input type="date" id="selected_date">
 <select id="selected_time"></select>
 <button id="loadDataBtn">Load Data</button>
