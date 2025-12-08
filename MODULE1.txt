@@ -1,3 +1,114 @@
+<script>
+
+function fetchHours() {
+    const env = document.getElementById("environment").value;
+    const date = document.getElementById("selected_date").value;
+    const hourDropdown = document.getElementById("selected_time");
+
+    hourDropdown.innerHTML = "<option>Loading...</option>";
+
+    if (!env || !date) {
+        hourDropdown.innerHTML = "<option>-- Select Hour --</option>";
+        return;
+    }
+
+    fetch("/get-hours", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ env: env, date: date })
+    })
+    .then(res => res.json())
+    .then(data => {
+        hourDropdown.innerHTML = "";
+        if (!data || data.length === 0) {
+            hourDropdown.innerHTML = "<option>No hours available</option>";
+            return;
+        }
+        data.forEach(h => {
+            const opt = document.createElement("option");
+            opt.value = h;
+            opt.textContent = h;
+            hourDropdown.appendChild(opt);
+        });
+    })
+    .catch(err => {
+        console.error("Error:", err);
+        hourDropdown.innerHTML = "<option>Error loading hours</option>";
+    });
+}
+
+
+
+function loadReport(event) {
+    event.preventDefault();
+
+    const env = document.getElementById("environment").value;
+    const date = document.getElementById("selected_date").value;
+    const hour = document.getElementById("selected_time").value;
+    const iframe = document.getElementById("report-frame");
+
+    // Show loading
+    iframe.srcdoc = "<p style='padding:20px;'>Loading report...</p>";
+
+    fetch("/load-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            environment: env,
+            selected_date: date,
+            selected_time: hour
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (data.success) {
+
+            iframe.srcdoc = `
+            <html>
+            <head>
+            <style>
+                body { margin:0; padding:10px; font-family:Arial; overflow-x:hidden; }
+                .report-wrapper { width:100%; white-space:pre-wrap; }
+                table { width:100%; border-collapse:collapse; }
+                td, th { border:1px solid black; padding:5px; }
+            </style>
+            </head>
+            <body>
+                <h4 style="color:#1EBC3A;">Report for ${date} at ${hour}</h4>
+                <div class="report-wrapper">
+                    ${data.report_html}
+                </div>
+            </body>
+            </html>`;
+        }
+        else {
+            iframe.srcdoc = `<p style='color:red; padding:20px;'>${data.error}</p>`;
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        iframe.srcdoc = "<p style='color:red; padding:20px;'>Error loading report.</p>";
+    });
+}
+
+
+
+function resizeIframe(iframe) {
+    try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        iframe.style.height = doc.body.scrollHeight + "px";
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+</script>
+
+
+
+
+
 const iframe = document.getElementById("report-frame");
 
 iframe.srcdoc = `
