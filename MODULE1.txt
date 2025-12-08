@@ -1,3 +1,42 @@
+const iframe = document.getElementById("report-frame");
+
+iframe.srcdoc = `
+<html>
+<head>
+<style>
+  body {
+     margin: 0;
+     padding: 0;
+     overflow-x: hidden;
+     font-family: Arial;
+  }
+  .report-wrapper {
+     width: 100%;
+     padding: 15px;
+     box-sizing: border-box;
+     background: white;
+     white-space: pre-wrap;
+  }
+  table {
+     width: 100% !important;
+     border-collapse: collapse;
+  }
+  td, th {
+     border: 1px solid black;
+     padding: 5px;
+  }
+</style>
+</head>
+<body>
+  <div class="report-wrapper">
+     <h3 style="color:#1EBC3A;">Report for ${date} at ${hour}</h3>
+     ${data.report_html}
+  </div>
+</body>
+</html>
+`;
+
+
 <!DOCTYPE html>
 <html>
 <head>
