@@ -1,3 +1,48 @@
+iframe.srcdoc = `
+<html>
+<head>
+<style>
+    body, html {
+        margin: 0;
+        padding: 10px;
+        width: 100%;
+        overflow-x: hidden !important;
+        font-family: Arial;
+    }
+
+    .report-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    table {
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse;
+    }
+
+    td, th {
+        border: 1px solid black;
+        padding: 5px;
+        word-wrap: break-word !important;
+        white-space: normal !important;
+    }
+</style>
+</head>
+<body>
+    <h4 style="color:#1EBC3A;">Report for ${date} at ${hour}</h4>
+    <div class="report-wrapper">
+        ${data.report_html}
+    </div>
+</body>
+</html>`;
+
+
+
+
+
 <script>
 
 function fetchHours() {
