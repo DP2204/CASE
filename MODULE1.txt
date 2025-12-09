@@ -1,3 +1,16 @@
+<div class="small-box">
+    <a href="/devsecops" target="_blank" 
+       style="display:block; padding:15px; background:linear-gradient(135deg, #1EBC3A, #0E8F27);
+              border-radius:10px; text-align:center; color:white; font-weight:bold; 
+              font-size:18px; text-decoration:none; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+        DevSecOps Health Checks
+    </a>
+</div>
+
+
+
+
+
 iframe.srcdoc = `
 <html>
 <head>
