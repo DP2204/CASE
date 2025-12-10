@@ -4,6 +4,37 @@ class RequestControllerTest {
     @InjectMocks
     private RequestController requestController;
 
+    @Mock private RequestMapper requestMapper;
+    @Mock private TransactionPropertyService transactionPropertyService;
+    @Mock private EventMapper eventMapper;
+    @Mock private IntradayReportMapper intradayReportMapper;
+    @Mock private RequestService requestService;
+    @Mock private EventService eventService;
+    @Mock private LockUserService lockUserService;
+    @Mock private EventThrowbackService eventThrowbackService;
+    @Mock private EventReviewService eventReviewService;
+    @Mock private RequestServiceImpl requestServiceImpl;
+    @Mock private ExternalTrackAndTraceService externalTrackAndTraceService;
+
+    // 🔥 THIS IS THE MOST IMPORTANT MOCK
+    @Mock private ExternalTrackAndTraceMapper externalTrackAndTraceMapper;
+
+    @BeforeEach
+    void setup() {
+        ReflectionTestUtils.setField(requestController, "exportLimit", 2000);
+    }
+}
+
+
+
+
+
+@ExtendWith(MockitoExtension.class)
+class RequestControllerTest {
+
+    @InjectMocks
+    private RequestController requestController;
+
     @Mock
     private RequestService requestService;
 
