@@ -1,3 +1,64 @@
+@Test
+public void createUser() {
+    // Arrange
+    UserEntity savedUserEntity = ModelHelper.findByUIdIgnoreCase("1");
+    ReflectionTestUtils.setField(service, "commonMapper", commonMapper);
+
+    UserV3 userV3 = ModelHelper.getUserV3();
+
+    // UID is not used → must return null
+    given(userRepository.getFullNameByUid(ArgumentMatchers.any()))
+            .willReturn(null);
+
+    // saveUser() inside service → repository.save() mocked
+    given(repository.save(ArgumentMatchers.any()))
+            .willReturn(savedUserEntity);
+
+    // user jurisdiction save mocks
+    given(userJurisdictionRepository.saveAll(ArgumentMatchers.any()))
+            .willReturn(ModelHelper.getUserJurisdictionEntities(savedUserEntity));
+
+    // for LDAP case (if forLdap = true)
+    given(pgpeLinkRepository.findAll())
+            .willReturn(Arrays.asList(ModelHelper.getPgpeLinkEntity()));
+
+    given(layerPeRoleRepository.getLayerPeRoleEntity(
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()))
+            .willReturn(Optional.of(ModelHelper.getLayerPeRoleEntity()));
+
+    given(processingAreaRepository.findById(ArgumentMatchers.any()))
+            .willReturn(Optional.of(ModelHelper.getProcessingAreaEntity()));
+
+    // mapper mocks for building UserV3 response
+    given(commonMapper.getProcessingAreaV2Model(ArgumentMatchers.any()))
+            .willReturn(ModelHelper.getProcessingAreaV2());
+
+    given(commonMapper.getLayerModel(ArgumentMatchers.any()))
+            .willReturn(ModelHelper.getLayer());
+
+    given(commonMapper.getProcessingV2Model(ArgumentMatchers.any()))
+            .willReturn(ModelHelper.getProcessingV2());
+
+    given(commonMapper.getRoleV2List(ArgumentMatchers.any()))
+            .willReturn(ModelHelper.getRoles());
+
+    // Act
+    UserV3 createdUser =
+            service.createUser("1", userV3, false, null);
+
+    // Assert
+    assertThat(createdUser).isNotNull();
+}
+
+
+
+
+
+
+
+
 ALTER TABLE DPW_EXTERNAL_TRACK_AND_TRACE DROP COLUMN "KA CODE";
 
 ALTER TABLE DPW_EXTERNAL_TRACK_AND_TRACE DROP COLUMN TNX_TYPE_CODE;
