@@ -1,4 +1,74 @@
 @Test
+void createRequest_ShouldHandleNormalAndFallbackFlow() {
+
+    String bnppuid = "bnppuid1";
+    String branchCode = "30004";
+    String countryCode = "FR";
+
+    Request incomingRequest = new Request();
+    incomingRequest.setChannelName("UV");
+
+    Request expectedRequest = new Request();
+    expectedRequest.setId("R1");
+
+    // Normal flow throws
+    when(requestService.createRequest(
+            eq(bnppuid),
+            eq(incomingRequest),
+            isNull(),
+            isNull(),
+            eq(branchCode),
+            eq(countryCode),
+            isNull()
+    )).thenThrow(new RuntimeException("Status and Workflow Mismatch"));
+
+    // Fallback flow returns expected
+    when(requestService.createRequestInCaseOfFallback(
+            eq(bnppuid),
+            eq(incomingRequest),
+            eq(branchCode)
+    )).thenReturn(expectedRequest);
+
+    // Act
+    ResponseEntity<Request> response = requestController.createRequest(
+            branchCode,
+            countryCode,
+            bnppuid,
+            null,
+            null,
+            null,
+            incomingRequest
+    );
+
+    // Assert
+    assertNotNull(response);
+    assertEquals("R1", response.getBody().getId());
+
+    verify(requestService, times(1)).createRequest(
+            eq(bnppuid),
+            eq(incomingRequest),
+            isNull(),
+            isNull(),
+            eq(branchCode),
+            eq(countryCode),
+            isNull()
+    );
+
+    verify(requestService, times(1)).createRequestInCaseOfFallback(
+            eq(bnppuid),
+            eq(incomingRequest),
+            eq(branchCode)
+    );
+}
+
+
+
+
+
+
+
+
+@Test
 void testGetConnexisReqRefIdThroughMfr_ReturnsResponse() throws BatchException {
     // Arrange
     String branchCode = "30004";
