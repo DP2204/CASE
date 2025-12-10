@@ -1,4 +1,46 @@
 @Test
+void testCreateSaveMotiveForEventId() {
+
+    // Arrange
+    String bnppuid = "tech001";
+    String branchCode = "30004";
+    String countryCode = "FR";
+    String eventId = "E00001";
+    String saveMotiveName = "Test Save Motive";
+
+    // Prepare the mocked response
+    GenericResponse mockedResponse = new GenericResponse();
+    mockedResponse.setStatus("SUCCESS");
+
+    // Correct Mockito stubbing
+    when(requestApi.createSaveMotiveForEventId(
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString()))
+        .thenReturn(mockedResponse);
+
+    // Act
+    GenericResponse response = controllerUtils.createSaveMotiveForEventId(
+            bnppuid, branchCode, countryCode, eventId, saveMotiveName);
+
+    // Assert
+    assertNotNull(response);
+    assertEquals("SUCCESS", response.getStatus());
+
+    // Verify that the API was called exactly once
+    verify(requestApi, times(1))
+        .createSaveMotiveForEventId(
+            anyString(), anyString(), anyString(), anyString(), anyString());
+}
+
+
+
+
+
+
+@Test
 public void createUser() {
     // Arrange
     UserEntity savedUserEntity = ModelHelper.findByUIdIgnoreCase("1");
