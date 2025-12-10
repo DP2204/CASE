@@ -1,3 +1,46 @@
+@Test
+void completeExistingEvent() {
+
+    CompleteEventRequest body = new CompleteEventRequest();
+    body.setCompletionMotiveComment("test Comment");
+    body.setCompletionMotiveId(1);
+
+    // Mock eventService call
+    when(eventService.completeEvent(
+            anyString(), anyString(), anyString(), anyString(), any(CompleteEventRequest.class)
+    )).thenReturn(new EventEntity());  // just return a dummy EventEntity
+
+    // Mock externalTrackAndTraceService call
+    when(externalTrackAndTraceService.getExternalTrackAndTraceDetails(
+            anyString(), anyString(), anyString(), anyString(), any()
+    )).thenReturn(new ExternalTrackAndTraceDetails()); // dummy object
+
+    // Mock mapper call (optional if you don't care)
+    when(externalTrackAndTraceMapper.externalTrackAndTraceDetailsToRequest(
+            any(ExternalTrackAndTraceDetails.class), any(Request.class)
+    )).thenReturn(null);  // mapper is void, so returning null is fine
+
+    // Execute
+    ResponseEntity<Request> response = requestController.completeEvent(
+            "30004", "FR", "bnppuid1", "Initiate", "E1", body
+    );
+
+    // Verify service calls
+    verify(eventService, times(1)).completeEvent(anyString(), anyString(), anyString(), anyString(), any(CompleteEventRequest.class));
+    verify(externalTrackAndTraceService, times(1)).getExternalTrackAndTraceDetails(anyString(), anyString(), anyString(), anyString(), any());
+
+    // Assert response
+    assertNotNull(response);
+    assertNotNull(response.getBody());
+    assertEquals("E1", response.getBody().getEventId());  // controller sets eventId
+}
+
+
+
+
+
+
+
 @ExtendWith(MockitoExtension.class)
 @WithMockUser // IMPORTANT → Makes @PreAuthorize inactive for unit test
 class RequestControllerTest {
