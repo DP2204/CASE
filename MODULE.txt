@@ -1,3 +1,35 @@
+@ExtendWith(MockitoExtension.class)
+class RequestControllerTest {
+
+    @InjectMocks
+    private RequestController requestController;
+
+    @Mock
+    private RequestService requestService;
+
+    @Mock
+    private EventService eventService;
+
+    @Mock
+    private IntradayReportMapper intradayReportMapper;
+
+    @Mock
+    private EventMapper eventMapper;
+
+    @Mock
+    private RequestMapper requestMapper;
+
+    @Mock
+    private DpwEventHelper dpwEventHelper;
+
+    @BeforeEach
+    public void setup() {
+        ReflectionTestUtils.setField(requestController, "exportLimit", 2000);
+    }
+}
+
+
+
 @Test
 void createRequest_ShouldHandleNormalAndFallbackFlow() {
 
