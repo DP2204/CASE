@@ -1,4 +1,62 @@
 @Test
+void completeExistingEvent_ShouldReturnRequest() {
+    // --- Prepare input ---
+    String bnppuid = "bnppuid1";
+    String branchCode = "30004";
+    String countryCode = "FR";
+    String stepName = "Initiate";
+    String eventId = "E1";
+
+    CompleteEventRequest body = new CompleteEventRequest();
+    body.setCompletionMotiveComment("test Comment");
+    body.setCompletionMotiveId(1);
+
+    // --- Prepare mocked objects ---
+    RequestEvent mockRequestEvent = new RequestEvent();
+    mockRequestEvent.setId(eventId);
+
+    ExternalTrackAndTraceDetails mockTrackAndTrace = new ExternalTrackAndTraceDetails();
+
+    // --- Stubbing service calls ---
+    when(eventService.completeEvent(
+            anyString(), anyString(), anyString(), anyString(), any(CompleteEventRequest.class)
+    )).thenReturn(mockRequestEvent);  // return correct type
+
+    when(externalTrackAndTraceService.getExternalTrackAndTraceDetails(
+            anyString(), anyString(), anyString(), anyString(), any()
+    )).thenReturn(mockTrackAndTrace);
+
+    // mapper is void, so doNothing()
+    doNothing().when(externalTrackAndTraceMapper)
+            .externalTrackAndTraceDetailsToRequest(any(ExternalTrackAndTraceDetails.class), any(Request.class));
+
+    // --- Execute controller method ---
+    ResponseEntity<Request> response = requestController.completeEvent(
+            branchCode, countryCode, bnppuid, stepName, eventId, body
+    );
+
+    // --- Verify service calls ---
+    verify(eventService, times(1))
+            .completeEvent(eq(bnppuid), eq(branchCode), eq(eventId), eq(stepName), eq(body));
+    verify(externalTrackAndTraceService, times(1))
+            .getExternalTrackAndTraceDetails(eq(branchCode), eq(countryCode), eq(bnppuid), eq(eventId), isNull());
+    verify(externalTrackAndTraceMapper, times(1))
+            .externalTrackAndTraceDetailsToRequest(eq(mockTrackAndTrace), any(Request.class));
+
+    // --- Assertions ---
+    assertNotNull(response);
+    assertNotNull(response.getBody());
+    assertEquals(eventId, response.getBody().getEventId());
+    assertEquals(mockRequestEvent, response.getBody().getEvent());
+}
+
+
+
+
+
+
+
+@Test
 void completeExistingEvent() {
 
     CompleteEventRequest body = new CompleteEventRequest();
