@@ -1,4 +1,36 @@
 @Test
+void testGetConnexisReqRefIdThroughMfr_ReturnsResponse() throws BatchException {
+    // Arrange
+    String branchCode = "30004";
+    String countryCode = "FR";
+    String mfr = "MFR123";
+    String bnppuid = "tech001"; // assuming used internally
+
+    // Stub API to return a value
+    String expectedResponse = "REQ_REF_001";
+    when(mfrAndUmfrApi.getMfrOrCorrespondentRef(
+            anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(expectedResponse);
+
+    // Act
+    String actualResponse = controllerUtils.getConnexisReqRefIdThroughMfr(
+            branchCode, countryCode, mfr);
+
+    // Assert
+    assertNotNull(actualResponse);
+    assertEquals(expectedResponse, actualResponse);
+}
+
+
+
+
+
+
+
+
+
+
+@Test
 void testCreateSaveMotiveForEventId() {
 
     // Arrange
