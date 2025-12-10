@@ -1,4 +1,99 @@
 @ExtendWith(MockitoExtension.class)
+@WithMockUser // IMPORTANT → Makes @PreAuthorize inactive for unit test
+class RequestControllerTest {
+
+    @InjectMocks
+    private RequestController requestController;
+
+    @Mock private RequestMapper requestMapper;
+    @Mock private TransactionPropertyService transactionPropertyService;
+    @Mock private EventMapper eventMapper;
+    @Mock private IntradayReportMapper intradayReportMapper;
+    @Mock private RequestService requestService;
+    @Mock private EventService eventService;
+    @Mock private LockUserService lockUserService;
+    @Mock private EventThrowbackService eventThrowbackService;
+    @Mock private EventReviewService eventReviewService;
+    @Mock private RequestServiceImpl requestServiceImpl;
+    @Mock private ExternalTrackAndTraceService externalTrackAndTraceService;
+    @Mock private ExternalTrackAndTraceMapper externalTrackAndTraceMapper;
+
+    @BeforeEach
+    void setup() {
+        ReflectionTestUtils.setField(requestController, "exportLimit", 2000);
+    }
+
+    @Test
+    void createRequest_ShouldHandleNormalAndFallbackFlow() {
+
+        String bnppuid = "bnppuid1";
+        String branchCode = "30004";
+        String countryCode = "FR";
+
+        Request incomingRequest = new Request();
+        incomingRequest.setChannelName("UV");
+
+        Request expectedRequest = new Request();
+        expectedRequest.setId("R1");
+
+        // Primary call throws exception
+        when(requestService.createRequest(
+                eq(bnppuid),
+                eq(incomingRequest),
+                isNull(),
+                isNull(),
+                eq(branchCode),
+                eq(countryCode),
+                isNull()
+        )).thenThrow(new RuntimeException("Status and Workflow Mismatch"));
+
+        // Fallback call returns expected
+        when(requestService.createRequestInCaseOfFallback(
+                eq(bnppuid),
+                eq(incomingRequest),
+                eq(branchCode)
+        )).thenReturn(expectedRequest);
+
+        // ACT
+        ResponseEntity<Request> response = requestController.createRequest(
+                branchCode,
+                countryCode,
+                bnppuid,
+                null,
+                null,
+                null,
+                incomingRequest
+        );
+
+        // ASSERT
+        assertNotNull(response);
+        assertEquals("R1", response.getBody().getId());
+
+        verify(requestService, times(1)).createRequest(
+                eq(bnppuid),
+                eq(incomingRequest),
+                isNull(),
+                isNull(),
+                eq(branchCode),
+                eq(countryCode),
+                isNull()
+        );
+
+        verify(requestService, times(1)).createRequestInCaseOfFallback(
+                eq(bnppuid),
+                eq(incomingRequest),
+                eq(branchCode)
+        );
+    }
+}
+
+
+
+
+
+
+
+@ExtendWith(MockitoExtension.class)
 class RequestControllerTest {
 
     @InjectMocks
