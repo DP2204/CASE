@@ -1,3 +1,175 @@
+<style>
+    /* LEFT LINKS */
+    .left-link {
+        text-decoration: none;
+        color: #007bff;
+        font-size: 15px;
+        display: block;
+        padding: 5px 0;
+    }
+    .left-link:hover {
+        text-decoration: underline;
+    }
+
+    /* BLUE BUTTONS */
+    .blue-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 14px;
+        margin: 4px;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    /* CENTER WHITE PANEL */
+    .center-box {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        min-height: 350px;
+    }
+
+    /* SECTION TITLES (blue like screenshot) */
+    .center-section-title {
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+
+    /* LINKS INSIDE CENTER */
+    .center-link {
+        color: black;
+        margin: 5px 0;
+        font-size: 15px;
+    }
+    .center-link:hover {
+        color: #007bff;
+        text-decoration: underline;
+    }
+
+    /* RIGHT BUTTONS */
+    .run-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 6px;
+        font-size: 16px;
+    }
+
+    .reset-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 6px;
+        font-size: 16px;
+        margin-left: 10px;
+    }
+</style>
+
+
+
+<div class="container-fluid" style="padding-top: 30px; padding-bottom:50px;">
+
+    <div class="row justify-content-center">
+
+        <!-- LEFT DIVISION (SMALL WIDTH) -->
+        <div class="col-md-2">
+            <div style="background:#f0f0f0; padding:15px; border-radius:10px;">
+                <h4 style="text-align:center; font-weight:bold;">Tools</h4>
+
+                <ul style="list-style:none; padding-left:0; margin-top:20px;">
+                    <li><a class="left-link" href="#">Link 1</a></li>
+                    <li><a class="left-link" href="#">Link 2</a></li>
+                    <li><a class="left-link" href="#">Link 3</a></li>
+                    <li><a class="left-link" href="#">Link 4</a></li>
+                    <li><a class="left-link" href="#">Link 5</a></li>
+                    <li><a class="left-link" href="#">Link 6</a></li>
+                    <li><a class="left-link" href="#">Link 7</a></li>
+                    <li><a class="left-link" href="#">Link 8</a></li>
+                    <li><a class="left-link" href="#">Link 9</a></li>
+                    <li><a class="left-link" href="#">Link 10</a></li>
+                </ul>
+            </div>
+        </div>
+
+
+
+        <!-- CENTER DIVISION (EXACT SCREENSHOT STYLE) -->
+        <div class="col-md-7">
+
+            <!-- BLUE BUTTONS ROW -->
+            <div class="text-center mb-3">
+                <button class="blue-btn">Dashboard</button>
+                <button class="blue-btn">Metrics</button>
+                <button class="blue-btn">Repositories</button>
+                <button class="blue-btn">Quality Gates</button>
+                <button class="blue-btn">Build History</button>
+            </div>
+
+            <!-- MAIN WHITE BOX -->
+            <div class="center-box">
+
+                <div class="row">
+
+                    <!-- SERVICE NOW SECTION -->
+                    <div class="col-md-6 text-center">
+                        <h5 class="center-section-title">Service Now</h5>
+                        <p class="center-link">Incidents</p>
+                        <p class="center-link">Requests</p>
+                        <p class="center-link">Change Log</p>
+                        <p class="center-link">Knowledge Base</p>
+                    </div>
+
+                    <!-- MONITORING SECTION -->
+                    <div class="col-md-6 text-center">
+                        <h5 class="center-section-title">Monitoring</h5>
+                        <p class="center-link">Alerts</p>
+                        <p class="center-link">Dashboards</p>
+                        <p class="center-link">Metrics</p>
+                        <p class="center-link">Reports</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- RIGHT DIVISION (DATE PICKER + BUTTONS) -->
+        <div class="col-md-3">
+            <div style="background:#f0f0f0; padding:20px; border-radius:10px;">
+
+                <h4 style="text-align:center; font-weight:bold;">Select Date</h4>
+
+                <input type="date" class="form-control" style="margin-top:15px;">
+
+                <div class="text-center" style="margin-top:20px;">
+                    <button class="run-btn">Run</button>
+                    <button class="reset-btn">Reset</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
 <div class="container-fluid" style="padding-top: 30px;">
 
     <div class="row">
