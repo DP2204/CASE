@@ -1,3 +1,141 @@
+<div class="container-fluid" style="padding-top: 30px;">
+
+    <div class="row">
+
+        <!-- LEFT DIVISION WITH 10 LINKS -->
+        <div class="col-md-3">
+            <div style="background:#f0f0f0; padding:20px; border-radius:10px;">
+
+                <h4 style="text-align:center; font-weight:bold;">Quick Links</h4>
+
+                <ul style="list-style-type:none; padding-left:0; margin-top:20px;">
+
+                    <li style="margin-bottom:10px;">
+                        <a href="#" style="text-decoration:none; color:#007bff; font-size:16px;">Link 1</a>
+                    </li>
+                    <li style="margin-bottom:10px;">
+                        <a href="#" style="text-decoration:none; color:#007bff; font-size:16px;">Link 2</a>
+                    </li>
+                    <li style="margin-bottom:10px;">
+                        <a href="#" style="text-decoration:none; color:#007bff; font-size:16px;">Link 3</a>
+                    </li>
+                    <li style="margin-bottom:10px;">
+                        <a href="#" style="text-decoration:none; color:#007bff; font-size:16px;">Link 4</a>
+                    </li>
+                    <li style="margin-bottom:10px;">
+                        <a href="#" style="text-decoration:none; color:#007bff; font-size:16px;">Link 5</a>
+                    </li>
+                    <li style="margin-bottom:10px;">
+                        <a href="#" style="text-decoration:none; color:#007bff; font-size:16px;">Link 6</a>
+                    </li>
+                    <li style="margin-bottom:10px;">
+                        <a href="#" style="text-decoration:none; color:#007bff; font-size:16px;">Link 7</a>
+                    </li>
+                    <li style="margin-bottom:10px;">
+                        <a href="#" style="text-decoration:none; color:#007bff; font-size:16px;">Link 8</a>
+                    </li>
+                    <li style="margin-bottom:10px;">
+                        <a href="#" style="text-decoration:none; color:#007bff; font-size:16px;">Link 9</a>
+                    </li>
+                    <li style="margin-bottom:10px;">
+                        <a href="#" style="text-decoration:none; color:#007bff; font-size:16px;">Link 10</a>
+                    </li>
+
+                </ul>
+
+            </div>
+        </div>
+
+        <!-- CENTER DIVISION -->
+        <div class="col-md-6">
+
+            <!-- TOP BIG BOX -->
+            <div class="big-box"
+                 style="padding:25px; margin-bottom:30px; border-radius:10px;
+                        background:#ffffff; box-shadow:0px 0px 10px rgba(0,0,0,0.1);">
+
+                <h4 style="text-align:center; font-weight:bold; margin-bottom:25px;">
+                    Monitoring Tools
+                </h4>
+
+                <div class="row">
+
+                    <div class="col-md-6">
+                        <a href="#" class="small-box"
+                           style="display:block; padding:20px; border-radius:10px;
+                                  background:#eaf6ff; margin-bottom:20px; text-align:center;
+                                  color:black; font-size:18px; font-weight:bold;">
+                            ServiceNow Dashboard
+                        </a>
+                    </div>
+
+                    <div class="col-md-6">
+                        <a href="#" class="small-box"
+                           style="display:block; padding:20px; border-radius:10px;
+                                  background:#eaf6ff; margin-bottom:20px; text-align:center;
+                                  color:black; font-size:18px; font-weight:bold;">
+                            Jira Dashboard
+                        </a>
+                    </div>
+
+                    <div class="col-md-6">
+                        <a href="#" class="small-box"
+                           style="display:block; padding:20px; border-radius:10px;
+                                  background:#eaf6ff; margin-bottom:20px; text-align:center;
+                                  color:black; font-size:18px; font-weight:bold;">
+                            Dynatrace Alerts
+                        </a>
+                    </div>
+
+                    <div class="col-md-6">
+                        <a href="#" class="small-box"
+                           style="display:block; padding:20px; border-radius:10px;
+                                  background:#eaf6ff; margin-bottom:20px; text-align:center;
+                                  color:black; font-size:18px; font-weight:bold;">
+                            OpenSearch
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- BOTTOM BIG BOX -->
+            <div class="big-box"
+                 style="padding:25px; border-radius:10px;
+                        background:#ffffff; box-shadow:0px 0px 10px rgba(0,0,0,0.1);">
+
+                <h4 style="text-align:center; font-weight:bold; margin-bottom:25px;">
+                    Additional Tool
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <a href="#" class="small-box"
+                           style="display:block; padding:20px; border-radius:10px;
+                                  background:#eaf6ff; margin-bottom:20px; text-align:center;
+                                  color:black; font-size:18px; font-weight:bold;">
+                            Single Tool Box
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT DIVISION -->
+        <div class="col-md-3">
+            <div style="background:#f0f0f0; padding:20px; border-radius:10px;">
+                <h4 style="text-align:center; font-weight:bold;">Right Division</h4>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+
 <div class="container-fluid" style="height: 100%; padding-top: 30px;">
 
     <div class="row">
