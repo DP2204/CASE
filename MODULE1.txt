@@ -1,3 +1,61 @@
+<div class="col-md-7">
+
+    <div class="big-wrapper" 
+         style="background:white; padding:20px; border-radius:12px; 
+                box-shadow:0 3px 8px rgba(0,0,0,0.15);">
+
+        <!-- BLUE BUTTONS -->
+        <div class="text-center mb-3">
+            <button class="blue-btn">Dashboard</button>
+            <button class="blue-btn">Metrics</button>
+            <button class="blue-btn">Repositories</button>
+            <button class="blue-btn">Quality Gates</button>
+            <button class="blue-btn">Build History</button>
+        </div>
+
+        <div class="row justify-content-center">
+
+            <!-- SERVICE NOW -->
+            <div class="col-md-5">
+                <div class="center-box"
+                     style="height:180px; padding:12px; background:#f8fbff;
+                            border:1px solid #dde7f7; border-radius:12px;
+                            width:100%; margin:auto;">
+                    <h5 class="center-section-title" style="font-size:18px; font-weight:bold;">
+                        Service Now
+                    </h5>
+
+                    <p class="center-link">Incidents</p>
+                    <p class="center-link">Requests</p>
+                    <p class="center-link">Change Log</p>
+                    <p class="center-link">Knowledge Base</p>
+                </div>
+            </div>
+
+            <!-- MONITORING -->
+            <div class="col-md-5">
+                <div class="center-box"
+                     style="height:180px; padding:12px; background:#f8fbff;
+                            border:1px solid #dde7f7; border-radius:12px;
+                            width:100%; margin:auto;">
+                    <h5 class="center-section-title" style="font-size:18px; font-weight:bold;">
+                        Monitoring
+                    </h5>
+
+                    <p class="center-link">Alerts</p>
+                    <p class="center-link">Dashboards</p>
+                    <p class="center-link">Metrics</p>
+                    <p class="center-link">Reports</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
 <!-- CENTER DIVISION (WITH ONE BIG BOX) -->
 <div class="col-md-7">
 
