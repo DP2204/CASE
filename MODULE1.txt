@@ -1,3 +1,86 @@
+<div class="container-fluid" style="height: 100%; padding-top: 30px;">
+
+    <div class="row">
+
+        <!-- LEFT DIVISION -->
+        <div class="col-md-3">
+            <div style="background:#f0f0f0; padding:20px; border-radius:10px; height:100%;">
+                <h4 style="text-align:center; font-weight:bold;">Left Division</h4>
+            </div>
+        </div>
+
+        <!-- CENTER BIG BOX -->
+        <div class="col-md-6">
+            <div class="big-box"
+                 style="padding:25px; border-radius:10px; background:#ffffff; box-shadow:0px 0px 10px rgba(0,0,0,0.1);">
+
+                <h4 style="text-align:center; font-weight:bold; margin-bottom:25px;">
+                    Monitoring Tools
+                </h4>
+
+                <div class="row">
+
+                    <!-- Small Box 1 -->
+                    <div class="col-md-6">
+                        <a href="#" class="small-box"
+                           style="display:block; padding:20px; border-radius:10px;
+                                  background:#eaf6ff; margin-bottom:20px; text-align:center;
+                                  color:black; font-size:18px; font-weight:bold; text-decoration:none;">
+                            ServiceNow Dashboard
+                        </a>
+                    </div>
+
+                    <!-- Small Box 2 -->
+                    <div class="col-md-6">
+                        <a href="#" class="small-box"
+                           style="display:block; padding:20px; border-radius:10px;
+                                  background:#eaf6ff; margin-bottom:20px; text-align:center;
+                                  color:black; font-size:18px; font-weight:bold; text-decoration:none;">
+                            Jira Dashboard
+                        </a>
+                    </div>
+
+                    <!-- Small Box 3 -->
+                    <div class="col-md-6">
+                        <a href="#" class="small-box"
+                           style="display:block; padding:20px; border-radius:10px;
+                                  background:#eaf6ff; margin-bottom:20px; text-align:center;
+                                  color:black; font-size:18px; font-weight:bold; text-decoration:none;">
+                            Dynatrace Alerts
+                        </a>
+                    </div>
+
+                    <!-- Small Box 4 -->
+                    <div class="col-md-6">
+                        <a href="#" class="small-box"
+                           style="display:block; padding:20px; border-radius:10px;
+                                  background:#eaf6ff; margin-bottom:20px; text-align:center;
+                                  color:black; font-size:18px; font-weight:bold; text-decoration:none;">
+                            OpenSearch
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT DIVISION -->
+        <div class="col-md-3">
+            <div style="background:#f0f0f0; padding:20px; border-radius:10px; height:100%;">
+                <h4 style="text-align:center; font-weight:bold;">Right Division</h4>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+
+
+
+
 <div class="small-box">
     <a href="/devsecops" target="_blank" 
        style="display:block; padding:15px; background:linear-gradient(135deg, #1EBC3A, #0E8F27);
