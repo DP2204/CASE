@@ -1,3 +1,45 @@
+<!-- CENTER DIVISION (WITH TWO BOXES) -->
+<div class="col-md-7">
+
+    <!-- BLUE BUTTONS ROW -->
+    <div class="text-center mb-3">
+        <button class="blue-btn">Dashboard</button>
+        <button class="blue-btn">Metrics</button>
+        <button class="blue-btn">Repositories</button>
+        <button class="blue-btn">Quality Gates</button>
+        <button class="blue-btn">Build History</button>
+    </div>
+
+    <div class="row">
+
+        <!-- SERVICE NOW BOX -->
+        <div class="col-md-6">
+            <div class="center-box" style="height: 300px;">
+                <h5 class="center-section-title">Service Now</h5>
+                <p class="center-link">Incidents</p>
+                <p class="center-link">Requests</p>
+                <p class="center-link">Change Log</p>
+                <p class="center-link">Knowledge Base</p>
+            </div>
+        </div>
+
+        <!-- MONITORING BOX -->
+        <div class="col-md-6">
+            <div class="center-box" style="height: 300px;">
+                <h5 class="center-section-title">Monitoring</h5>
+                <p class="center-link">Alerts</p>
+                <p class="center-link">Dashboards</p>
+                <p class="center-link">Metrics</p>
+                <p class="center-link">Reports</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+
 <style>
     /* LEFT LINKS */
     .left-link {
