@@ -2,6 +2,69 @@
 void testGeneratePrtFromJson() throws Exception {
     String documentId = "MT765";
 
+    // Mock the File and its parent
+    File mockedParent = Mockito.mock(File.class);
+    Mockito.when(mockedParent.getPath()).thenReturn("/tmp");
+
+    File mockedPrtFile = Mockito.mock(File.class);
+    Mockito.when(mockedPrtFile.getName()).thenReturn("MT765_test.prt");
+    Mockito.when(mockedPrtFile.getParentFile()).thenReturn(mockedParent);
+
+    // Prepare PrtFileData
+    PrtFileData prtFileData = new PrtFileData();
+    prtFileData.setFileName("MT765_test.prt");
+
+    // Create list of SwiftFileProcessingDetails
+    List<SwiftFileProcessingDetails> processingDetailsList = Lists.newArrayList(
+            new SwiftFileProcessingDetails(prtFileData, mockedPrtFile, "testFile", ProcessingStatus.IN_PROGRESS)
+    );
+
+    ObjectMapper mapper = new ObjectMapper();
+
+    // ---------------- First JSON input ----------------
+    SwiftDocumentResponse swiftDocumentResponse1 = mapper.readValue(swiftJson(), SwiftDocumentResponse.class);
+    String rawMT1 = (String) ReflectionTestUtils.invokeMethod(
+            service,
+            "convertUvJsonToRawFormat",
+            swiftDocumentResponse1.getSwiftData()
+    );
+
+    Mockito.when(
+            processingStrategy.execute(rawMT1, documentId, new ArrayList<>(), tmpPath, errorPath)
+    ).thenReturn(processingDetailsList);
+
+    SwiftPrtResponse prtFile1 = service.generatePrtFromJson(swiftDocumentResponse1.getSwiftData(), documentId);
+    assertNotNull(prtFile1.getFile(), "First PRT file should not be null");
+
+    // ---------------- Second JSON input ----------------
+    SwiftDocumentResponse swiftDocumentResponse2 = mapper.readValue(swiftJsonFor53A(), SwiftDocumentResponse.class);
+    String rawMT2 = (String) ReflectionTestUtils.invokeMethod(
+            service,
+            "convertUvJsonToRawFormat",
+            swiftDocumentResponse2.getSwiftData()
+    );
+
+    Mockito.when(
+            processingStrategy.execute(rawMT2, documentId, new ArrayList<>(), tmpPath, errorPath)
+    ).thenReturn(processingDetailsList);
+
+    SwiftPrtResponse prtFile2 = service.generatePrtFromJson(swiftDocumentResponse2.getSwiftData(), documentId);
+    assertNotNull(prtFile2.getFile(), "Second PRT file should not be null");
+}
+
+
+
+
+
+
+
+
+
+
+@Test
+void testGeneratePrtFromJson() throws Exception {
+    String documentId = "MT765";
+
     // Mock the File returned inside SwiftFileProcessingDetails
     File mockedPrtFile = Mockito.mock(File.class);
     Mockito.when(mockedPrtFile.getName()).thenReturn("MT765_test.prt");
