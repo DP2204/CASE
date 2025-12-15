@@ -1,3 +1,76 @@
+<div class="container-fluid mt-3">
+    <div class="row justify-content-center">
+
+        <!-- LEFT TOOLS -->
+        <div class="col-md-2 tools-box">
+            <h5>Tools</h5>
+            <ul>
+                <li><a href="#">Bitbucket</a></li>
+                <li><a href="#">Artifactory</a></li>
+                <li><a href="#">Jenkins</a></li>
+                <li><a href="#">Sonarqube</a></li>
+                <li><a href="#">Fortify</a></li>
+                <li><a href="#">Tenable</a></li>
+                <li><a href="#">Nexus</a></li>
+            </ul>
+        </div>
+
+        <!-- CENTER BIG BOX -->
+        <div class="col-md-6">
+            <div class="big-center-box">
+
+                <!-- Service Now -->
+                <div class="inner-box">
+                    <h5>Service Now</h5>
+                    <a href="#">Incidents</a>
+                    <a href="#">Requests</a>
+                    <a href="#">Change Log</a>
+                    <a href="#">Knowledge Base</a>
+                </div>
+
+                <!-- Monitoring -->
+                <div class="inner-box">
+                    <h5>Monitoring</h5>
+                    <a href="#">Alerts</a>
+                    <a href="#">Dashboards</a>
+                    <a href="#">Metrics</a>
+                    <a href="#">Reports</a>
+                </div>
+
+                <!-- DevSecOps Healthcheck -->
+                <div class="inner-box small-height">
+                    <h5>DevSecOps Healthcheck</h5>
+                    <a href="#">Pipeline Status</a>
+                    <a href="#">Security Scan</a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE -->
+        <div class="col-md-3">
+            <div class="right-box">
+                <h5>Select Date</h5>
+
+                <input type="date" class="form-control mb-2">
+
+                <!-- BLANK INPUT -->
+                <input type="text" class="form-control mb-3" placeholder="Enter value">
+
+                <button class="btn btn-success w-100 mb-2">Run</button>
+                <button class="btn btn-danger w-100">Reset</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+
+
+
 .small-service-box {
     height: 180px !important;      /* adjust here */
     border-radius: 12px;
