@@ -1,3 +1,34 @@
+<!-- 2. Middle Section: Dynamic Views Container (3/6 width) -->
+<section class="lg:col-span-3">
+
+    <!-- CHANGE START: App container -->
+    <div id="app-frame-container" class="hidden bg-white rounded-xl shadow-lg p-4">
+
+        <!-- CHANGE START: Top header with Back button -->
+        <div class="flex justify-end mb-3">
+            <button onclick="backToDashboard()"
+                    class="px-4 py-2 bg-bnpp-primary text-white font-medium rounded-lg shadow hover:bg-bnpp-dark transition duration-200">
+                ← Back to Dashboard
+            </button>
+        </div>
+        <!-- CHANGE END -->
+
+        <!-- Embedded application iframe -->
+        <iframe
+            id="appFrame"
+            name="appFrame"
+            class="w-full h-[75vh] rounded-xl"
+            frameborder="0">
+        </iframe>
+
+    </div>
+    <!-- CHANGE END -->
+
+</section>
+
+
+
+
 <script>
 /* CHANGE START: Initial fallback data */
 const DEFAULT_HANDOVER = {
