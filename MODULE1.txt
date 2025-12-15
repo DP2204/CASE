@@ -1,4 +1,61 @@
 <style>
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px; /* 👈 GAP BETWEEN CARDS */
+        margin-top: 20px;
+    }
+
+    .status-card {
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        background: #fff;
+    }
+
+    .status-card.pass {
+        background: #e6f7ec;
+        border-left: 6px solid #22c55e;
+        color: #15803d;
+    }
+
+    .status-card.fail {
+        background: #fde8e8;
+        border-left: 6px solid #ef4444;
+        color: #b91c1c;
+    }
+
+    .status-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .status-value {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 6px;
+    }
+</style>
+
+<div class="status-grid">
+    <div class="status-card pass">
+        <div class="status-title">CLI Check</div>
+        <div class="status-value">PASS</div>
+    </div>
+
+    <div class="status-card fail">
+        <div class="status-title">UI Check</div>
+        <div class="status-value">FAIL</div>
+    </div>
+</div>
+
+
+
+
+
+
+<style>
     .status-card.pass {
         background: #e6f7ec;
         border-left: 6px solid #22c55e;
