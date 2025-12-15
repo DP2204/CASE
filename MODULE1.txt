@@ -1,3 +1,25 @@
+<!-- CHANGE START: iframe container for application pages -->
+<div id="app-frame-container" class="hidden bg-white rounded-xl shadow-lg h-full">
+    <iframe
+        id="appFrame"
+        name="appFrame"
+        class="w-full h-[75vh] rounded-xl"
+        frameborder="0">
+    </iframe>
+
+    <!-- Back to Dashboard button -->
+    <div class="mt-4 text-right">
+        <button onclick="backToDashboard()"
+                class="text-sm font-medium text-bnpp-primary hover:underline">
+            ← Back to Dashboard
+        </button>
+    </div>
+</div>
+<!-- CHANGE END -->
+
+
+
+
 /* TOOLS */
 .tools-box {
     background: #f2f2f2;
