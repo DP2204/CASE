@@ -1,3 +1,67 @@
+<script>
+/* CHANGE START: Handover logic */
+
+/* Default handover data */
+const DEFAULT_HANDOVER = {
+    ritms: "RITM0012345 - Pending QA signoff",
+    incidents: "INC0098765 - Jenkins slave monitoring",
+    changes: "CHG005544 - Artifactory upgrade at 2 AM",
+    comments: "Check Bitbucket PR queue and Sonar DB memory",
+    updatedAt: "Initial load"
+};
+
+/* Load on page open */
+function loadHandover() {
+    const saved = localStorage.getItem("handoverData");
+    const data = saved ? JSON.parse(saved) : DEFAULT_HANDOVER;
+
+    // Fill textboxes
+    document.getElementById("handover-ritms").value = data.ritms;
+    document.getElementById("handover-incidents").value = data.incidents;
+    document.getElementById("handover-changes").value = data.changes;
+    document.getElementById("handover-comments").value = data.comments;
+
+    // Update upper display
+    renderHandover(data);
+}
+
+/* Update upper display only */
+function renderHandover(data) {
+    document.getElementById("handover-default-display").innerHTML = `
+        <div class="text-xs text-gray-500 mb-1">
+            Last Updated: ${data.updatedAt}
+        </div>
+        <div><b>RITMs:</b> ${data.ritms}</div>
+        <div><b>Incidents:</b> ${data.incidents}</div>
+        <div><b>Changes:</b> ${data.changes}</div>
+        <div><b>Notes:</b> ${data.comments}</div>
+    `;
+}
+
+/* Submit handover */
+function submitHandover() {
+    const data = {
+        ritms: document.getElementById("handover-ritms").value,
+        incidents: document.getElementById("handover-incidents").value,
+        changes: document.getElementById("handover-changes").value,
+        comments: document.getElementById("handover-comments").value,
+        updatedAt: new Date().toLocaleString()
+    };
+
+    localStorage.setItem("handoverData", JSON.stringify(data));
+    renderHandover(data);
+}
+
+/* AUTO LOAD */
+window.addEventListener("DOMContentLoaded", loadHandover);
+
+/* CHANGE END */
+</script>
+
+
+
+
+
 <!-- 2. Middle Section: Dynamic Views Container (3/6 width) -->
 <section class="lg:col-span-3">
 
