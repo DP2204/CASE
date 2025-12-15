@@ -1,4 +1,115 @@
 <script>
+/* CHANGE START: Support Team Handover with Submit + Acknowledge */
+
+/* Mock SSO user (replace later with real SSO) */
+window.SSO_USER = window.SSO_USER || "john.doe@bnpparibas.com";
+
+/* Default handover data */
+const DEFAULT_HANDOVER = {
+    ritms: "RITM0012345 - Pending QA signoff",
+    incidents: "INC0098765 - Jenkins monitoring",
+    changes: "CHG005544 - Artifactory upgrade at 2 AM",
+    comments: "Check PR queue and Sonar DB memory",
+    submittedBy: "System",
+    submittedAt: "Initial load",
+    acknowledgedBy: "",
+    acknowledgedAt: ""
+};
+
+/* Load handover on page load */
+function loadHandover() {
+    const saved = localStorage.getItem("handoverData");
+    const data = saved ? JSON.parse(saved) : DEFAULT_HANDOVER;
+
+    // Fill textboxes
+    document.getElementById("handover-ritms").value = data.ritms;
+    document.getElementById("handover-incidents").value = data.incidents;
+    document.getElementById("handover-changes").value = data.changes;
+    document.getElementById("handover-comments").value = data.comments;
+
+    renderHandover(data);
+}
+
+/* Render summary box */
+function renderHandover(data) {
+    const acknowledged = data.acknowledgedBy
+        ? `<div class="text-green-700 mt-2">
+              ✔ Acknowledged by <b>${data.acknowledgedBy}</b>
+              <br><span class="text-xs">${data.acknowledgedAt}</span>
+           </div>`
+        : `<div class="text-yellow-700 mt-2">
+              ⏳ Awaiting acknowledgment
+           </div>`;
+
+    document.getElementById("handover-default-display").innerHTML = `
+        <div class="text-xs text-gray-500 mb-1">
+            Submitted by <b>${data.submittedBy}</b> on ${data.submittedAt}
+        </div>
+        <div><b>RITMs:</b> ${data.ritms}</div>
+        <div><b>Incidents:</b> ${data.incidents}</div>
+        <div><b>Changes:</b> ${data.changes}</div>
+        <div><b>Notes:</b> ${data.comments}</div>
+        ${acknowledged}
+    `;
+
+    // Show acknowledge button only if not acknowledged
+    document.getElementById("ackBtn").classList.toggle(
+        "hidden",
+        !!data.acknowledgedBy
+    );
+}
+
+/* Submit handover */
+function submitHandover() {
+    const data = {
+        ritms: document.getElementById("handover-ritms").value,
+        incidents: document.getElementById("handover-incidents").value,
+        changes: document.getElementById("handover-changes").value,
+        comments: document.getElementById("handover-comments").value,
+        submittedBy: window.SSO_USER,
+        submittedAt: new Date().toLocaleString(),
+        acknowledgedBy: "",
+        acknowledgedAt: ""
+    };
+
+    localStorage.setItem("handoverData", JSON.stringify(data));
+    renderHandover(data);
+}
+
+/* Acknowledge handover */
+function acknowledgeHandover() {
+    const data = JSON.parse(localStorage.getItem("handoverData"));
+    data.acknowledgedBy = window.SSO_USER;
+    data.acknowledgedAt = new Date().toLocaleString();
+
+    localStorage.setItem("handoverData", JSON.stringify(data));
+    renderHandover(data);
+}
+
+/* Auto load */
+window.addEventListener("DOMContentLoaded", loadHandover);
+
+/* CHANGE END */
+</script>
+
+
+
+
+
+
+<!-- CHANGE START: Acknowledge button -->
+<div class="text-right mb-4">
+    <button id="ackBtn"
+            onclick="acknowledgeHandover()"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 hidden">
+        Acknowledge Handover
+    </button>
+</div>
+<!-- CHANGE END -->
+
+
+
+<script>
 /* CHANGE START: Handover logic */
 
 /* Default handover data */
