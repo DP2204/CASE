@@ -1,3 +1,59 @@
+<script>
+/* CHANGE START: Capture handover data and display it below submit button */
+function submitHandover() {
+
+    // Read values from handover textareas
+    const ritms = document.getElementById("handover-ritms").value.trim();
+    const incidents = document.getElementById("handover-incidents").value.trim();
+    const changes = document.getElementById("handover-changes").value.trim();
+    const comments = document.getElementById("handover-comments").value.trim();
+
+    // Validation: Prevent empty submission
+    if (!ritms && !incidents && !changes && !comments) {
+        alert("Please fill at least one handover field.");
+        return;
+    }
+
+    // Get the output container
+    const output = document.getElementById("handover-output");
+
+    // Make output visible after submit
+    output.classList.remove("hidden");
+
+    // Populate submitted handover data
+    output.innerHTML = `
+        <div>
+            <strong>RITMs / SRs:</strong>
+            <p>${ritms || "—"}</p>
+        </div>
+
+        <div>
+            <strong>Incidents:</strong>
+            <p>${incidents || "—"}</p>
+        </div>
+
+        <div>
+            <strong>Changes:</strong>
+            <p>${changes || "—"}</p>
+        </div>
+
+        <div>
+            <strong>Next Shift Notes:</strong>
+            <p>${comments || "—"}</p>
+        </div>
+
+        <!-- Timestamp for tracking handover -->
+        <div class="text-xs text-gray-500 mt-2">
+            Submitted at ${new Date().toLocaleString()}
+        </div>
+    `;
+}
+/* CHANGE END */
+</script>
+
+
+
+
 <style>
     .status-grid {
         display: grid;
