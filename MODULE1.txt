@@ -1,3 +1,70 @@
+<script>
+/* CHANGE START: Initial fallback data */
+const DEFAULT_HANDOVER = {
+    ritms: "RITM0012345 - Pending QA signoff",
+    incidents: "INC0098765 - Jenkins slave monitoring",
+    changes: "CHG005544 - Artifactory upgrade at 2 AM",
+    comments: "Check Bitbucket PR queue and Sonar DB memory"
+};
+/* CHANGE END */
+
+/* CHANGE START: Load and render handover */
+function loadHandover() {
+
+    // Load saved handover or default
+    const data = JSON.parse(localStorage.getItem("handoverData")) || DEFAULT_HANDOVER;
+
+    // Fill textboxes
+    document.getElementById("handover-ritms").value = data.ritms;
+    document.getElementById("handover-incidents").value = data.incidents;
+    document.getElementById("handover-changes").value = data.changes;
+    document.getElementById("handover-comments").value = data.comments;
+
+    // Update ONLY the upper display box
+    renderHandover(data);
+}
+/* CHANGE END */
+
+/* CHANGE START: Render data in upper box */
+function renderHandover(data) {
+    document.getElementById("handover-default-display").innerHTML = `
+        <strong>Current Handover:</strong>
+        <div><b>RITMs:</b> ${data.ritms}</div>
+        <div><b>Incidents:</b> ${data.incidents}</div>
+        <div><b>Changes:</b> ${data.changes}</div>
+        <div><b>Notes:</b> ${data.comments}</div>
+    `;
+}
+/* CHANGE END */
+
+/* CHANGE START: Submit handler updates upper box only */
+function submitHandover() {
+
+    // Read updated values from inputs
+    const data = {
+        ritms: document.getElementById("handover-ritms").value.trim(),
+        incidents: document.getElementById("handover-incidents").value.trim(),
+        changes: document.getElementById("handover-changes").value.trim(),
+        comments: document.getElementById("handover-comments").value.trim()
+    };
+
+    // Persist updated handover
+    localStorage.setItem("handoverData", JSON.stringify(data));
+
+    // Update ONLY the upper box
+    renderHandover(data);
+}
+/* CHANGE END */
+
+/* CHANGE START: Auto-load on page open */
+document.addEventListener("DOMContentLoaded", loadHandover);
+/* CHANGE END */
+</script>
+
+
+
+
+
 <!-- CHANGE START: Single handover display box -->
 <div id="handover-default-display"
      class="mb-4 bg-blue-50 border-l-4 border-blue-500 p-3 rounded-lg text-sm space-y-1">
