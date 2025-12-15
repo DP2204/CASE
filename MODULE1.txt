@@ -1,3 +1,48 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
+    <!-- CLI Check Card -->
+    <div class="p-4 bg-green-100 border-l-4 border-green-500 rounded shadow flex items-center justify-between">
+        <div>
+            <h3 class="text-sm font-semibold text-gray-700">CLI Check</h3>
+            <p class="text-lg font-bold text-green-700">PASS</p>
+        </div>
+    </div>
+
+    <!-- UI Check Card -->
+    <div class="p-4 bg-green-100 border-l-4 border-green-500 rounded shadow flex items-center justify-between">
+        <div>
+            <h3 class="text-sm font-semibold text-gray-700">UI Check</h3>
+            <p class="text-lg font-bold text-green-700">PASS</p>
+        </div>
+    </div>
+
+    <!-- Cluster Check Card -->
+    <div class="p-4 bg-green-100 border-l-4 border-green-500 rounded shadow flex items-center justify-between">
+        <div>
+            <h3 class="text-sm font-semibold text-gray-700">Cluster</h3>
+            <p class="text-lg font-bold text-green-700">3 / 3</p>
+        </div>
+    </div>
+
+    <!-- Certificate Expiry Card -->
+    <div class="p-4 bg-green-100 border-l-4 border-green-500 rounded shadow flex items-center justify-between">
+        <div>
+            <h3 class="text-sm font-semibold text-gray-700">Certificate Expiry</h3>
+            <p class="text-lg font-bold text-green-700">PASS</p>
+        </div>
+    </div>
+
+    <!-- License Card -->
+    <div class="p-4 bg-green-100 border-l-4 border-green-500 rounded shadow flex items-center justify-between">
+        <div>
+            <h3 class="text-sm font-semibold text-gray-700">License</h3>
+            <p class="text-lg font-bold text-green-700">PASS</p>
+        </div>
+    </div>
+</div>
+
+
+
+
 <!-- CHANGE START: Center iframe control -->
 <script>
     function openAppInCenter() {
