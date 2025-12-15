@@ -1,3 +1,21 @@
+<!-- CHANGE START: Center iframe control -->
+<script>
+    function openAppInCenter() {
+        document.getElementById('dashboard-view').classList.add('hidden');
+        document.getElementById('servicenow-details-view').classList.add('hidden');
+        document.getElementById('app-frame-container').classList.remove('hidden');
+    }
+
+    function backToDashboard() {
+        document.getElementById('app-frame-container').classList.add('hidden');
+        document.getElementById('dashboard-view').classList.remove('hidden');
+    }
+</script>
+<!-- CHANGE END -->
+
+
+
+
 <!-- CHANGE START: iframe container for application pages -->
 <div id="app-frame-container" class="hidden bg-white rounded-xl shadow-lg h-full">
     <iframe
