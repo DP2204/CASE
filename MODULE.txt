@@ -1,3 +1,109 @@
+@Mapper(componentModel = "spring")
+public interface CourierMapper {
+
+    /* =======================
+       CREATE
+       ======================= */
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "eventId", source = "eventId")
+    @Mapping(target = "createdBy", source = "bnppuid")
+    @Mapping(target = "createdByUser", source = "createdByUser")
+    @Mapping(target = "createdOn", expression = "java(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))")
+
+    /* These were already business fields */
+    @Mapping(target = "courierPartnerCategory", source = "courierPartnerCategory")
+    @Mapping(target = "courierPartnerWaybillNo", source = "courierPartnerWaybillNo")
+
+    /* Not applicable on create */
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "updatedOn", ignore = true)
+
+    CourierEntity toEntityForCreate(
+            Courier courier,
+            String bnppuid,
+            String createdByUser
+    );
+
+
+    /* =======================
+       UPDATE
+       ======================= */
+
+    @Mapping(target = "eventId", ignore = true) // eventId must NEVER change
+    @Mapping(target = "updatedBy", source = "bnppuid")
+    @Mapping(target = "lastModifiedBy", source = "lastModifiedBy")
+    @Mapping(target = "updatedOn", expression = "java(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))")
+
+    /* Business fields */
+    @Mapping(target = "courierPartnerCategory", source = "courierPartnerCategory")
+    @Mapping(target = "courierPartnerWaybillNo", source = "courierPartnerWaybillNo")
+
+    /* Do NOT override create fields */
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdByUser", ignore = true)
+    @Mapping(target = "createdOn", ignore = true)
+
+    void updateEntityFromModel(
+            Courier courier,
+            @MappingTarget CourierEntity entity,
+            String bnppuid,
+            String lastModifiedBy
+    );
+}
+
+
+
+
+
+
+
+@Override
+@Transactional(rollbackFor = Exception.class)
+public Courier createCourier(String bnppuid, Courier courier, String stepName) {
+
+    validateEventId(courier.getEventId());
+
+    if (stepName != null) {
+        dpwEventHelper.checkLockForAllApis(stepName, bnppuid, courier.getEventId());
+    }
+
+    /* =========================
+       MAPSTRUCT USED HERE
+       ========================= */
+    CourierEntity entity = courierMapper.toEntityForCreate(
+            courier,
+            bnppuid,
+            referentialUtil.getUserNameInString(bnppuid, true)
+    );
+
+    CourierEntity saved = courierRepository.save(entity);
+
+    auditCourier(courier, "Create", bnppuid);
+
+    Long courierCount = updateCourierCount(courier.getEventId(), 1);
+
+    Courier responseModel = mapEntityToModel(saved);
+    responseModel.setCourierCount(String.valueOf(courierCount));
+
+    return responseModel;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 package com.bnpparibas.dpw.service.impl;
 
 import java.time.LocalDateTime;
