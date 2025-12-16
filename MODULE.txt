@@ -1,3 +1,263 @@
+package com.bnpparibas.dpw.service.impl;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.bnpparibas.dpw.entity.*;
+import com.bnpparibas.dpw.exception.DpwEntityNotFoundException;
+import com.bnpparibas.dpw.exception.DpwException;
+import com.bnpparibas.dpw.helper.AuditHelper;
+import com.bnpparibas.dpw.helper.DpwEventHelper;
+import com.bnpparibas.dpw.mapper.CourierMapper;
+import com.bnpparibas.dpw.model.Courier;
+import com.bnpparibas.dpw.repository.*;
+import com.bnpparibas.dpw.service.CourierService;
+import com.bnpparibas.dpw.util.ReferentialUtil;
+
+@Service
+public class CourierServiceImpl extends
+        AbstractAdminServiceImpl<CourierEntity, Courier, CourierRepository, CourierRepositoryCustom>
+        implements CourierService {
+
+    @Autowired
+    private CourierRepository courierRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private DpwEventHelper dpwEventHelper;
+
+    @Autowired
+    private DpwSideNavCountRepository dpwSideNavCountRepository;
+
+    @Autowired
+    private ReferentialUtil referentialUtil;
+
+    @Autowired
+    private CourierMapper courierMapper;
+
+    // ================= CREATE =================
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Courier createCourier(String bnppuid, Courier courier, String stepName) {
+
+        validateEventId(courier.getEventId());
+
+        if (stepName != null) {
+            dpwEventHelper.checkLockForAllApis(stepName, bnppuid, courier.getEventId());
+        }
+
+        CourierEntity entity = new CourierEntity();
+        entity.setEventId(courier.getEventId());
+        entity.setCourierPartnerCategory(courier.getCourierPartnerCategory());
+        entity.setCourierPartnerWaybillNo(courier.getCourierPartnerWaybillNo());
+        entity.setCreatedBy(bnppuid);
+        entity.setCreatedByUser(referentialUtil.getUserNameInString(bnppuid, true));
+        entity.setCreatedOn(LocalDateTime.now(ZoneOffset.UTC));
+
+        CourierEntity saved = courierRepository.save(entity);
+
+        auditCourier(courier, "Create", bnppuid);
+
+        Long courierCount = updateCourierCount(courier.getEventId(), 1);
+
+        Courier responseModel = courierMapper.toModel(saved);
+        responseModel.setCourierCount(String.valueOf(courierCount));
+
+        return responseModel;
+    }
+
+    // ================= UPDATE =================
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Courier updateCourier(String bnppuid, String courierId, Courier courier, String stepName) {
+
+        Long id;
+        try {
+            id = Long.parseLong(courierId);
+        } catch (NumberFormatException ex) {
+            throw new DpwEntityNotFoundException("Invalid courier ID format: " + courierId);
+        }
+
+        validateEventId(courier.getEventId());
+
+        Optional<CourierEntity> optional = courierRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new DpwEntityNotFoundException("Courier entry not found for id: " + courierId);
+        }
+
+        if (stepName != null) {
+            dpwEventHelper.checkLockForAllApis(stepName, bnppuid, courier.getEventId());
+        }
+
+        CourierEntity entity = optional.get();
+
+        // MapStruct handles update
+        courierMapper.updateEntityFromModel(courier, entity);
+
+        entity.setUpdatedBy(bnppuid);
+        entity.setLastModifiedBy(referentialUtil.getUserNameInString(bnppuid, true));
+        entity.setUpdatedOn(LocalDateTime.now(ZoneOffset.UTC));
+
+        CourierEntity saved = courierRepository.save(entity);
+
+        auditCourier(courier, "Update", bnppuid);
+
+        Long courierCount = updateCourierCount(courier.getEventId(), 0);
+
+        Courier responseModel = courierMapper.toModel(saved);
+        responseModel.setCourierCount(String.valueOf(courierCount));
+
+        return responseModel;
+    }
+
+    // ================= DELETE =================
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Map<String, String> deleteCourier(String courierId, String bnppuid, String stepName) {
+
+        Long id;
+        try {
+            id = Long.parseLong(courierId);
+        } catch (NumberFormatException ex) {
+            throw new DpwEntityNotFoundException("Invalid courier ID format: " + courierId);
+        }
+
+        Optional<CourierEntity> optional = courierRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new DpwEntityNotFoundException("Courier entry not found for id: " + courierId);
+        }
+
+        CourierEntity entity = optional.get();
+
+        if (stepName != null) {
+            dpwEventHelper.checkLockForAllApis(stepName, bnppuid, entity.getEventId());
+        }
+
+        courierRepository.deleteById(id);
+
+        auditCourier(courierMapper.toModel(entity), "Close", bnppuid);
+
+        Long updatedCount = updateCourierCount(entity.getEventId(), -1);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Courier deleted successfully");
+        response.put("courierCount", String.valueOf(updatedCount));
+
+        return response;
+    }
+
+    // ================= GET LIST =================
+
+    @Override
+    public List<Courier> getCourierListByEventId(String eventId, String bnppuid) {
+
+        List<CourierEntity> list = courierRepository.findByEventId(eventId);
+
+        SideNavCountEntity sideNav = dpwSideNavCountRepository.findByEventId(eventId);
+        Long courierCount = sideNav != null ? sideNav.getCourierTotalCount() : 0L;
+
+        return list.stream().map(entity -> {
+            Courier courier = courierMapper.toModel(entity);
+            courier.setCourierCount(String.valueOf(courierCount));
+            return courier;
+        }).collect(Collectors.toList());
+    }
+
+    // ================= HELPERS =================
+
+    private Long updateCourierCount(String eventId, int increment) {
+
+        SideNavCountEntity entity = dpwSideNavCountRepository.findByEventId(eventId);
+
+        if (entity == null) {
+            entity = new SideNavCountEntity();
+            entity.setEventId(eventId);
+            entity.setCourierTotalCount(0L);
+            entity.setCourierActiveCount(0L);
+        }
+
+        Long total = entity.getCourierTotalCount() + increment;
+        Long active = entity.getCourierActiveCount() + increment;
+
+        entity.setCourierTotalCount(total);
+        entity.setCourierActiveCount(active);
+
+        dpwSideNavCountRepository.save(entity);
+        return total;
+    }
+
+    private void validateEventId(String eventId) {
+        if (!eventRepository.findById(eventId).isPresent()) {
+            throw new DpwEntityNotFoundException("Invalid eventId: " + eventId);
+        }
+    }
+
+    private void auditCourier(Courier courier, String action, String bnppuid) {
+
+        String fullName;
+
+        if ("Close".equalsIgnoreCase(action)) {
+            fullName = dpwEventHelper.setCreatedOrClosedByField(
+                    courier.getClosedBy(),
+                    bnppuid,
+                    courier.getClosedByUser(),
+                    true);
+        } else {
+            fullName = dpwEventHelper.setCreatedOnClosedByField(
+                    courier.getCreatedBy(),
+                    bnppuid,
+                    courier.getCreatedByUser(),
+                    true);
+        }
+
+        if (courier.getEventId() != null && !courier.getEventId().trim().isEmpty()) {
+
+            Optional<EventEntity> optional = eventRepository.findById(courier.getEventId());
+            if (optional.isPresent()) {
+
+                EventEntity event = optional.get();
+
+                AuditHelper.setAuditTrail(
+                        AuditTrailEntity.builder()
+                                .actionName(action + " Courier")
+                                .statusBefore(event.getStatus())
+                                .statusAfter(event.getStatus())
+                                .isManualorAutomatic(Actions.MANUAL)
+                                .createdByUser(fullName)
+                                .build()
+                );
+            } else {
+                throw new DpwException("INSUFFICIENT_PARAMETER", null, null, HttpStatus.BAD_REQUEST);
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @Test
 void testGeneratePrtFromJson() throws Exception {
     String documentId = "MT765";
