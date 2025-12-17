@@ -1,3 +1,192 @@
+from flask import Flask, render_template, request, session, jsonify
+import json
+import os
+
+app = Flask(__name__)
+app.secret_key = "your_secret_key"
+
+# ===== SSO Simulation =====
+@app.before_request
+def set_sso_user():
+    # Simulate getting SSO headers
+    uid = request.headers.get("Bnppglobalid", "guest")
+    first_name = request.headers.get("Bnppfirstname", "")
+    last_name = request.headers.get("Bnpplastname", "")
+    username = f"{first_name} {last_name}".strip() or "Guest User"
+
+    session["uid"] = uid
+    session["username"] = username
+
+# ===== Home page =====
+@app.route("/")
+def base():
+    return render_template("base.html")
+
+# ===== Get last handover =====
+@app.route("/handover/get")
+def get_handover():
+    if os.path.exists("handover.json"):
+        with open("handover.json") as f:
+            data = json.load(f)
+    else:
+        # Default handover
+        data = {
+            "ritms": "RITM0012345 Pending QA signoff",
+            "incidents": "INC0098765 Jenkins monitoring",
+            "changes": "CHG005544 - Artifactory upgrade at 2 AM",
+            "comments": "Check PR queue and Sonar DB memory",
+            "submittedBy": "System",
+            "submittedAt": "Initial load",
+            "acknowledgedBy": "",
+            "acknowledgedAt": ""
+        }
+    return jsonify(data)
+
+# ===== Save handover =====
+@app.route("/handover/save", methods=["POST"])
+def save_handover():
+    data = request.json
+    with open("handover.json", "w") as f:
+        json.dump(data, f)
+    return jsonify({"status": "success"})
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System-wide Handover</title>
+<style>
+  .hidden { display: none; }
+  .text-green { color: green; }
+  .text-yellow { color: orange; }
+</style>
+</head>
+<body>
+
+<h2>System-wide Handover</h2>
+
+<div>
+  <label>RITMs: <input id="handover-ritms" /></label><br>
+  <label>Incidents: <input id="handover-incidents" /></label><br>
+  <label>Changes: <input id="handover-changes" /></label><br>
+  <label>Comments: <input id="handover-comments" /></label><br>
+  <button onclick="submitHandover()">Submit</button>
+  <button id="ackBtn" onclick="acknowledgeHandover()">Acknowledge</button>
+</div>
+
+<h3>Summary:</h3>
+<div id="handoverSummary"></div>
+
+<!-- Pass Flask session username to JS -->
+<script>
+  window.SSO_USER = {{ session.get('username', 'Guest User') | tojson }};
+</script>
+
+<script>
+async function loadHandover() {
+    try {
+        const res = await fetch("/handover/get");
+        const data = await res.json();
+
+        document.getElementById("handover-ritms").value = data.ritms;
+        document.getElementById("handover-incidents").value = data.incidents;
+        document.getElementById("handover-changes").value = data.changes;
+        document.getElementById("handover-comments").value = data.comments;
+
+        renderHandover(data);
+    } catch (err) {
+        console.error("Failed to load handover", err);
+    }
+}
+
+function renderHandover(data) {
+    const summaryEl = document.getElementById("handoverSummary");
+    summaryEl.innerHTML = `
+        <div>Submitted by <b>${data.submittedBy}</b> on ${data.submittedAt}</div>
+        <div><b>RITMs:</b> ${data.ritms}</div>
+        <div><b>Incidents:</b> ${data.incidents}</div>
+        <div><b>Changes:</b> ${data.changes}</div>
+        <div><b>Notes:</b> ${data.comments}</div>
+        <div class="${data.acknowledgedBy ? 'text-green' : 'text-yellow'}">
+            ${data.acknowledgedBy 
+                ? `✔ Acknowledged by <b>${data.acknowledgedBy}</b> (${data.acknowledgedAt})` 
+                : 'Awaiting acknowledgment'}
+        </div>
+    `;
+
+    const ackBtn = document.getElementById("ackBtn");
+    if (ackBtn) ackBtn.classList.toggle("hidden", !!data.acknowledgedBy);
+}
+
+async function submitHandover() {
+    const data = {
+        ritms: document.getElementById("handover-ritms").value,
+        incidents: document.getElementById("handover-incidents").value,
+        changes: document.getElementById("handover-changes").value,
+        comments: document.getElementById("handover-comments").value,
+        submittedBy: window.SSO_USER,
+        submittedAt: new Date().toLocaleString(),
+        acknowledgedBy: document.getElementById("ackBtn").classList.contains("hidden") 
+                        ? JSON.parse(localStorage.getItem("handoverData") || "{}").acknowledgedBy || "" 
+                        : "",
+        acknowledgedAt: document.getElementById("ackBtn").classList.contains("hidden") 
+                        ? JSON.parse(localStorage.getItem("handoverData") || "{}").acknowledgedAt || "" 
+                        : ""
+    };
+
+    await fetch("/handover/save", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    });
+
+    renderHandover(data);
+}
+
+async function acknowledgeHandover() {
+    const res = await fetch("/handover/get");
+    const data = await res.json();
+
+    data.acknowledgedBy = window.SSO_USER;
+    data.acknowledgedAt = new Date().toLocaleString();
+
+    await fetch("/handover/save", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    });
+
+    renderHandover(data);
+}
+
+// Load last handover on page load
+window.addEventListener("load", loadHandover);
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
 <script>
 /* =========================================================
    SSO USER (temporary)
