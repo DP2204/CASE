@@ -1,3 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Handover Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-6">
+
+<!-- =========================================================
+  CHANGE: SSO USER (replace later from backend if needed)
+========================================================= -->
+<script>
+  // Simulated SSO user (today this comes from Flask/Jenkins headers)
+  window.SSO_USER = "John Doe";
+</script>
+
+<!-- =========================================================
+  HANDOVER SUMMARY (UPPER BOX)
+========================================================= -->
+<div class="bg-white p-4 rounded shadow mb-6">
+  <h2 class="font-bold mb-2">Current Handover</h2>
+  <div id="handoverSummary" class="text-sm text-gray-700">
+    No handover submitted
+  </div>
+
+  <button id="ackBtn"
+          onclick="acknowledgeHandover()"
+          class="mt-3 px-3 py-1 bg-green-600 text-white rounded hidden">
+    Acknowledge
+  </button>
+</div>
+
+<!-- =========================================================
+  HANDOVER FORM
+========================================================= -->
+<div class="bg-white p-4 rounded shadow">
+  <h2 class="font-bold mb-3">Submit Handover</h2>
+
+  <input id="handover-ritms" class="w-full border p-2 mb-2" placeholder="RITMs">
+  <input id="handover-incidents" class="w-full border p-2 mb-2" placeholder="Incidents">
+  <input id="handover-changes" class="w-full border p-2 mb-2" placeholder="Changes">
+  <textarea id="handover-comments" class="w-full border p-2 mb-2" placeholder="Comments"></textarea>
+
+  <button onclick="submitHandover()"
+          class="px-4 py-2 bg-blue-600 text-white rounded">
+    Submit Handover
+  </button>
+</div>
+
+<!-- =========================================================
+  JAVASCRIPT LOGIC (ALL IN ONE PLACE)
+========================================================= -->
+<script>
+/* ---------------------------------------------------------
+  DEFAULT STRUCTURE
+--------------------------------------------------------- */
+const DEFAULT_HANDOVER = {
+  ritms: "",
+  incidents: "",
+  changes: "",
+  comments: "",
+  submittedBy: "",
+  submittedAt: "",
+  acknowledgedBy: "",
+  acknowledgedAt: ""
+};
+
+/* ---------------------------------------------------------
+  LOAD HANDOVER ON PAGE LOAD
+--------------------------------------------------------- */
+function loadHandover() {
+  const saved = localStorage.getItem("handoverData");
+  const data = saved ? JSON.parse(saved) : DEFAULT_HANDOVER;
+
+  document.getElementById("handover-ritms").value = data.ritms;
+  document.getElementById("handover-incidents").value = data.incidents;
+  document.getElementById("handover-changes").value = data.changes;
+  document.getElementById("handover-comments").value = data.comments;
+
+  renderHandover(data);
+}
+
+/* ---------------------------------------------------------
+  RENDER UPPER SUMMARY ONLY
+--------------------------------------------------------- */
+function renderHandover(data) {
+  const acknowledgedBlock = data.acknowledgedBy
+    ? `<div class="text-green-700 mt-2">
+         ✔ Acknowledged by <b>${data.acknowledgedBy}</b>
+         <span class="text-xs">(${data.acknowledgedAt})</span>
+       </div>`
+    : `<div class="text-yellow-700 mt-2">
+         Awaiting acknowledgment
+       </div>`;
+
+  document.getElementById("handoverSummary").innerHTML = `
+    <div class="text-xs text-gray-500 mb-1">
+      Submitted by <b>${data.submittedBy || "-"}</b>
+      on ${data.submittedAt || "-"}
+    </div>
+    <div><b>RITMs:</b> ${data.ritms}</div>
+    <div><b>Incidents:</b> ${data.incidents}</div>
+    <div><b>Changes:</b> ${data.changes}</div>
+    <div><b>Notes:</b> ${data.comments}</div>
+    ${acknowledgedBlock}
+  `;
+
+  // Show acknowledge button only if not yet acknowledged
+  document.getElementById("ackBtn").classList.toggle(
+    "hidden",
+    !!data.acknowledgedBy
+  );
+}
+
+/* ---------------------------------------------------------
+  SUBMIT HANDOVER
+--------------------------------------------------------- */
+function submitHandover() {
+  const data = {
+    ritms: document.getElementById("handover-ritms").value,
+    incidents: document.getElementById("handover-incidents").value,
+    changes: document.getElementById("handover-changes").value,
+    comments: document.getElementById("handover-comments").value,
+
+    // CHANGE: who submitted + when
+    submittedBy: window.SSO_USER,
+    submittedAt: new Date().toLocaleString(),
+
+    acknowledgedBy: "",
+    acknowledgedAt: ""
+  };
+
+  localStorage.setItem("handoverData", JSON.stringify(data));
+  renderHandover(data);
+}
+
+/* ---------------------------------------------------------
+  ACKNOWLEDGE HANDOVER
+--------------------------------------------------------- */
+function acknowledgeHandover() {
+  const data = JSON.parse(localStorage.getItem("handoverData"));
+  if (!data) return;
+
+  // CHANGE: who acknowledged + when
+  data.acknowledgedBy = window.SSO_USER;
+  data.acknowledgedAt = new Date().toLocaleString();
+
+  localStorage.setItem("handoverData", JSON.stringify(data));
+  renderHandover(data);
+}
+
+/* ---------------------------------------------------------
+  INIT
+--------------------------------------------------------- */
+window.onload = loadHandover;
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
 <script>
 /* CHANGE: Render summary box (SYNTAX FIXED) */
 function renderHandover(data) {
