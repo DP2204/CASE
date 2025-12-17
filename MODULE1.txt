@@ -1,4 +1,43 @@
 <script>
+/* CHANGE: Render summary box (SYNTAX FIXED) */
+function renderHandover(data) {
+    const summary = document.getElementById("handoverSummary");
+
+    let acknowledgedHtml = "";
+    if (data.acknowledgedBy) {
+        acknowledgedHtml = `
+            <div class="mt-1 text-green-700">
+                <b>Acknowledged By:</b> ${data.acknowledgedBy}<br>
+                <b>Acknowledged At:</b> ${data.acknowledgedAt}
+            </div>
+        `;
+    }
+
+    summary.innerHTML = `
+        <div><b>RITMs:</b> ${data.ritms}</div>
+        <div><b>Incidents:</b> ${data.incidents}</div>
+        <div><b>Changes:</b> ${data.changes}</div>
+        <div><b>Notes:</b> ${data.comments}</div>
+        <hr class="my-2">
+        <div><b>Submitted By:</b> ${data.submittedBy}</div>
+        <div><b>Submitted At:</b> ${data.submittedAt}</div>
+        ${acknowledgedHtml}
+    `;
+
+    // Show acknowledge button only if NOT acknowledged
+    document.getElementById("ackBtn").classList.toggle(
+        "hidden",
+        !!data.acknowledgedBy
+    );
+}
+</script>
+
+
+
+
+
+
+<script>
 <script>
 /* CHANGE: Load saved handover on page load */
 function loadHandover() {
