@@ -1,4 +1,104 @@
 <script>
+<script>
+/* CHANGE: Load saved handover on page load */
+function loadHandover() {
+    const data = JSON.parse(localStorage.getItem("handoverData"));
+    if (data) {
+        renderHandover(data);
+
+        // Fill form with existing data
+        document.getElementById("handover-ritms").value = data.ritms;
+        document.getElementById("handover-incidents").value = data.incidents;
+        document.getElementById("handover-changes").value = data.changes;
+        document.getElementById("handover-comments").value = data.comments;
+    }
+}
+
+
+/* CHANGE: Render summary box */
+function renderHandover(data) {
+    const summary = document.getElementById("handoverSummary");
+
+    summary.innerHTML = `
+        <div><b>RITMs:</b> ${data.ritms}</div>
+        <div><b>Incidents:</b> ${data.incidents}</div>
+        <div><b>Changes:</b> ${data.changes}</div>
+        <div><b>Notes:</b> ${data.comments}</div>
+        <hr class="my-2">
+        <div><b>Submitted By:</b> ${data.submittedBy}</div>
+        <div><b>Submitted At:</b> ${data.submittedAt}</div>
+        ${
+            data.acknowledgedBy
+            ? `<div class="mt-1 text-green-700"><b>Acknowledged By:</b> ${data.acknowledgedBy}
+               <br><b>Acknowledged At:</b> ${data.acknowledgedAt}</div>`
+            : ""
+        }
+    `;
+
+    // Show acknowledge button only if not acknowledged
+    document.getElementById("ackBtn").classList.toggle(
+        "hidden",
+        !!data.acknowledgedBy
+    );
+}
+
+
+/* CHANGE: Submit handover */
+function submitHandover() {
+    const username =
+        document.getElementById("loggedInUser").dataset.username;
+
+    const data = {
+        ritms: document.getElementById("handover-ritms").value,
+        incidents: document.getElementById("handover-incidents").value,
+        changes: document.getElementById("handover-changes").value,
+        comments: document.getElementById("handover-comments").value,
+
+        submittedBy: username,                  // FIXED
+        submittedAt: new Date().toLocaleString(),
+
+        acknowledgedBy: "",
+        acknowledgedAt: ""
+    };
+
+    localStorage.setItem("handoverData", JSON.stringify(data));
+    renderHandover(data);
+}
+
+
+/* CHANGE: Acknowledge handover */
+function acknowledgeHandover() {
+    const data = JSON.parse(localStorage.getItem("handoverData"));
+    if (!data) return;
+
+    data.acknowledgedBy =
+        document.getElementById("loggedInUser").dataset.username;  // FIXED
+    data.acknowledgedAt = new Date().toLocaleString();
+
+    localStorage.setItem("handoverData", JSON.stringify(data));
+    renderHandover(data);
+}
+
+
+/* CHANGE: Auto-load on refresh */
+window.addEventListener("DOMContentLoaded", loadHandover);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* CHANGE: Load saved handover on page load */
 function loadHandover() {
     const data = JSON.parse(localStorage.getItem("handoverData"));
