@@ -1,5 +1,72 @@
 import requests
 
+# ----------------------------
+# 1. BASE URL (replace this)
+# ----------------------------
+BASE_URL = "https://api.example.com"
+
+# ----------------------------
+# 2. API ENDPOINT (replace this)
+# Example: /items , /getData , /v1/users
+# ----------------------------
+ENDPOINT = "/items"
+
+# Full URL
+URL = BASE_URL + ENDPOINT
+
+# ----------------------------
+# 3. HEADERS (replace values if needed)
+# ----------------------------
+headers = {
+    "Content-Type": "application/json",
+    
+    # If API needs token-based auth
+    # Replace YOUR_TOKEN_HERE
+    "Authorization": "Bearer YOUR_TOKEN_HERE"
+}
+
+# ----------------------------
+# 4. PAYLOAD (only if API needs it)
+# For GET usually not required
+# ----------------------------
+payload = {
+    "key1": "value1",
+    "key2": "value2"
+}
+
+try:
+    # ----------------------------
+    # 5. API CALL
+    # Use GET or POST based on API
+    # ----------------------------
+    
+    response = requests.get(
+        URL,
+        headers=headers,
+        params=payload  # use params for GET
+        # json=payload   # use this instead for POST
+    )
+
+    # ----------------------------
+    # 6. PRINT STATUS & DATA
+    # ----------------------------
+    print("Status Code:", response.status_code)
+
+    # If response is JSON
+    print("Response Data:")
+    print(response.json())
+
+except Exception as e:
+    print("Error while calling API:", e)
+
+
+
+
+
+
+
+import requests
+
 # ==========================
 # CONFIGURATION
 # ==========================
