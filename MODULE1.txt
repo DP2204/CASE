@@ -23,6 +23,131 @@ const DEFAULT_HANDOVER = {
 ========================================================= */
 function loadHandover() {
   let data;
+  try {
+    data = JSON.parse(localStorage.getItem("handoverData"));
+  } catch (e) {
+    data = null;
+  }
+
+  if (!data || !data.ritms) {
+    data = DEFAULT_HANDOVER;
+    localStorage.setItem("handoverData", JSON.stringify(data));
+  }
+
+  // Fill form safely
+  const ritmsEl = document.getElementById("handover-ritms");
+  const incidentsEl = document.getElementById("handover-incidents");
+  const changesEl = document.getElementById("handover-changes");
+  const commentsEl = document.getElementById("handover-comments");
+
+  if (ritmsEl) ritmsEl.value = data.ritms;
+  if (incidentsEl) incidentsEl.value = data.incidents;
+  if (changesEl) changesEl.value = data.changes;
+  if (commentsEl) commentsEl.value = data.comments;
+
+  renderHandover(data);
+}
+
+/* =========================================================
+   RENDER SUMMARY
+========================================================= */
+function renderHandover(data) {
+  const summaryEl = document.getElementById("handoverSummary");
+  if (!summaryEl) return;
+
+  summaryEl.innerHTML = `
+    <div class="text-xs text-gray-500 mb-1">
+      Submitted by <b>${data.submittedBy}</b> on ${data.submittedAt}
+    </div>
+    <div><b>RITMs:</b> ${data.ritms}</div>
+    <div><b>Incidents:</b> ${data.incidents}</div>
+    <div><b>Changes:</b> ${data.changes}</div>
+    <div><b>Notes:</b> ${data.comments}</div>
+    ${
+      data.acknowledgedBy
+        ? `<div class="text-green-700 mt-2">
+             ✔ Acknowledged by <b>${data.acknowledgedBy}</b>
+             (${data.acknowledgedAt})
+           </div>`
+        : `<div class="text-yellow-700 mt-2">
+             Awaiting acknowledgment
+           </div>`
+    }
+  `;
+
+  const ackBtn = document.getElementById("ackBtn");
+  if (ackBtn) ackBtn.classList.toggle("hidden", !!data.acknowledgedBy);
+}
+
+/* =========================================================
+   SUBMIT
+========================================================= */
+function submitHandover() {
+  const data = {
+    ritms: document.getElementById("handover-ritms")?.value || "",
+    incidents: document.getElementById("handover-incidents")?.value || "",
+    changes: document.getElementById("handover-changes")?.value || "",
+    comments: document.getElementById("handover-comments")?.value || "",
+    submittedBy: window.SSO_USER,
+    submittedAt: new Date().toLocaleString(),
+    acknowledgedBy: "",
+    acknowledgedAt: ""
+  };
+
+  localStorage.setItem("handoverData", JSON.stringify(data));
+  renderHandover(data);
+}
+
+/* =========================================================
+   ACKNOWLEDGE
+========================================================= */
+function acknowledgeHandover() {
+  const data = JSON.parse(localStorage.getItem("handoverData") || "{}");
+  if (!data) return;
+
+  data.acknowledgedBy = window.SSO_USER;
+  data.acknowledgedAt = new Date().toLocaleString();
+
+  localStorage.setItem("handoverData", JSON.stringify(data));
+  renderHandover(data);
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+window.addEventListener("load", loadHandover);
+</script>
+
+
+
+
+
+
+<script>
+/* =========================================================
+   SSO USER (temporary)
+========================================================= */
+window.SSO_USER = window.SSO_USER || "Guest User";
+
+/* =========================================================
+   DEFAULT HANDOVER (ALWAYS VALID)
+========================================================= */
+const DEFAULT_HANDOVER = {
+  ritms: "RITM0012345 - Pending QA signoff",
+  incidents: "INC0098765 - Jenkins monitoring",
+  changes: "CHG005544 - Artifactory upgrade",
+  comments: "Check PR queue and Sonar DB memory",
+  submittedBy: "System",
+  submittedAt: "Initial load",
+  acknowledgedBy: "",
+  acknowledgedAt: ""
+};
+
+/* =========================================================
+   SAFE LOAD
+========================================================= */
+function loadHandover() {
+  let data;
 
   try {
     data = JSON.parse(localStorage.getItem("handoverData"));
