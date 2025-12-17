@@ -1,3 +1,83 @@
+import requests
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# ================= CONFIG =================
+AUTH_TOKEN_URL = "https://itgp.api.group.echonet/auth/oauth2/v2/token"
+
+API_BASE_URL = "https://data.itgp.api.group.echonet/servicenow/v2"
+GET_ITEMS_URL = f"{API_BASE_URL}/catalog/item"
+
+CLIENT_ID = "YOUR_KEY"
+CLIENT_SECRET = "YOUR_SECRET"
+
+ASSIGNMENT_GROUP = "jsjsjskshsjsk"
+# ==========================================
+
+
+def get_access_token():
+    payload = {
+        "grant_type": "client_credentials",
+        "scope": "read-catalog"
+    }
+
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
+    response = requests.post(
+        AUTH_TOKEN_URL,
+        data=payload,
+        auth=(CLIENT_ID, CLIENT_SECRET),
+        headers=headers,
+        verify=False
+    )
+
+    response.raise_for_status()
+    return response.json()["access_token"]
+
+
+def get_unanswered_ritms():
+    token = get_access_token()
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json"
+    }
+
+    params = {
+        "assignment_group": ASSIGNMENT_GROUP,
+        "state": "unanswered"
+    }
+
+    response = requests.get(
+        GET_ITEMS_URL,
+        headers=headers,
+        params=params,
+        verify=False
+    )
+
+    response.raise_for_status()
+    data = response.json()
+
+    # ---- Group by Assigned To ----
+    counts = {}
+    for item in data.get("result", []):
+        assignee = item.get("assigned_to", {}).get("display_value", "Unassigned")
+        counts[assignee] = counts.get(assignee, 0) + 1
+
+    return [
+        {"assigned_to": k, "count": v}
+        for k, v in counts.items()
+    ]
+
+
+
+
+
+
+
 <div class="bg-white p-4 rounded-xl shadow-lg border-t-4 border-yellow-500 md:col-span-2">
 
   <h4 class="text-lg font-semibold text-bnpp-dark mb-3">
