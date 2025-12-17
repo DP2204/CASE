@@ -1,5 +1,86 @@
 import requests
 
+# ==============================
+# 1. OAUTH TOKEN DETAILS
+# ==============================
+TOKEN_URL = "https://itop.api.group.echonet/auth/oauth2/v2/token"
+
+CLIENT_ID = "IYEwovarwr7OP9jBbleyDUXTIeNYcGxs"
+CLIENT_SECRET = "6ttNyyFr4amXxiCi"
+
+token_payload = {
+    "grant_type": "client_credentials",
+    "scope": "read-catalog"
+}
+
+# ==============================
+# 2. GET ACCESS TOKEN
+# ==============================
+token_response = requests.post(
+    TOKEN_URL,
+    data=token_payload,
+    auth=(CLIENT_ID, CLIENT_SECRET)
+)
+
+if token_response.status_code != 200:
+    print("Failed to get token")
+    print(token_response.text)
+    exit()
+
+access_token = token_response.json().get("access_token")
+print("Access Token received successfully\n")
+
+# ==============================
+# 3. SERVICENOW API DETAILS
+# ==============================
+BASE_URL = "https://data.itgp.api.group.echonet/servicenow/v2"
+ENDPOINT = "/catalog/item"
+
+URL = BASE_URL + ENDPOINT
+
+# Query for:
+# assignment_group = 70ade0521bab9010fb4565fce54bcb0a
+# assigned_to is empty
+# state NOT IN 3,4
+query = (
+    "assignment_group=70ade0521bab9010fb4565fce54bcb0a^"
+    "assigned_toISEMPTY^"
+    "stateNOT IN3,4"
+)
+
+headers = {
+    "Authorization": f"Bearer {access_token}",
+    "Accept": "application/json"
+}
+
+params = {
+    "sysparm_query": query
+}
+
+# ==============================
+# 4. API CALL
+# ==============================
+response = requests.get(URL, headers=headers, params=params)
+
+# ==============================
+# 5. PRINT RESULT
+# ==============================
+print("Status Code:", response.status_code)
+print("\nResponse Data:\n")
+
+try:
+    print(response.json())
+except Exception:
+    print(response.text)
+
+
+
+
+
+
+
+import requests
+
 # ----------------------------
 # 1. BASE URL (replace this)
 # ----------------------------
