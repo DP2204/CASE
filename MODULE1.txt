@@ -1,4 +1,63 @@
 import requests
+
+# ==========================
+# CONFIGURATION
+# ==========================
+API_URL = "https://your-api-endpoint-here"   # 🔴 replace with actual API URL
+
+HEADERS = {
+    "Content-Type": "application/json",
+    # Add headers only if required
+    # "Authorization": "Bearer YOUR_TOKEN",
+    # "anppglobalid": "12345",
+}
+
+PARAMS = {
+    # Optional query params
+    # "status": "active"
+}
+
+# ==========================
+# API CALL
+# ==========================
+def hit_api():
+    try:
+        print("Calling API...\n")
+
+        response = requests.get(
+            API_URL,
+            headers=HEADERS,
+            params=PARAMS,
+            timeout=10
+        )
+
+        print(f"Status Code: {response.status_code}\n")
+
+        # If response is JSON
+        try:
+            data = response.json()
+            print("Response JSON:")
+            print(data)
+        except ValueError:
+            print("Response Text:")
+            print(response.text)
+
+    except requests.exceptions.RequestException as e:
+        print("API call failed:")
+        print(e)
+
+
+# ==========================
+# MAIN
+# ==========================
+if __name__ == "__main__":
+    hit_api()
+
+
+
+
+
+import requests
 from flask import request, session
 
 def base():
