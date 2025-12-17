@@ -1,3 +1,47 @@
+<div class="bg-white p-4 rounded-xl shadow-lg border-t-4 border-yellow-500 md:col-span-2">
+
+  <h4 class="text-lg font-semibold text-bnpp-dark mb-3">
+    Unanswered RITMS
+  </h4>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200 text-sm detail-table">
+      <thead>
+        <tr>
+          <th class="text-left">Assigned To</th>
+          <th class="text-right">Count of Unanswered RITMS</th>
+        </tr>
+      </thead>
+
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for row in ritm_data %}
+        <tr>
+          <td class="text-left">{{ row.assigned_to }}</td>
+          <td class="text-center font-bold text-yellow-600">
+            {{ row.count }}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="2" class="text-center text-gray-500">
+            No unanswered RITMS
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+
 from flask import Flask, render_template
 import requests
 
