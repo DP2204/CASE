@@ -1,3 +1,90 @@
+from flask import Flask, render_template
+import requests
+
+app = Flask(__name__)
+
+# ================= CONFIG =================
+BASE_URL = "https://example.com"
+TOKEN_URL = f"{BASE_URL}/oauth/token"
+GET_ITEMS_URL = f"{BASE_URL}/api/ritms"
+
+CLIENT_ID = "YOUR_KEY"
+CLIENT_SECRET = "YOUR_SECRET"
+
+ASSIGNMENT_GROUPS = "jsjsjskshsjsk"
+# ==========================================
+
+def get_access_token():
+    payload = {
+        "grant_type": "client_credentials",
+        "scope": "read"
+    }
+
+    response = requests.post(
+        TOKEN_URL,
+        data=payload,
+        auth=(CLIENT_ID, CLIENT_SECRET)
+    )
+
+    response.raise_for_status()
+    return response.json()["access_token"]
+
+
+def get_unanswered_ritms():
+    token = get_access_token()
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json"
+    }
+
+    params = {
+        "assignment_group": ASSIGNMENT_GROUPS,
+        "state": "unanswered"
+    }
+
+    response = requests.get(
+        GET_ITEMS_URL,
+        headers=headers,
+        params=params
+    )
+
+    response.raise_for_status()
+    data = response.json()
+
+    # ---- Transform API response into UI-friendly format ----
+    result = {}
+    for item in data["result"]:
+        assignee = item.get("assigned_to", "Unassigned")
+        result[assignee] = result.get(assignee, 0) + 1
+
+    # Convert to list of dicts
+    return [
+        {"assigned_to": k, "count": v}
+        for k, v in result.items()
+    ]
+
+
+@app.route("/")
+def dashboard():
+    ritm_data = get_unanswered_ritms()
+    return render_template("dashboard.html", ritm_data=ritm_data)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
 from flask import Flask, render_template, request, session, jsonify
 import json
 import os
