@@ -1,4 +1,69 @@
 import requests
+import json
+
+# =========================
+# API DETAILS
+# =========================
+URL = "http://localhost:5000/api/v1/report/view"  
+# 🔁 replace localhost:5000 with actual host & port
+
+USERNAME = "your_username"     # 🔁 replace
+PASSWORD = "your_password"     # 🔁 replace
+
+HEADERS = {
+    "Content-Type": "application/json"
+}
+
+# JSON BODY (must be JSON as per API)
+PAYLOAD = {
+    "reportType": "daily",
+    "date": "2025-01-01"
+}
+
+# =========================
+# API HIT
+# =========================
+try:
+    print("🔄 Hitting API...")
+
+    response = requests.post(
+        URL,
+        auth=(USERNAME, PASSWORD),   # Basic Auth
+        headers=HEADERS,
+        json=PAYLOAD,
+        timeout=10
+    )
+
+    print("✅ API WAS HIT")
+    print("Status Code:", response.status_code)
+
+    # =========================
+    # RESPONSE HANDLING
+    # =========================
+    try:
+        print("Response JSON:")
+        print(response.json())
+    except Exception:
+        print("Response Text:")
+        print(response.text)
+
+except requests.exceptions.Timeout:
+    print("❌ API WAS NOT HIT - Timeout")
+
+except requests.exceptions.ConnectionError:
+    print("❌ API WAS NOT HIT - Connection Error")
+
+except Exception as e:
+    print("❌ API WAS NOT HIT")
+    print("Error:", str(e))
+
+
+
+
+
+
+
+import requests
 
 # ==============================
 # 1. OAUTH TOKEN DETAILS
