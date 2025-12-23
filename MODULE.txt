@@ -1,3 +1,43 @@
+private void enrichEbDataFromUv(
+        RequestEvent event,
+        String branchCode,
+        String countryCode,
+        String bnppuid) {
+
+    if (StringUtils.isBlank(event.getCustMstNo())) {
+        log.warn("CustomerId missing, cannot fetch EB data");
+        return;
+    }
+
+    List<CustomerDetails> customers =
+            staticDataService.getCustomerIdOrCustomerAccount(
+                    branchCode,
+                    countryCode,
+                    null,
+                    event.getCustMstNo(),
+                    null
+            );
+
+    customers.stream()
+            .filter(c -> c.getCustomerId() != null
+                    && event.getCustMstNo()
+                    .equals(c.getCustomerId().getCustomerId()))
+            .findFirst()
+            .ifPresent(c -> {
+                event.setEbCusFlag(c.getEbCusflag());
+
+                if (c.getCustomerId() != null) {
+                    event.setEbCusId(c.getCustomerId().getCustomerId());
+                }
+
+                if (c.getAccountNumber() != null) {
+                    event.setEbBanId(c.getAccountNumber().getAccountNumber());
+                }
+            });
+}
+
+
+
 @Cacheable("customerDetails")
 public List<CustomerDetails> getCustomerDetailsByCustomerId(
         String branchCode,
