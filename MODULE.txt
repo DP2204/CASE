@@ -1,3 +1,55 @@
+@Cacheable("customerDetails")
+public List<CustomerDetails> getCustomerDetailsByCustomerId(
+        String branchCode,
+        String countryCode,
+        String customerId) throws BatchException {
+
+    final String url = uvStaticDataApiHost + uvCustomersDataEndpoint;
+
+    try {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(UID, bnppuid);
+        headers.set(SITE_NAME, branchCode.concat(countryCode));
+
+        UriComponentsBuilder builder =
+                UriComponentsBuilder.fromUriString(url)
+                        .queryParam("branchCode", branchCode)
+                        .queryParam("customerId", customerId);
+
+        String uri = builder.build().toUriString();
+
+        ResponseEntity<CustomerResponse> response =
+                restClient.get()
+                        .uri(uri)
+                        .headers(h -> h.addAll(headers))
+                        .retrieve()
+                        .toEntity(CustomerResponse.class);
+
+        CustomerResponse customerResponse = response.getBody();
+
+        return Optional.ofNullable(customerResponse)
+                .map(CustomerResponse::getCustomerDetailsList)
+                .orElse(Collections.emptyList());
+
+    } catch (HttpClientErrorException | HttpServerErrorException ex) {
+        log.warn("Error fetching CustomerDetails from UV for customerId {}",
+                customerId, ex);
+        throw new HttpServerErrorException(ex.getStatusCode());
+    } catch (Exception ex) {
+        throw new BatchException(
+                "[getCustomerDetailsByCustomerId]",
+                "Exception while fetching customer details from UV",
+                ex);
+    }
+}
+
+
+
+
+
+
+
+
 @Mapper(componentModel = "spring")
 public interface CourierMapper {
 
