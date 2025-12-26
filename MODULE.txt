@@ -1,3 +1,42 @@
+public Optional<Customer> getCustomerFromUV(
+        String branchCode,
+        String countryCode,
+        String customerId) {
+
+    try {
+        List<Customer> customerList =
+            staticDataService.getCustomerIdOrCustomerAccount(
+                branchCode,
+                countryCode,
+                null,
+                customerId,
+                null
+            );
+
+        return customerList.stream()
+                .filter(c -> customerId.equalsIgnoreCase(c.getCustomerId()))
+                .findFirst();
+
+    } catch (HttpServerErrorException ex) {
+        if (HttpStatus.NOT_FOUND.equals(ex.getStatusCode())) {
+            return Optional.empty();
+        }
+        throw ex;
+    } catch (Exception e) {
+        log.error(
+          "[getCustomerFromUV] Exception while fetching customer from UV. customerId={}, branchCode={}",
+          customerId, branchCode, e
+        );
+        return Optional.empty();
+    }
+}
+
+
+
+
+
+
+
 private void enrichEbDataFromUv(
         RequestEvent event,
         String branchCode,
