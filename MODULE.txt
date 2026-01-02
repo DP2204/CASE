@@ -1,3 +1,35 @@
+channelHelper
+    .getCustomerFromUV(
+        connexisData.getBranchCode(),
+        connexisData.getCountryCode(),
+        connexisData.getCustomerId()
+    )
+    .ifPresent(customer -> {
+
+        RequestExtended request = connexisData.getRequest();
+        if (request == null || request.getEvent() == null) {
+            return;
+        }
+
+        RequestEvent event = request.getEvent();
+
+        // ✅ DIRECTLY ON RequestEvent
+        event.setEbCusflag(customer.getEbCusflag());
+        event.setEbCusId(customer.getEbCusId());
+
+        // EB BAN ID — derive from account
+        customer.getCustomerAccount()
+                .stream()
+                .findFirst()
+                .ifPresent(acc ->
+                    event.setEbBanId(acc.getAccountNum()) // OR acc.getEbBanId() if exists
+                );
+    });
+
+
+
+
+
 // ================= EB ENRICHMENT FROM UV =================
 channelHelper
     .getCustomerFromUV(
