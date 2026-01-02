@@ -1,3 +1,35 @@
+// ================= EB ENRICHMENT FROM UV =================
+channelHelper
+    .getCustomerFromUV(
+        event.getBranchCode(),
+        event.getCountryCode(),
+        customerMstNo
+    )
+    .ifPresent(customer -> {
+
+        if (event.getExternalTrackAndTraceDetails() == null) {
+            event.setExternalTrackAndTraceDetails(new ExternalTrackAndTraceDetails());
+        }
+
+        ExternalTrackAndTraceDetails ext =
+                event.getExternalTrackAndTraceDetails();
+
+        ext.setEbCusflag(customer.getEbCusflag());
+        ext.setEbCusId(customer.getEbCusId());
+
+        customer.getCustomerAccount()
+                .stream()
+                .findFirst()
+                .ifPresent(acc ->
+                        ext.setEbBanId(acc.getEbBanId())
+                );
+    });
+// =========================================================
+
+
+
+
+
 // ===== EB data enrichment START =====
 channelHelper
     .getCustomerFromUV(
