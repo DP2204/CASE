@@ -1,3 +1,24 @@
+// 🔽 TEMP DEBUG LOG (MANDATORY)
+log.info("### EB DEBUG: Inside setProductSpecificDetailsForCreateRequest");
+
+// 🔽 HARD-CODED TEST (for now)
+RequestEvent event = request.getEvent();
+if (event != null) {
+    event.setEbCusflag("Y");
+    event.setEbCusId("EB_TEST_CUS_001");
+    event.setEbBanId("EB_TEST_BAN_001");
+
+    log.info("### EB DEBUG SET: flag={}, cusId={}, banId={}",
+        event.getEbCusflag(),
+        event.getEbCusId(),
+        event.getEbBanId()
+    );
+}
+
+
+
+
+
 channelHelper
     .getCustomerFromUV(
         connexisData.getBranchCode(),
