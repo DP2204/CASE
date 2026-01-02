@@ -1,3 +1,106 @@
+def fetch_unanswered_ritm_data(token):
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+
+    # ⚠️ Replace this query with YOUR actual unanswered query
+    query = {
+        "assignment_group": "BNPP_CIB_IN_GLOBAL_CIB_PRODUCTION_APS_DEVOPS_SUPPORT_SDM",
+        "state": "New",   # or your unanswered condition
+        "sysparm_display_value": "true",
+        "sysparm_exclude_reference_link": "true",
+        "sysparm_limit": "100"
+    }
+
+    try:
+        response = requests.get(
+            GET_ITEMS_URL,
+            headers=headers,
+            params=query,
+            verify=False
+        )
+
+        print("Unanswered RITM Status:", response.status_code)
+        response.raise_for_status()
+
+        return response.json()
+
+    except Exception as ex:
+        print("Failed to fetch UNANSWERED RITM data:", ex)
+        return None
+
+
+
+
+
+
+def store_unanswered_ritm_data(timestamp, total_ritms):
+    try:
+        connection = psycopg2.connect(
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT
+        )
+
+        cursor = connection.cursor()
+
+        cursor.execute(
+            sql.SQL("SET search_path TO {}").format(sql.Identifier(DB_SCHEMA))
+        )
+
+        cursor.execute(
+            "SELECT to_regclass(%s)",
+            (f"{DB_SCHEMA}.unanswered_ritms",)
+        )
+
+        if not cursor.fetchone()[0]:
+            raise Exception(f"Table {DB_SCHEMA}.unanswered_ritms does not exist")
+
+        insert_query = sql.SQL("""
+            INSERT INTO {} (timestamp, total_ritms)
+            VALUES (%s, %s)
+        """).format(sql.Identifier("unanswered_ritms"))
+
+        cursor.execute(insert_query, (timestamp, total_ritms))
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        print(
+            f"Unanswered RITMs inserted successfully: "
+            f"timestamp={timestamp}, total_ritms={total_ritms}"
+        )
+
+    except Exception as ex:
+        print("Failed to store unanswered RITM data:", ex)
+
+
+
+
+
+def scheduled_unanswered_job():
+    print(f"\n===== UNANSWERED JOB STARTED @ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} =====")
+
+    token = gen_access_token()
+    if token:
+        ritm_data = fetch_unanswered_ritm_data(token)
+
+        if ritm_data:
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            total_ritms = len(ritm_data.get("result", []))
+
+            store_unanswered_ritm_data(timestamp, total_ritms)
+
+    print("===== UNANSWERED JOB FINISHED =====\n")
+
+
+
+
+
 from flask import Flask
 from apscheduler.schedulers.background import BackgroundScheduler
 import requests
