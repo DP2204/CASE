@@ -1,3 +1,41 @@
+// ===== EB data enrichment START =====
+channelHelper
+    .getCustomerFromUV(
+        connexisData.getBranchCode(),
+        connexisData.getCountryCode(),
+        connexisData.getCustomerId()
+    )
+    .ifPresent(customer -> {
+
+        RequestEventDetailsForConnexis reqEvent =
+                connexisData.getReqEventDetails();
+
+        if (reqEvent != null &&
+            reqEvent.getExternalTrackAndTraceDetails() != null) {
+
+            ExternalTrackAndTraceDetails ebDetails =
+                    reqEvent.getExternalTrackAndTraceDetails();
+
+            ebDetails.setEbCusflag(customer.getEbCusflag());
+            ebDetails.setEbCusId(customer.getEbCusId());
+
+            customer.getCustomerAccount()
+                    .stream()
+                    .findFirst()
+                    .ifPresent(acc ->
+                        ebDetails.setEbBanId(acc.getEbBanId())
+                    );
+        }
+    });
+// ===== EB data enrichment END =====
+
+
+
+
+
+
+
+
 public Optional<Customer> getCustomerFromUV(
         String branchCode,
         String countryCode,
