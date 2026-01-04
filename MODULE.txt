@@ -1,3 +1,52 @@
+public void populateCustomerAndEbDetails(
+        RequestExtended request,
+        RequestEvent event,
+        String branchCode,
+        String countryCode,
+        String customerId,
+        String currency) {
+
+    if (event == null || StringUtils.isBlank(currency)) {
+        return;
+    }
+
+    log.debug("Fetching Customer from UV for customerId={}, currency={}", customerId, currency);
+
+    Customer custDetails = getCustomerFromUV(branchCode, countryCode, customerId, currency);
+
+    if (custDetails == null) {
+        log.warn("No customer found in UV for customerId={}, currency={}", customerId, currency);
+        return;
+    }
+
+    // ---- Account selection (already currency filtered in UV method) ----
+    custDetails.getCustomerAccount()
+            .stream()
+            .findFirst()
+            .ifPresent(acc -> {
+                event.setAccountNo(acc.getAccountNum());
+                request.setCustomerAccountNo(acc.getAccountNum());
+            });
+
+    // ---- EB fields ----
+    event.setEbCusflag(custDetails.getEbCusflag());
+    event.setEbCusId(custDetails.getEbCusId());
+    event.setEbBanId(custDetails.getEbBanId());
+
+    request.setEbCusflag(custDetails.getEbCusflag());
+    request.setEbCusId(custDetails.getEbCusId());
+    request.setEbBanId(custDetails.getEbBanId());
+
+    log.info("EB details populated successfully for customerId={}", customerId);
+}
+
+
+
+
+
+
+
+
 // 🔽 TEMP DEBUG LOG (MANDATORY)
 log.info("### EB DEBUG: Inside setProductSpecificDetailsForCreateRequest");
 
