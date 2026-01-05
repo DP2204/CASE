@@ -1,3 +1,28 @@
+// ================= TEMP HARD CODE START =================
+String branchCode  = "30004";        // must exist in UV
+String countryCode = "FR";           // valid country
+String customerId  = "02478123456";  // existing customerId in UV
+String currency    = "EUR";          // account currency
+
+log.info("### TEMP TEST: Fetching EB details from UV ###");
+
+channelHelper.populateCustomerEbDetailsForRequest(
+        request,
+        branchCode,
+        countryCode,
+        customerId,
+        currency
+);
+
+log.info("### EB FLAG  : {}", request.getEbCusflag());
+log.info("### EB CUSID : {}", request.getEbCusId());
+log.info("### EB BANID : {}", request.getEbBanId());
+// ================= TEMP HARD CODE END ===================
+
+
+
+
+
 request.setCustMstNo(connexisData.getCustomerId());
 request.setBusinessCenter(connexisData.getBusinessCenter());
 
