@@ -1,3 +1,25 @@
+@app.route("/api/ritm_data")
+def get_ritm_data_api():
+    try:
+        ritm_data = get_ritm_data()
+
+        # 🔧 FIX: convert defaultdict → normal dict
+        if "assignment_counts" in ritm_data:
+            ritm_data["assignment_counts"] = dict(ritm_data["assignment_counts"])
+
+        return jsonify(ritm_data)
+
+    except Exception as ex:
+        print("Failed to fetch RITM data:", ex)
+        return jsonify({
+            "total_ritms": 0,
+            "assignment_counts": {}
+        }), 500
+
+
+
+
+
 fetch('/api/total_ritms')
   .then(response => response.json())
   .then(data => {
