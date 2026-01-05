@@ -1,3 +1,54 @@
+request.setCustMstNo(connexisData.getCustomerId());
+request.setBusinessCenter(connexisData.getBusinessCenter());
+
+setDataForCreateRequestFromXML(
+        connexisRequest,
+        request,
+        connexisAutoISMapping
+);
+
+/* =====================================================
+ * ✅ ADD EB POPULATION LOGIC HERE
+ * ===================================================== */
+String customerId  = connexisData.getCustomerId();
+String branchCode  = connexisData.getBranchCode();
+String countryCode = connexisData.getCountryCode();
+
+// currency is OPTIONAL for EB, pass if present
+String currency = null;
+if (StringUtils.isNotBlank(connexisRequest.getChildText(CURRENCY_CODE))) {
+    currency = connexisRequest.getChild(CURRENCY_CODE).getValue();
+}
+
+channelHelper.populateCustomerEbDetailsForRequest(
+        request,
+        branchCode,
+        countryCode,
+        customerId,
+        currency
+);
+/* ===================================================== */
+
+if (StringUtils.isNotBlank(connexisRequest.getChildText(LC_EXP_DATE))) {
+    serializedObjectMap.put(
+        LC_EXPIRY_DATE,
+        CommonUtil.getLocalDateTimeFromCetToUtc(
+            connexisRequest.getChild(LC_EXP_DATE).getValue()
+        )
+    );
+}
+
+request = cxtProcessingFactory.setProductSpecificDetailsForCreateRequest(
+        request,
+        connexisRequest,
+        serializedObjectMap
+);
+
+
+
+
+
+
 public void populateCustomerEbDetailsForRequest(
         RequestExtended request,
         String branchCode,
