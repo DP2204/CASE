@@ -1,3 +1,15 @@
+if __name__ == "__main__":
+    token = gen_access_token()
+    print("Token generated:", bool(token))
+
+    data = fetch_ritm_data(token)
+    print("Final data returned:", data)
+
+
+
+
+
+
 def fetch_ritm_data(token):
     headers = {
         'Authorization': f'Bearer {token}',
