@@ -1,3 +1,31 @@
+public void populateCustomerEbDetailsForRequest(
+        RequestExtended request,
+        String branchCode,
+        String countryCode,
+        String customerId,
+        String currency) {
+
+    Customer cust = getCustomerFromUV(branchCode, countryCode, customerId, currency);
+
+    if (cust == null) {
+        return;
+    }
+
+    request.setEbCusflag(cust.getEbCusflag());
+    request.setEbCusId(cust.getEbCusId());
+
+    cust.getCustomerAccount()
+        .stream()
+        .findFirst()
+        .ifPresent(acc ->
+            request.setEbBanId(acc.getAccountNum())
+        );
+}
+
+
+
+
+
 public void populateCustomerAndEbDetails(
         RequestExtended request,
         RequestEvent event,
