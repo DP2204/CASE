@@ -1,3 +1,36 @@
+def fetch_ritm_data(token):
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+
+    params = {
+        'sysparm_query': (
+            'assignment_group=<ASSIGNMENT_GROUP_SYS_ID>'
+            '^state=3'
+            '^sys_updated_on>=javascript:gs.daysAgoStart(3)'
+        ),
+        'sysparm_limit': 100,
+        'sysparm_display_value': 'true',
+        'sysparm_exclude_reference_link': 'true'
+    }
+
+    response = requests.get(
+        GET_ITEMS_URL,
+        headers=headers,
+        params=params,
+        verify=False
+    )
+
+    print("SN Response:", response.json())  # DEBUG ONCE
+    response.raise_for_status()
+    return response.json()
+
+
+
+
+
+
 @app.route("/api/ritm_data")
 def get_ritm_data_api():
     try:
