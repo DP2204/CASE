@@ -1,3 +1,16 @@
+fetch('/api/total_ritms')
+  .then(response => response.json())
+  .then(data => {
+      console.log('API Response:', data);   // 👈 ADD THIS LINE
+      document.getElementById('total-ritms').textContent = data.total_ritms;
+  })
+  .catch(error => console.error('Error fetching total RITMs:', error));
+
+
+
+
+
+
 def fetch_unanswered_ritm_data(token):
     headers = {
         'Authorization': f'Bearer {token}',
