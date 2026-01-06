@@ -1,3 +1,104 @@
+@app.route("/api/unanswered_ritms")
+def get_unanswered_ritms():
+    try:
+        connection = psycopg2.connect(
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT
+        )
+
+        cursor = connection.cursor()
+        cursor.execute(sql.SQL("SET search_path TO {}")
+                       .format(sql.Identifier(DB_SCHEMA)))
+
+        cursor.execute("""
+            SELECT assigned_to, COUNT(*) 
+            FROM onhold_ritms
+            WHERE updated_days > 3
+            GROUP BY assigned_to
+        """)
+
+        rows = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM onhold_ritms
+            WHERE updated_days > 3
+        """)
+        total = cursor.fetchone()[0]
+
+        cursor.close()
+        connection.close()
+
+        assignment_counts = {row[0]: row[1] for row in rows}
+
+        return jsonify({
+            "assignment_counts": assignment_counts,
+            "total_unanswered_ritms": total
+        })
+
+    except Exception as ex:
+        print("Failed to fetch unanswered RITMs:", ex)
+        return jsonify({
+            "assignment_counts": {},
+            "total_unanswered_ritms": 0
+        }), 500
+
+
+
+
+
+
+
+
+
+
+<script>
+async function fetchUnansweredRITMs() {
+  try {
+    const response = await fetch('/api/unanswered_ritms');
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+    console.log('Fetched unanswered RITMs:', data);
+
+    const tbody = document.getElementById('unanswered-ritm-data');
+    tbody.innerHTML = '';
+
+    for (const [person, count] of Object.entries(data.assignment_counts)) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="text-left">${person}</td>
+        <td class="text-right font-bold text-red-600">${count}</td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    document.getElementById('totalUnansweredRitms').textContent =
+      data.total_unanswered_ritms ?? 0;
+
+  } catch (error) {
+    console.error('Error fetching unanswered RITMs:', error);
+    document.getElementById('totalUnansweredRitms').textContent = 0;
+  }
+}
+
+/* Auto refresh every 5 minutes */
+setInterval(fetchUnansweredRITMs, 300000);
+
+/* Initial load */
+document.addEventListener('DOMContentLoaded', fetchUnansweredRITMs);
+</script>
+
+
+
+
+
+
 <script>
 /* ================================
    Fetch TOTAL NOT UPDATED RITMs
