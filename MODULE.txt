@@ -1,3 +1,21 @@
+private shouldTriggerTAR(request: any): boolean {
+  const eventStatus = request?.event?.status;
+  const connexisReqTnxId =
+    request?.event?.connexisRequestTnxId ?? request?.connexisRequestTnxId;
+  const cxtStatus = request?.cxtTrackAndTraceStatus;
+
+  return (
+    eventStatus === 'COMPLETED' &&
+    !!connexisReqTnxId &&
+    !!cxtStatus
+  );
+}
+
+
+
+
+
+
 // ================= TEMP HARD CODE START =================
 String branchCode  = "30004";        // must exist in UV
 String countryCode = "FR";           // valid country
