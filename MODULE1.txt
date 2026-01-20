@@ -1,3 +1,112 @@
+from flask import Flask, jsonify
+from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
+
+app = Flask(__name__)
+
+# -------- MongoDB Config --------
+MONGO_URI = "mongodb://localhost:27017/"
+DB_NAME = "ritm_db"
+DB_COLLECTION = "ritm_hold"
+# --------------------------------
+
+
+def get_mongo_collection():
+    client = MongoClient(MONGO_URI)
+    db = client[DB_NAME]
+    return client, db[DB_COLLECTION]
+
+
+@app.route("/api/ritm_data")
+def get_ritm_data_api():
+    """
+    Returns the latest full RITM summary document
+    """
+    try:
+        client, collection = get_mongo_collection()
+
+        data = collection.find_one(
+            {},
+            sort=[("timestamp", -1)],
+            projection={"_id": 0}
+        )
+
+        client.close()
+
+        if not data:
+            return jsonify({})
+
+        return jsonify(data)
+
+    except ConnectionFailure as ex:
+        print("MongoDB connection failed:", ex)
+        return jsonify({}), 500
+
+
+@app.route("/api/total_ritms")
+def get_total_ritms():
+    """
+    Returns only total_ritms from latest record
+    """
+    try:
+        client, collection = get_mongo_collection()
+
+        doc = collection.find_one(
+            {},
+            sort=[("timestamp", -1)],
+            projection={"_id": 0, "total_ritms": 1}
+        )
+
+        client.close()
+
+        return jsonify({
+            "total_ritms": doc.get("total_ritms", 0) if doc else 0
+        })
+
+    except Exception as ex:
+        print("Error fetching total_ritms:", ex)
+        return jsonify({"total_ritms": 0}), 500
+
+
+@app.route("/api/ritm_not_updated")
+def ritm_not_updated():
+    """
+    Returns RITMs not updated > 3 days (per assigned_to)
+    """
+    try:
+        client, collection = get_mongo_collection()
+
+        doc = collection.find_one(
+            {},
+            sort=[("timestamp", -1)],
+            projection={"_id": 0, "ritm_not_updated_counts": 1}
+        )
+
+        client.close()
+
+        return jsonify(
+            doc.get("ritm_not_updated_counts", {}) if doc else {}
+        )
+
+    except Exception as ex:
+        print("Error fetching ritm_not_updated:", ex)
+        return jsonify({}), 500
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
 import json
 import re
 import requests
