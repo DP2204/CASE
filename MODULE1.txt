@@ -1,3 +1,216 @@
+import json
+import re
+import requests
+import atexit
+from datetime import datetime, date
+from collections import defaultdict
+
+from requests.auth import HTTPBasicAuth
+from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure, OperationFailure
+
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Flask
+
+# ---------------- CONFIG ----------------
+TOKEN_URL = "YOUR_TOKEN_URL"
+GET_ITEMS_URL = "YOUR_GET_ITEMS_URL"
+
+CLIENT_ID = "YOUR_CLIENT_ID"
+CLIENT_SECRET = "YOUR_CLIENT_SECRET"
+SCOPE = "YOUR_SCOPE"
+
+MONGO_URI = "mongodb://localhost:27017/"
+DB_NAME = "ritm_db"
+DB_COLLECTION = "ritm_hold"
+
+app = Flask(__name__)
+# ---------------------------------------
+
+
+def print_to_console(message, level="INFO", data=None):
+    """Enhanced console printing function"""
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"[{timestamp}] [{level}] {message}")
+
+    if data is not None:
+        print(json.dumps(data, indent=2, default=str))
+        print("-" * 50)
+
+
+def gen_access_token():
+    """Generate access token for API authentication"""
+    print_to_console("Generating access token...")
+
+    payload = {
+        "grant_type": "client_credentials",
+        "scope": SCOPE
+    }
+
+    try:
+        response = requests.post(
+            TOKEN_URL,
+            data=payload,
+            auth=HTTPBasicAuth(CLIENT_ID, CLIENT_SECRET),
+            verify=False
+        )
+        response.raise_for_status()
+
+        token = response.json().get("access_token")
+        print_to_console("Access token generated successfully")
+        return token
+
+    except Exception as ex:
+        print_to_console(f"Token generation failed: {str(ex)}", level="ERROR")
+        return None
+
+
+def fetch_ritm_data(token):
+    """Fetch RITM data from API"""
+    print_to_console("Fetching RITM data from API...")
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    params = {
+        "assignment_group": "BNPP_CIB_IN_GLOBAL CIB PRODUCTION APS DEVOPS SUPPORT_SDM",
+        "state": "On Hold",
+        "updated": "javascript:gs.daysAgoStart(3)",
+        "sysparm_display_value": "true",
+        "sysparm_exclude_reference_link": "true",
+        "sysparm_limit": "100"
+    }
+
+    try:
+        response = requests.get(
+            GET_ITEMS_URL,
+            headers=headers,
+            params=params,
+            verify=False
+        )
+        response.raise_for_status()
+
+        data = response.json()
+        print_to_console("Raw API Response:", data=data)
+        return data
+
+    except Exception as ex:
+        print_to_console(f"Failed to fetch RITM data: {str(ex)}", level="ERROR")
+        return None
+
+
+def get_days_since(input_date):
+    """Calculate days since a given date"""
+    today = datetime.strptime(date.today().strftime('%Y-%m-%d'), '%Y-%m-%d')
+    d2 = datetime.strptime(input_date, '%Y-%m-%d')
+    return (today - d2).days
+
+
+def extract_date_from_comments(comments):
+    """Extract YYYY-MM-DD from comments"""
+    match = re.search(r'(\d{4}-\d{2}-\d{2})', comments)
+    return match.group(1) if match else None
+
+
+def store_ritm_data(timestamp, total_ritms, total_ritm_not_updated, ritm_not_updated_counts):
+    """Store RITM data in MongoDB"""
+    print_to_console("Storing RITM data in MongoDB...")
+
+    try:
+        client = MongoClient(MONGO_URI)
+        db = client[DB_NAME]
+        collection = db[DB_COLLECTION]
+
+        document = {
+            "timestamp": timestamp,
+            "total_ritms": total_ritms,
+            "total_ritm_not_updated": total_ritm_not_updated,
+            "ritm_not_updated_counts": dict(ritm_not_updated_counts)
+        }
+
+        print_to_console("Document to be stored:", data=document)
+
+        result = collection.insert_one(document)
+        print_to_console(f"Data inserted successfully with ID: {result.inserted_id}")
+
+    except (ConnectionFailure, OperationFailure) as ex:
+        print_to_console(f"MongoDB error: {str(ex)}", level="ERROR")
+
+    finally:
+        if 'client' in locals():
+            client.close()
+
+
+def scheduled_job():
+    """Scheduled job to fetch and store RITM data"""
+    print_to_console("=" * 50)
+    print_to_console(f"JOB STARTED @ {datetime.now()}")
+    print_to_console("=" * 50)
+
+    token = gen_access_token()
+    if not token:
+        return
+
+    ritm_data = fetch_ritm_data(token)
+    if not ritm_data or "result" not in ritm_data:
+        print_to_console("No RITM data found", level="WARNING")
+        return
+
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    total_ritms = len(ritm_data["result"])
+    total_ritm_not_updated = 0
+    ritm_not_updated_counts = defaultdict(int)
+
+    for item in ritm_data["result"]:
+        number = item.get("number", "N/A")
+        assigned_to = item.get("assigned_to", {}).get("value", "Unassigned")
+        comments = item.get("comments", "")
+
+        comment_date = extract_date_from_comments(comments)
+        if comment_date:
+            days = get_days_since(comment_date)
+            if days > 3:
+                total_ritm_not_updated += 1
+                ritm_not_updated_counts[assigned_to] += 1
+
+    store_ritm_data(
+        timestamp,
+        total_ritms,
+        total_ritm_not_updated,
+        ritm_not_updated_counts
+    )
+
+    print_to_console("JOB FINISHED")
+    print_to_console("=" * 50)
+
+
+# ---------------- SCHEDULER ----------------
+scheduler = BackgroundScheduler()
+scheduler.add_job(
+    func=scheduled_job,
+    trigger="interval",
+    minutes=5,
+    id="ritm_data_job",
+    replace_existing=True
+)
+scheduler.start()
+atexit.register(lambda: scheduler.shutdown())
+# ------------------------------------------
+
+
+if __name__ == "__main__":
+    print_to_console("Starting RITM Data Collector...")
+    scheduled_job()
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
+
+
+
+
+
+
 if __name__ == "__main__":
     scheduler = BackgroundScheduler()
     scheduler.add_job(ritm_scheduled_job, "interval", minutes=5)
