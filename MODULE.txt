@@ -3,6 +3,60 @@ void sendDataToConnexis_publishFails_returnsFalse() throws Exception {
 
     File xmlFile = new File("target/test.xml");
 
+    // Inject @Value fields
+    ReflectionTestUtils.setField(service, "tmpFilePath", "target/tmp/");
+    ReflectionTestUtils.setField(service, "doneFilePath", "target/done/");
+    ReflectionTestUtils.setField(service, "errorFilePath", "target/error/");
+
+    when(controllerUtils.checkEligibleForSendToCxt(
+            any(), any(), any(), any(), any(), any()
+    )).thenReturn(true);
+
+    when(xmlStrategyContext.generateXml(
+            any(), anyString(), anyList()
+    )).thenReturn(xmlFile);
+
+    doNothing().when(controllerUtils)
+            .createExternalTrackAndTraceHistory(any(), any(), any());
+
+    try (MockedStatic<FileUtil> fileUtilMock = mockStatic(FileUtil.class)) {
+
+        // 🔥 CRITICAL FIX: use the SAME PATH that service passes in
+        fileUtilMock.when(() -> FileUtil.createTarFile(anyList(), anyString()))
+                .thenAnswer(invocation -> {
+                    String realTarPath = invocation.getArgument(1, String.class);
+                    File realTarFile = new File(realTarPath);
+
+                    realTarFile.getParentFile().mkdirs();
+                    realTarFile.createNewFile();  // <-- now matches service check
+
+                    return null;
+                });
+
+        // Simulate publish failure
+        doThrow(new RuntimeException("Publish Error"))
+                .when(etntMessagePublisherViaPushMQ)
+                .publish(anyList());
+
+        boolean result = service.sendDataToConnexis(request, "BNPPUID");
+
+        assertFalse(result);
+
+        // NOW this WILL be invoked
+        verify(etntMessagePublisherViaPushMQ, times(1))
+                .publish(anyList());
+    }
+}
+
+
+
+
+
+@Test
+void sendDataToConnexis_publishFails_returnsFalse() throws Exception {
+
+    File xmlFile = new File("target/test.xml");
+
     // Must inject @Value paths
     ReflectionTestUtils.setField(service, "tmpFilePath", "target/tmp/");
     ReflectionTestUtils.setField(service, "doneFilePath", "target/done/");
