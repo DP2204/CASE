@@ -1,3 +1,18 @@
+ExternalTNTRequest request = new ExternalTNTRequest();
+
+var flags = mock(ExternalTNTRequestFlags.class); // replace with real class name
+
+when(flags.isLocAttachmentFlag()).thenReturn(true);
+when(flags.isCourierFlag()).thenReturn(false);
+when(flags.isConnexisRequestRefIdMfrFlag()).thenReturn(false);
+
+request.setFlags(flags);
+
+
+
+
+
+
 package com.bnpparibas.mql.service.impl;
 
 import com.bnpparibas.mql.bean.external.TrackAndTrace.Attachment;
