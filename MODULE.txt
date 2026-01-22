@@ -1,3 +1,33 @@
+@Test
+void sendDataToConnexis_tarCreationFails_returnsFalse() throws Exception {
+
+    File xmlFile = new File("target/test.xml");
+
+    when(controllerUtils.checkEligibleForSendToCxt(
+            any(), any(), any(), any(), any(), any()
+    )).thenReturn(true);
+
+    when(xmlStrategyContext.generateXml(
+            any(), anyString(), anyList()
+    )).thenReturn(xmlFile);
+
+    // IMPORTANT: Do NOT throw exception
+    // Just don't create the tar file
+    try (MockedStatic<FileUtil> fileUtilMock = mockStatic(FileUtil.class)) {
+
+        fileUtilMock.when(() -> FileUtil.createTarFile(anyList(), anyString()))
+                .thenAnswer(invocation -> null);  // No tar file created
+
+        boolean result = service.sendDataToConnexis(request, "BNPPUID");
+
+        assertFalse(result);
+
+        verify(etntMessagePublisherViaPushMQ, never()).publish(anyList());
+    }
+}
+
+
+
 package com.bnpparibas.mql.service.impl;
 
 import com.bnpparibas.mql.helper.ExternalTNTHelper;
