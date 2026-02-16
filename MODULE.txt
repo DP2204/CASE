@@ -1,3 +1,196 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bnpparibas.dpw</groupId>
+    <artifactId>dpw-bom</artifactId>
+    <version>4.0.0-1</version>
+    <packaging>pom</packaging>
+
+    <name>DPW Platform BOM</name>
+
+    <!-- ===================================================== -->
+    <!-- Properties -->
+    <!-- ===================================================== -->
+    <properties>
+        <java.version>21</java.version>
+        <spring.boot.version>3.5.9</spring.boot.version>
+        <spring-cloud.version>2023.0.3</spring-cloud.version>
+
+        <!-- Common libs -->
+        <commons-io.version>2.15.1</commons-io.version>
+        <commons-validator.version>1.7</commons-validator.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
+
+        <!-- Mapping -->
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <lombok.version>1.18.42</lombok.version>
+
+        <!-- OpenAPI -->
+        <springdoc.version>2.5.0</springdoc.version>
+
+        <!-- Database -->
+        <oracle.ojdbc.version>23.7.0.25.01</oracle.ojdbc.version>
+
+        <!-- Utilities -->
+        <poi.version>5.3.0</poi.version>
+        <opencsv.version>5.9</opencsv.version>
+
+        <!-- Testing -->
+        <cucumber.version>7.14.0</cucumber.version>
+        <equalsverifier.version>3.15.3</equalsverifier.version>
+
+        <!-- Other -->
+        <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
+    </properties>
+
+    <!-- ===================================================== -->
+    <!-- Dependency Management -->
+    <!-- ===================================================== -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- Spring Boot BOM -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud BOM -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- ================================================= -->
+            <!-- Common Libraries -->
+            <!-- ================================================= -->
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-validator</groupId>
+                <artifactId>commons-validator</artifactId>
+                <version>${commons-validator.version}</version>
+            </dependency>
+
+            <!-- ================================================= -->
+            <!-- Database -->
+            <!-- ================================================= -->
+
+            <dependency>
+                <groupId>com.oracle.database.jdbc</groupId>
+                <artifactId>ojdbc11</artifactId>
+                <version>${oracle.ojdbc.version}</version>
+            </dependency>
+
+            <!-- ================================================= -->
+            <!-- OpenAPI (Spring Boot 3 compatible) -->
+            <!-- ================================================= -->
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- ================================================= -->
+            <!-- Mapping -->
+            <!-- ================================================= -->
+
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+
+            <!-- ================================================= -->
+            <!-- Utilities -->
+            <!-- ================================================= -->
+
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi</artifactId>
+                <version>${poi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>${poi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.opencsv</groupId>
+                <artifactId>opencsv</artifactId>
+                <version>${opencsv.version}</version>
+            </dependency>
+
+            <!-- ================================================= -->
+            <!-- Servlet API -->
+            <!-- ================================================= -->
+
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet.version}</version>
+            </dependency>
+
+            <!-- ================================================= -->
+            <!-- Testing -->
+            <!-- ================================================= -->
+
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-spring</artifactId>
+                <version>${cucumber.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-junit-platform-engine</artifactId>
+                <version>${cucumber.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>nl.jqno.equalsverifier</groupId>
+                <artifactId>equalsverifier</artifactId>
+                <version>${equalsverifier.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>
+
+
+
+
+
+
+
 @Test
 void sendDataToConnexis_tarCreationFails_returnsFalse() throws Exception {
 
