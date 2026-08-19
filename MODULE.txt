@@ -1,3 +1,159 @@
+We are creating persistent codebase knowledge for this large enterprise project.
+
+This is the INITIAL CODEBASE-MAPPING PHASE only.
+
+For THIS TASK:
+
+- Do not modify application source code.
+- Do not build or compile the project.
+- Do not run tests.
+- Do not start the application.
+- Do not run deployment or migration commands.
+- Use static repository/source analysis only.
+
+These restrictions apply ONLY to this documentation task. Future implementation tasks may modify code and build/test the project when appropriate.
+
+Objective
+
+Create a lightweight hierarchical "AGENTS.md" knowledge base that reduces the amount of repository scanning and token/context consumption required in future coding tasks.
+
+The AGENTS.md files should function as a navigation and architecture map, not as a copy of the source code.
+
+Project Context
+
+This is a large existing enterprise application.
+
+The application previously supported Island Mode.
+
+Island Mode is being decommissioned and the application is being moved to Edge Mode.
+
+The eventual implementation work will be handled separately.
+
+Do NOT design or implement the Island → Edge migration now.
+
+Only understand and document the existing codebase.
+
+First Pass
+
+Start from the repository root.
+
+Create/update:
+
+"AGENTS.md"
+
+Analyze the repository structure at a high level.
+
+Document:
+
+- major modules
+- responsibility of each module
+- important source directories
+- technologies/frameworks
+- important configuration locations
+- important application entry points
+- major module dependencies
+- important external integrations
+- frontend/backend locations
+- where Island-related functionality exists
+- where Edge-related functionality exists, if already present
+
+Do not deeply inspect every file.
+
+IVisionWeb
+
+IVisionWeb is the primary module of interest because most of the eventual migration changes are expected there.
+
+Identify its relationship with the other modules, but do not deeply document those modules yet.
+
+The next documentation pass will focus specifically on:
+
+"IVisionWeb"
+
+Documentation Structure
+
+Prefer a hierarchy such as:
+
+"AGENTS.md"
+
+"IVisionWeb/AGENTS.md"
+
+"IVisionWeb/src/main/java/AGENTS.md"
+
+"IVisionWeb/src/main/webapp/AGENTS.md"
+
+Create deeper AGENTS.md files only when the size/complexity of a package or feature justifies it.
+
+Important
+
+Optimize for FUTURE AGENTS.
+
+The documentation should answer:
+
+- Where is this functionality?
+- Which module owns it?
+- Which package/class should I inspect?
+- What calls this component?
+- What does this component depend on?
+- Where should I look next?
+
+Do NOT document:
+
+- trivial classes
+- getters/setters
+- generated code
+- every individual file
+- large source-code snippets
+- speculative behavior
+- implementation proposals
+
+Prefer concise descriptions plus exact paths/classes.
+
+Cross-Module References
+
+When you discover:
+
+"IVisionWeb → ModuleA → ModuleB"
+
+record the relationship and important paths/classes.
+
+Do not copy ModuleA/ModuleB's implementation details into IVisionWeb's documentation.
+
+Those modules can receive their own AGENTS.md later.
+
+Accuracy
+
+Only document what can be verified from the source.
+
+If something is unclear:
+
+"UNKNOWN — requires deeper investigation"
+
+Do not guess.
+
+Final Output
+
+Create/update the appropriate AGENTS.md file(s) for this first repository-level pass.
+
+At the end, report:
+
+1. Major modules discovered
+2. AGENTS.md files created
+3. Important IVisionWeb dependencies discovered
+4. Areas that require deeper documentation
+5. Recommended next pass
+
+Again, this is ONLY the knowledge-generation phase.
+
+Do not modify application source code.
+Do not build or compile.
+Do not test.
+
+
+
+
+------------------66-66------------------
+
+
 We are creating persistent codebase knowledge for a very large existing enterprise project.
 
 IMPORTANT: This is a DOCUMENTATION / CODEBASE-MAPPING task only.
