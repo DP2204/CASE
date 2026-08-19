@@ -1,156 +1,77 @@
-when(controllerUtils.checkEligibleForSendToCxt(
-                any(), any(), any(), any(), any(), any()
-        )).thenReturn(false);
 
-        boolean result = service.sendDataToConnexis(request, "BNPPUID");
 
-        assertFalse(result);
+Read the parent/root "AGENTS.md" first.
 
-        verifyNoInteractions(xmlStrategyContext);
-        verifyNoInteractions(etntMessagePublisherViaPushMQ);
-    }
+Now focus ONLY on the "IVisionWeb" module.
 
-    // ---------------------------------------------------------
-    // 3. XML generation fails → false
-    // ---------------------------------------------------------
-    @Test
-    void sendDataToConnexis_xmlGenerationFails_returnsFalse() {
+This is a documentation/codebase-mapping task only.
 
-        when(controllerUtils.checkEligibleForSendToCxt(
-                any(), any(), any(), any(), any(), any()
-        )).thenReturn(true);
+For this task:
 
-        when(xmlStrategyContext.generateXml(
-                any(), anyString(), anyList()
-        )).thenThrow(new RuntimeException("XML Error"));
+- Do not modify application source code.
+- Do not build or compile.
+- Do not run tests.
+- Do not start the application.
+- Use static source analysis only.
 
-        boolean result = service.sendDataToConnexis(request, "BNPPUID");
+Create/update:
 
-        assertFalse(result);
+"IVisionWeb/AGENTS.md"
 
-        verify(etntMessagePublisherViaPushMQ, never()).publish(anyList());
-    }
+The purpose is to create a compact knowledge map that future coding agents can use instead of repeatedly scanning this large module.
 
-    // ---------------------------------------------------------
-    // 4. TAR creation fails → false
-    // ---------------------------------------------------------
-    @Test
-    void sendDataToConnexis_tarCreationFails_returnsFalse() throws Exception {
+Analyze the structure of:
 
-        File xmlFile = new File("target/test.xml");
+- "src/main/java"
+- "src/main/webapp"
+- relevant configuration/resources
+- module dependencies
 
-        when(controllerUtils.checkEligibleForSendToCxt(
-                any(), any(), any(), any(), any(), any()
-        )).thenReturn(true);
+Document:
 
-        when(xmlStrategyContext.generateXml(
-                any(), anyString(), anyList()
-        )).thenReturn(xmlFile);
+1. IVisionWeb's responsibility in the overall project.
+2. High-level architecture.
+3. "src/main/java" structure and important packages.
+4. "src/main/webapp" structure and important frontend areas.
+5. Important controllers/services/classes.
+6. Important frontend pages, JavaScript and resources.
+7. Frontend → backend relationships.
+8. Important request/data flows.
+9. Important configuration.
+10. Dependencies on other modules.
+11. Important Island-related code/configuration.
+12. Existing Edge-related code/configuration, if present.
+13. Important files/classes that a future developer is likely to need.
+14. "Where to look next" navigation guidance.
 
-        try (MockedStatic<FileUtil> fileUtilMock = mockStatic(FileUtil.class)) {
+Do NOT document every class or file.
 
-            fileUtilMock.when(() -> FileUtil.createTarFile(anyList(), anyString()))
-                    .thenThrow(new RuntimeException("TAR Error"));
+Do NOT copy source code into AGENTS.md.
 
-            boolean result = service.sendDataToConnexis(request, "BNPPUID");
+Prioritize relationships, responsibilities, paths and navigation.
 
-            assertFalse(result);
+When IVisionWeb depends on another module, reference the module and relevant classes/paths rather than documenting that module in detail.
 
-            verify(etntMessagePublisherViaPushMQ, never()).publish(anyList());
-        }
-    }
+If something cannot be established from the source, mark it:
 
-    // ---------------------------------------------------------
-    // 5. Publish fails → false
-    // ---------------------------------------------------------
-    @Test
-    void sendDataToConnexis_publishFails_returnsFalse() throws Exception {
+"UNKNOWN — requires deeper investigation"
 
-        File xmlFile = new File("target/test.xml");
+Do not guess.
 
-        when(controllerUtils.checkEligibleForSendToCxt(
-                any(), any(), any(), any(), any(), any()
-        )).thenReturn(true);
+At the end, report:
 
-        when(xmlStrategyContext.generateXml(
-                any(), anyString(), anyList()
-        )).thenReturn(xmlFile);
+- what you analyzed
+- what you documented
+- what you intentionally did not analyze deeply
+- important cross-module dependencies
+- recommended next documentation pass
 
-        String expectedTarPath =
-                "target/tmp/" + request.getEventId() + request.getProdCode()
-                        + File.separator + request.getEventId() + ".tar";
-
-        File tarFile = new File(expectedTarPath);
-
-        try (MockedStatic<FileUtil> fileUtilMock = mockStatic(FileUtil.class)) {
-
-            fileUtilMock.when(() -> FileUtil.createTarFile(anyList(), anyString()))
-                    .thenAnswer(invocation -> {
-                        tarFile.getParentFile().mkdirs();
-                        tarFile.createNewFile();
-                        return null;
-                    });
-
-            doThrow(new RuntimeException("Publish Error"))
-                    .when(etntMessagePublisherViaPushMQ).publish(anyList());
-
-            boolean result = service.sendDataToConnexis(request, "BNPPUID");
-
-            assertFalse(result);
-
-            verify(etntMessagePublisherViaPushMQ, times(1))
-                    .publish(anyList());
-        }
-    }
-
-    // ---------------------------------------------------------
-    // 6. Status update throws → should NOT break success flow
-    // ---------------------------------------------------------
-    @Test
-    void sendDataToConnexis_statusUpdateThrows_noCrash() throws Exception {
-
-        File xmlFile = new File("target/test.xml");
-
-        when(controllerUtils.checkEligibleForSendToCxt(
-                any(), any(), any(), any(), any(), any()
-        )).thenReturn(true);
-
-        when(xmlStrategyContext.generateXml(
-                any(), anyString(), anyList()
-        )).thenReturn(xmlFile);
-
-        doThrow(new RuntimeException("DB Error"))
-                .when(controllerUtils)
-                .undateEventProperties(any(), any(), any(), anyList());
-
-        String expectedTarPath =
-                "target/tmp/" + request.getEventId() + request.getProdCode()
-                        + File.separator + request.getEventId() + ".tar";
-
-        File tarFile = new File(expectedTarPath);
-
-        try (MockedStatic<FileUtil> fileUtilMock = mockStatic(FileUtil.class)) {
-
-            fileUtilMock.when(() -> FileUtil.createTarFile(anyList(), anyString()))
-                    .thenAnswer(invocation -> {
-                        tarFile.getParentFile().mkdirs();
-                        tarFile.createNewFile();
-                        return null;
-                    });
-
-            doNothing().when(etntMessagePublisherViaPushMQ).publish(anyList());
-
-            boolean result = service.sendDataToConnexis(request, "BNPPUID");
-
-            assertTrue(result);
-        }
-    }
-}
+Remember: this is only building the knowledge map. Implementation will happen later.
 
 
 
-)))))))()))))))))))))---------------------
 
+---------
 
 We are creating persistent codebase knowledge for this large enterprise project.
 
@@ -669,314 +590,5 @@ ______________________________________________
 
         </dependencies>
     </dependencyManagement>
-
-</project>
-
-
-
-
-
-
-
-@Test
-void sendDataToConnexis_tarCreationFails_returnsFalse() throws Exception {
-
-    File xmlFile = new File("target/test.xml");
-
-    ReflectionTestUtils.setField(service, "tmpFilePath", "target/tmp/");
-    ReflectionTestUtils.setField(service, "doneFilePath", "target/done/");
-    ReflectionTestUtils.setField(service, "errorFilePath", "target/error/");
-
-    when(controllerUtils.checkEligibleForSendToCxt(
-            any(), any(), any(), any(), any(), any()
-    )).thenReturn(true);
-
-    when(xmlStrategyContext.generateXml(
-            any(), anyString(), anyList()
-    )).thenReturn(xmlFile);
-
-    try (MockedStatic<FileUtil> fileUtilMock = mockStatic(FileUtil.class)) {
-
-        // 🔥 REAL FAILURE SIMULATION
-        fileUtilMock.when(() -> FileUtil.createTarFile(anyList(), anyString()))
-                .thenThrow(new RuntimeException("Tar creation failed"));
-
-        boolean result = service.sendDataToConnexis(request, "BNPPUID");
-
-        assertFalse(result);
-
-        // TAR creation attempted once
-        fileUtilMock.verify(() -> FileUtil.createTarFile(anyList(), anyString()), times(1));
-
-        // Publish should NEVER be called
-        verify(etntMessagePublisherViaPushMQ, never()).publish(anyList());
-    }
-}
-
-
-
-@Test
-void sendDataToConnexis_publishFails_returnsFalse() throws Exception {
-
-    File xmlFile = new File("target/test.xml");
-
-    // Inject @Value fields
-    ReflectionTestUtils.setField(service, "tmpFilePath", "target/tmp/");
-    ReflectionTestUtils.setField(service, "doneFilePath", "target/done/");
-    ReflectionTestUtils.setField(service, "errorFilePath", "target/error/");
-
-    when(controllerUtils.checkEligibleForSendToCxt(
-            any(), any(), any(), any(), any(), any()
-    )).thenReturn(true);
-
-    when(xmlStrategyContext.generateXml(
-            any(), anyString(), anyList()
-    )).thenReturn(xmlFile);
-
-    doNothing().when(controllerUtils)
-            .createExternalTrackAndTraceHistory(any(), any(), any());
-
-    try (MockedStatic<FileUtil> fileUtilMock = mockStatic(FileUtil.class)) {
-
-        // 🔥 CRITICAL FIX: use the SAME PATH that service passes in
-        fileUtilMock.when(() -> FileUtil.createTarFile(anyList(), anyString()))
-                .thenAnswer(invocation -> {
-                    String realTarPath = invocation.getArgument(1, String.class);
-                    File realTarFile = new File(realTarPath);
-
-                    realTarFile.getParentFile().mkdirs();
-                    realTarFile.createNewFile();  // <-- now matches service check
-
-                    return null;
-                });
-
-        // Simulate publish failure
-        doThrow(new RuntimeException("Publish Error"))
-                .when(etntMessagePublisherViaPushMQ)
-                .publish(anyList());
-
-        boolean result = service.sendDataToConnexis(request, "BNPPUID");
-
-        assertFalse(result);
-
-        // NOW this WILL be invoked
-        verify(etntMessagePublisherViaPushMQ, times(1))
-                .publish(anyList());
-    }
-}
-
-
-
-
-
-@Test
-void sendDataToConnexis_publishFails_returnsFalse() throws Exception {
-
-    File xmlFile = new File("target/test.xml");
-
-    // Must inject @Value paths
-    ReflectionTestUtils.setField(service, "tmpFilePath", "target/tmp/");
-    ReflectionTestUtils.setField(service, "doneFilePath", "target/done/");
-    ReflectionTestUtils.setField(service, "errorFilePath", "target/error/");
-
-    when(controllerUtils.checkEligibleForSendToCxt(
-            any(), any(), any(), any(), any(), any()
-    )).thenReturn(true);
-
-    when(xmlStrategyContext.generateXml(
-            any(), anyString(), anyList()
-    )).thenReturn(xmlFile);
-
-    doNothing().when(controllerUtils)
-            .createExternalTrackAndTraceHistory(any(), any(), any());
-
-    String expectedTarPath =
-            "target/tmp/" + request.getEventId() + request.getProdCode()
-                    + File.separator + request.getEventId() + ".tar";
-
-    File tarFile = new File(expectedTarPath);
-
-    try (MockedStatic<FileUtil> fileUtilMock = mockStatic(FileUtil.class)) {
-
-        // Create TAR file exactly where service expects it
-        fileUtilMock.when(() -> FileUtil.createTarFile(anyList(), anyString()))
-                .thenAnswer(invocation -> {
-                    tarFile.getParentFile().mkdirs();
-                    tarFile.createNewFile();
-                    return null;
-                });
-
-        // Simulate publish failure
-        doThrow(new RuntimeException("Publish Error"))
-                .when(etntMessagePublisherViaPushMQ)
-                .publish(anyList());
-
-        boolean result = service.sendDataToConnexis(request, "BNPPUID");
-
-        assertFalse(result);
-
-        // NOW this will pass
-        verify(etntMessagePublisherViaPushMQ, times(1))
-                .publish(anyList());
-    }
-}
-
-
-
-
-
-@Test
-void sendDataToConnexis_tarCreationFails_returnsFalse() throws Exception {
-
-    File xmlFile = new File("target/test.xml");
-
-    when(controllerUtils.checkEligibleForSendToCxt(
-            any(), any(), any(), any(), any(), any()
-    )).thenReturn(true);
-
-    when(xmlStrategyContext.generateXml(
-            any(), anyString(), anyList()
-    )).thenReturn(xmlFile);
-
-    // IMPORTANT: Do NOT throw exception
-    // Just don't create the tar file
-    try (MockedStatic<FileUtil> fileUtilMock = mockStatic(FileUtil.class)) {
-
-        fileUtilMock.when(() -> FileUtil.createTarFile(anyList(), anyString()))
-                .thenAnswer(invocation -> null);  // No tar file created
-
-        boolean result = service.sendDataToConnexis(request, "BNPPUID");
-
-        assertFalse(result);
-
-        verify(etntMessagePublisherViaPushMQ, never()).publish(anyList());
-    }
-}
-
-
-
-package com.bnpparibas.mql.service.impl;
-
-import com.bnpparibas.mql.helper.ExternalTNTHelper;
-import com.bnpparibas.mql.publisher.EtntMessagePublisherViaPushMQ;
-import com.bnpparibas.mql.strategy.XmlStrategyContext;
-import com.bnpparibas.mql.util.ControllerUtils;
-import com.bnpparibas.mql.util.FileUtil;
-import com.bnpparibas.mql.util.ReferentialUtils;
-import com.bnpparibas.mql.util.TradeDocV2Utils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.io.File;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-@ExtendWith(MockitoExtension.class)
-class ExternalTrackAndTraceServiceImplTest {
-
-    @Mock
-    private XmlStrategyContext xmlStrategyContext;
-
-    @Mock
-    private ControllerUtils controllerUtils;
-
-    @Mock
-    private TradeDocV2Utils tradeDocV2Utils;
-
-    @Mock
-    private ReferentialUtils referentialUtils;
-
-    @Mock
-    private EtntMessagePublisherViaPushMQ etntMessagePublisherViaPushMQ;
-
-    @Mock
-    private ExternalTNTHelper externalTNTHelper;
-
-    @Mock
-    private ObjectMapper objectMapper;
-
-    @InjectMocks
-    private ExternalTrackAndTraceServiceImpl service;
-
-    private ExternalTNTRequest request;
-
-    @BeforeEach
-    void setup() {
-
-        request = new ExternalTNTRequest();
-        request.setBranchCode("001");
-        request.setCountryCode("FR");
-        request.setEventId("EVT123");
-        request.setProdCode("PRD");
-        request.setConnexisRequestRefId("REF123");
-
-        // Inject @Value fields manually
-        ReflectionTestUtils.setField(service, "tmpFilePath", "target/tmp/");
-        ReflectionTestUtils.setField(service, "doneFilePath", "target/done/");
-        ReflectionTestUtils.setField(service, "errorFilePath", "target/error/");
-    }
-
-    // ---------------------------------------------------------
-    // 1. Happy path
-    // ---------------------------------------------------------
-    @Test
-    void sendDataToConnexis_successFlow_returnsTrue() throws Exception {
-
-        File xmlFile = new File("target/test.xml");
-
-        when(controllerUtils.checkEligibleForSendToCxt(
-                any(), any(), any(), any(), any(), any()
-        )).thenReturn(true);
-
-        when(xmlStrategyContext.generateXml(
-                any(), anyString(), anyList()
-        )).thenReturn(xmlFile);
-
-        doNothing().when(controllerUtils)
-                .createExternalTrackAndTraceHistory(any(), any(), any());
-
-        String expectedTarPath =
-                "target/tmp/" + request.getEventId() + request.getProdCode()
-                        + File.separator + request.getEventId() + ".tar";
-
-        File tarFile = new File(expectedTarPath);
-
-        try (MockedStatic<FileUtil> fileUtilMock = mockStatic(FileUtil.class)) {
-
-            fileUtilMock.when(() -> FileUtil.createTarFile(anyList(), anyString()))
-                    .thenAnswer(invocation -> {
-                        tarFile.getParentFile().mkdirs();
-                        tarFile.createNewFile();   // MUST match expected path
-                        return null;
-                    });
-
-            doNothing().when(etntMessagePublisherViaPushMQ).publish(anyList());
-
-            boolean result = service.sendDataToConnexis(request, "BNPPUID");
-
-            assertTrue(result);
-
-            verify(xmlStrategyContext, times(1))
-                    .generateXml(any(), anyString(), anyList());
-
-            verify(etntMessagePublisherViaPushMQ, times(1))
-                    .publish(anyList());
-
-            verify(controllerUtils, atLeastOnce())
-                    .undateEventProperties(any(), any(), any(), anyList());
-        }
-    }
-
-    // ---------------------------------------------------------
-    // 2. Not eligible → false
-    // ---------------------------------------------------------
-    @Test
-    void sendDataToConnexis_notEligible_returnsFalse() {
 
         
