@@ -1,3 +1,109 @@
+Read:
+
+- project root "AGENTS.md"
+- "IVisionWeb/AGENTS.md"
+- "IVisionWeb/src/main/java/AGENTS.md"
+
+Now focus ONLY on:
+
+"IVisionWeb/src/main/webapp"
+
+This is a documentation/codebase-mapping task only.
+
+Do not modify source code.
+Do not build/compile.
+Do not run tests.
+Do not start the application.
+
+Create/update:
+
+"IVisionWeb/src/main/webapp/AGENTS.md"
+
+Objective
+
+Create a compact navigation map of the IVisionWeb frontend/web layer.
+
+Analyze the actual structure and relationships between:
+
+- JSP/HTML
+- JavaScript
+- CSS
+- images/static resources
+- templates
+- forms
+- AJAX/API calls
+- frontend configuration
+- session/cookies if relevant
+- authentication-related UI
+- important UI flows
+
+Most important
+
+Trace important frontend functionality to the backend.
+
+For important flows document:
+
+UI/page
+→ JavaScript
+→ API/request
+→ Java controller
+→ Java service
+→ repository/external module
+
+Use actual paths and class names.
+
+Do not copy source code.
+
+Do not document every static file.
+
+Island / Edge
+
+Identify existing Island/Edge-related frontend logic, configuration, URLs, conditions, API calls or UI behavior.
+
+Do NOT propose changes.
+
+Only document where the existing implementation lives.
+
+Navigation
+
+Add:
+
+"## Where to Look"
+
+Organize it by functionality where possible.
+
+For example:
+
+- Login/authentication → ...
+- Document functionality → ...
+- Tracking → ...
+- Configuration → ...
+- Island-related UI → ...
+
+Use verified information only.
+
+If something is unclear:
+
+"UNKNOWN — requires deeper investigation"
+
+Optimize for future coding-agent context/token efficiency.
+
+At the end report:
+
+- major frontend areas analyzed
+- important UI → backend flows
+- Island/Edge-related areas
+- cross-module dependencies
+- areas requiring deeper documentation
+
+
+
+-----------------------------------------------
+
+
+
+
+
 Read the following AGENTS.md files before starting:
 
 - project root "AGENTS.md"
