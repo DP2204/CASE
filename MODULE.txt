@@ -1,3 +1,180 @@
+We are creating persistent codebase knowledge for a very large existing enterprise project.
+
+IMPORTANT: This is a DOCUMENTATION / CODEBASE-MAPPING task only.
+
+Do NOT implement anything.
+Do NOT modify application source code.
+Do NOT refactor anything.
+Do NOT propose fixes.
+
+The purpose of this task is to create an efficient "AGENTS.md" knowledge hierarchy so that future OpenCode sessions can understand and navigate this large repository without repeatedly scanning the entire codebase.
+
+Project Context
+
+The application previously supported Island Mode.
+
+Island Mode is now being decommissioned and the application is being moved to Edge Mode.
+
+The eventual implementation work will be performed separately.
+
+For now, we only need accurate knowledge of the existing codebase.
+
+First-pass objective
+
+Analyze the repository at a HIGH LEVEL.
+
+Do NOT deeply inspect every source file.
+
+Identify:
+
+1. Major modules
+2. Responsibility of each module
+3. Important source directories
+4. Build systems and major technologies
+5. Relationships/dependencies between modules
+6. Main application entry points
+7. Important configuration locations
+8. Which modules appear to contain frontend code
+9. Which modules appear to contain backend code
+10. Important external integrations
+11. Where Island-related functionality appears to exist
+12. Where Edge-related functionality already appears to exist, if any
+
+AGENTS.md strategy
+
+Create/update the ROOT:
+
+"AGENTS.md"
+
+This file should be a compact navigation map for future coding agents.
+
+It should NOT attempt to document the entire codebase.
+
+The root AGENTS.md should contain:
+
+1. Project Overview
+
+What the project is and its major architectural areas.
+
+2. Repository Structure
+
+Important modules/directories and their purpose.
+
+3. Technology Overview
+
+Important languages/frameworks/build systems.
+
+4. Module Map
+
+For each major module:
+
+- responsibility
+- important source locations
+- dependencies
+- whether it contains frontend/backend/shared functionality
+
+5. Important Relationships
+
+Important module-to-module relationships.
+
+6. Island / Edge Context
+
+Only identify where Island/Edge-related functionality appears.
+Do not propose migration changes.
+
+7. Where To Look
+
+Give future agents a quick starting point depending on the type of task.
+
+For example:
+
+Frontend task → IVisionWeb/src/main/webapp
+Backend task → IVisionWeb/src/main/java
+etc.
+
+8. Documentation Hierarchy
+
+Document where deeper AGENTS.md files should exist.
+
+Example:
+
+IVisionWeb/
+AGENTS.md
+
+IVisionWeb/src/main/java/
+AGENTS.md
+
+IVisionWeb/src/main/webapp/
+AGENTS.md
+
+Only create deeper files if the repository structure justifies them.
+
+Important
+
+Because this repository is very large:
+
+DO NOT read every file.
+
+DO NOT put source code inside AGENTS.md.
+
+DO NOT describe trivial classes.
+
+DO NOT create huge documentation.
+
+The purpose is to reduce future token/context consumption.
+
+The AGENTS.md should tell a future agent:
+
+"Where should I look?"
+
+rather than:
+
+"Here is the entire source code."
+
+Cross-module references
+
+When you discover a relationship such as:
+
+IVisionWeb → ModuleA → ModuleB
+
+document the relationship and relevant paths.
+
+Do not duplicate ModuleA or ModuleB's internal implementation details in the root AGENTS.md.
+
+Those modules can receive their own AGENTS.md later.
+
+Accuracy
+
+Only document facts verified from the repository.
+
+Do not guess.
+
+If something is unclear, mark it as:
+
+UNKNOWN — requires deeper investigation.
+
+Final requirement
+
+Before finishing, report:
+
+1. Major modules discovered
+2. What was documented
+3. What was intentionally not deeply analyzed
+4. Recommended next documentation pass
+5. Any important cross-module relationships discovered
+
+Again:
+
+THIS TASK IS ONLY FOR CODEBASE KNOWLEDGE.
+
+DO NOT IMPLEMENT THE ISLAND → EDGE MIGRATION.
+
+
+
+______________________________________________
+
+
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
