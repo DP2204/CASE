@@ -1,3 +1,121 @@
+Read the following AGENTS.md files before starting:
+
+- project root "AGENTS.md"
+- "IVisionWeb/AGENTS.md"
+
+Now focus ONLY on:
+
+"IVisionWeb/src/main/java"
+
+This is a documentation/codebase-mapping task only.
+
+For this task:
+
+- Do not modify source code.
+- Do not build or compile.
+- Do not run tests.
+- Do not start the application.
+- Use static source analysis only.
+
+Create/update:
+
+"IVisionWeb/src/main/java/AGENTS.md"
+
+Objective
+
+Create a compact navigation map of the IVisionWeb Java/backend code.
+
+The purpose is to allow a future coding agent to quickly find the relevant Java code without scanning the entire source tree again.
+
+Analyze
+
+Identify and document:
+
+- package structure
+- important controllers
+- services
+- interfaces/implementations
+- repositories/DAOs
+- entities/models/DTOs
+- configuration
+- utilities
+- exception handling
+- security/authentication if present
+- external clients/integrations
+- important request/data flows
+- important cross-module dependencies
+
+Do not document every class.
+
+Prioritize classes/packages that participate in actual application flows or are likely to be modified.
+
+For important flows, document:
+
+Entry point
+→ Controller
+→ Service
+→ Repository/Client
+→ Other module/external system
+
+Use actual class/package paths.
+
+Island / Edge
+
+Identify existing Island/Edge-related implementation in this Java code.
+
+Do NOT propose migration changes.
+
+Only document where the existing functionality is located and what components participate in it.
+
+Cross-module dependencies
+
+For each important dependency:
+
+- module
+- relevant package/class
+- purpose
+- relationship with IVisionWeb
+- reference to the other module's documentation if available
+
+Do not duplicate the other module's implementation.
+
+Navigation
+
+Add a section:
+
+"## Where to Look"
+
+For example:
+
+- Authentication → ...
+- Document functionality → ...
+- Tracking → ...
+- Configuration → ...
+- Island-related functionality → ...
+
+Only include areas verified from the source.
+
+If something is unclear:
+
+"UNKNOWN — requires deeper investigation"
+
+Keep the AGENTS.md concise and optimized for future agent context/token efficiency.
+
+At the end report:
+
+- packages analyzed
+- important flows discovered
+- important cross-module dependencies
+- areas not deeply analyzed
+- recommended next documentation pass
+
+
+
+
+------------------------------
+
+
+
 
 
 Read the parent/root "AGENTS.md" first.
