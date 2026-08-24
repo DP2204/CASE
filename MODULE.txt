@@ -1,3 +1,7 @@
+I would like to refer Sanidhya because he has strong hands-on experience in Java, Spring Boot, REST APIs and SQL, along with experience working on enterprise-scale financial applications. His exposure to system modernization, performance optimization, testing and production deployments makes him a strong fit for software engineering roles. I believe his technical skills and ability to work effectively in a collaborative environment would allow him to contribute well to the team.
+
+
+
 Read:
 
 - project root "AGENTS.md"
