@@ -1,3 +1,12 @@
+Current: The existing HTML/XSL code renders the Special Payment Conditions section with incorrect layout/alignment of the labels and textareas.
+Expected: The Beneficiary and Bank Only fields should be displayed as two vertically stacked rows, with the labels on the left and their large readonly textareas properly aligned on the right, matching the existing expected iVision UI layout.
+Task: Analyze the attached code, identify the cause, and make the minimum required HTML/CSS changes. Do not modify business logic, IDs, XSL mappings, or existing functionality.
+
+
+
+
+
+
 I would like to refer Sanidhya because he has strong hands-on experience in Java, Spring Boot, REST APIs and SQL, along with experience working on enterprise-scale financial applications. His exposure to system modernization, performance optimization, testing and production deployments makes him a strong fit for software engineering roles. I believe his technical skills and ability to work effectively in a collaborative environment would allow him to contribute well to the team.
 
 
