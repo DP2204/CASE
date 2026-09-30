@@ -1,6 +1,54 @@
-Current: The existing HTML/XSL code renders the Special Payment Conditions section with incorrect layout/alignment of the labels and textareas.
-Expected: The Beneficiary and Bank Only fields should be displayed as two vertically stacked rows, with the labels on the left and their large readonly textareas properly aligned on the right, matching the existing expected iVision UI layout.
-Task: Analyze the attached code, identify the cause, and make the minimum required HTML/CSS changes. Do not modify business logic, IDs, XSL mappings, or existing functionality.
+What the harness already does with common JS:
+
+harness/commonLoader.js resolves common/scripts relative to each HTML page (<page-dir/../../.. webapp/common/scripts) and loads a fixed whitelist of 11 files (COM_Functions.js, COM_Error.js, COM_Date.js, etc.) plus inline <script> blocks from the page itself.
+
+The gaps (I verified in the code):
+
+1. No dependency discovery it doesn't parse <script src="..."> tags to find what a page actually references. It always loads the sane 11 defaults, so a page using COM_LCFunctions.js + 4 others would only get the 11 on the list.
+
+2. Loaded but not executed runner.js: 261 (generateCombined Functions) calls commonLoader.load() but only uses the result to write a comment header Listing function names. The actual runs use hand-written shims (old.js:32 common Functions is a mock, not your real production code). So if COM Functions.js differs
+
+between old and new repos (e.g., contains vs exactContains, text vs text()), the harness will not catch it. 3. Path assumption the ../../.. walk only works for pages exactly 3 levels under webapp; deeper pages silently miss the folder.
+
+How I'd manage it in pieces (this also keeps sessions/token usage sane):
+
+Piece
+
+A. Library diff
+
+Direct file-by-file diff of common/scripts old vs new (both repos). Catches most migration bugs in shared code cheaply, no fixtures needed
+
+small, one pass
+
+B. Dependency map
+
+Parse <script src> from every page HTML per-page dependency list, verify each referenced file exists in both repos
+
+small, mechanical
+
+C. Page fixtures
+
+Per-page old-functions.js/new-functions.js + XML data, as designed
+
+1 page per session chunk, resumable
+
+D. Real-code execution (optional, bigger Lift)
+
+What
+
+Cost
+
+Modify commonLoader to execute the actual common JS in both engines instead of shims
+
+larger refactor
+
+My recommendation: start with A + B (fast, catches whole families of defects across all pages at once), then do C page-by-page. Each piece is independent, so we can work through them across multiple sessions progress is persisted in run-summary.json and each fixture's KNOWN BUGS.nd, so nothing is lost between sessions.
+
+Want me to kick off piece A/B against your two paths?
+
+
+
+
 
 
 
