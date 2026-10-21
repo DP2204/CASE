@@ -1,46 +1,59 @@
-Fix the horizontal alignment of the Receiver Address section specifically in the Pacs008 screen.
+Fix the horizontal alignment of the Receiver Address section in the Pacs008 screen using a targeted CSS change.
 
-Compare the attached screenshots:
-- First screenshot: Current incorrect layout.
-- Second screenshot: Expected layout.
+CURRENT BEHAVIOUR:
+The Receiver BIC and Receiver Name rows have a consistent layout:
+- Their labels are positioned on the left.
+- Their descriptive text appears in the middle.
+- Their input fields are aligned on the right.
 
-CURRENT ISSUE:
-The Receiver BIC and Receiver Name sections have their labels on the left and their corresponding input fields aligned on the right. However, the Receiver Address section has a different layout: its labels and input fields are spread horizontally, with excessive empty space between the left-side section label and the actual address fields.
+However, the Receiver Address section, identified by
+tr#new_Receiver_address_Pacs008, has a different layout.
+Its nested address fields are not positioned correctly relative to the rest of the form.
 
-EXPECTED RESULT:
-The Receiver Address section must be positioned and aligned like the second screenshot.
+EXPECTED BEHAVIOUR:
+The Receiver Address section must follow the same overall alignment as the other fields in the form.
 
-1. Keep the "Receiver Address" section label aligned with the other main section labels, such as "Receiver BIC", "Receiver Name", and "Payment Information".
+1. Keep the Receiver Address section label aligned with the other section labels on the left.
+2. Position the nested address grid to the right of the Receiver Address label, without excessive horizontal gaps.
+3. Keep each address label immediately beside its corresponding input field.
+4. Maintain two label-input pairs per row wherever the existing layout supports them:
+   Country + input | City + input
+   Department + input | Sub Department + input
+   Street Name + input | Building Number + input
+   Building Name + input | Floor + input
+   Post Box + input | Room + input
+   Post Code + input | Town Location Name + input
+   District Name + input | Country Sub Division + input
+5. Ensure the address grid does not stretch unnecessarily or shift its fields horizontally because of inherited table or cell widths.
+6. Preserve the existing vertical order of the Receiver BIC, Receiver Name, Receiver Address, and Payment Information sections.
 
-2. Position the address fields together in a compact grid instead of spreading them across the page. The address field labels must appear immediately beside their respective input boxes.
-
-3. Preserve the existing two-pair-per-row layout:
-   - Country | Country input | City | City input
-   - Department | Department input | Sub Department | Sub Department input
-   - Street Name | Street Name input | Building Number | Building Number input
-   - Building Name | Building Name input | Floor | Floor input
-   - Post Box | Post Box input | Room | Room input
-   - Post Code | Post Code input | Town Location Name | Town Location Name input
-   - District Name | District Name input | Country Sub Division | Country Sub Division input
-
-4. Ensure the nested table #new_Receiver_addressHY_Pacs008 does not cause the address fields to shift horizontally or inherit inappropriate widths or alignment from its parent cells.
-
-INVESTIGATE:
+INVESTIGATION:
+Inspect the existing CSS and layout for:
 - #new_Receiver_address_Pacs008
 - #new_Receiver_addressHY_Pacs008
-- #tbl_Message_Details_Pacs008 (verify the actual table ID)
-- Relevant CSS for table widths, td widths, text alignment, padding, margins, and inherited styles.
+- #receiverAddress_Pacs008_HY1
+- #receiverAddress_Pacs008_HY2
+- #receiverAddress_Pacs008_rec1 through #receiverAddress_Pacs008_rec6
+- The parent message table and the surrounding td elements.
 
-IMPORTANT:
-- Identify the actual CSS/layout cause before making changes.
-- Keep the existing HTML structure unchanged.
-- Preserve all IDs, datafld attributes, JavaScript functionality, and existing field behaviour.
-- Do not modify the Receiver BIC, Receiver Name, or Payment Information layouts.
-- Do not introduce global CSS changes or arbitrary absolute positioning.
-- Apply the smallest targeted fix to the Pacs008 Receiver Address section.
+Check the actual table IDs and existing CSS before making changes.
 
-ACCEPTANCE CRITERIA:
-The Receiver Address fields must match the compact positioning shown in the second screenshot, with their labels and input boxes aligned together in two columns of field pairs. The overall form and all other sections must remain unchanged.
+IMPORTANT CONSTRAINTS:
+- Do not change the HTML structure.
+- Preserve all existing IDs, datafld attributes, JavaScript functionality, and field behaviour.
+- Do not change the alignment of Receiver BIC, Receiver Name, or Payment Information.
+- Do not apply global CSS changes.
+- Do not use arbitrary absolute positioning or margins.
+- Make the smallest targeted CSS change that fixes the address grid positioning.
+
+Before editing, explain which existing CSS rule or table dimension is causing the misalignment. Then implement the fix.
+
+
+
+
+
+
+
 
 
 
