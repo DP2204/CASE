@@ -1,3 +1,10 @@
+Fix the CSS alignment specifically for #new_Receiver_address_Pacs008 and its nested table #new_Receiver_addressHY_Pacs008. The receiver address fields are shifted horizontally compared with the expected layout. Align the address section with the existing Country, City, Department, and other address fields, matching the expected screenshot. Inspect inherited styles, table widths, cell alignment, padding, and margins. Preserve existing HTML, IDs, functionality, and layouts of other message types. Apply only a targeted fix without global CSS changes.
+
+
+
+
+
+
 What the harness already does with common JS:
 
 harness/commonLoader.js resolves common/scripts relative to each HTML page (<page-dir/../../.. webapp/common/scripts) and loads a fixed whitelist of 11 files (COM_Functions.js, COM_Error.js, COM_Date.js, etc.) plus inline <script> blocks from the page itself.
