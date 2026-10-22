@@ -1,3 +1,15 @@
+Current: The Receiver Address block is too compact, causing Line 1 and Line 2 labels and their input boxes to appear misaligned. The Country and City fields are also not positioned correctly.
+
+Expected: Expand the Receiver Address block to the proper width. Display Line 1 and Line 2 first, with Country and City directly below them. Keep all labels and input boxes properly aligned with consistent spacing. Preserve the existing expand/collapse (+) functionality for the address fields.
+
+
+
+
+
+
+
+
+
 Fix the horizontal alignment of the Receiver Address section in the Pacs008 screen using a targeted CSS change.
 
 CURRENT BEHAVIOUR:
